@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+/*
+  Sistema visual de Manifest.
+  La app es oscura por definición: se usa de noche o al levantarse, a pantalla
+  completa, y el contenido son imágenes luminosas sobre fondo. Un tema claro
+  competiría con las escenas.
+*/
+@theme {
+  --color-ink-950: #07060d;
+  --color-ink-900: #0d0b18;
+  --color-ink-800: #141127;
+  --color-ink-700: #1e1a36;
+  --color-ink-600: #2c2650;
+
+  --color-violet-glow: #a78bfa;
+  --color-gold: #e9c46a;
+  --color-gold-deep: #c99d3f;
+
+  --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --radius-xl2: 1.4rem;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-ink-950);
+  color: #efeaf7;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Halo de fondo: da profundidad sin cargar una imagen. */
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60rem 40rem at 15% -10%, rgba(167, 139, 250, 0.22), transparent 60%),
+    radial-gradient(50rem 35rem at 90% 5%, rgba(233, 196, 106, 0.12), transparent 60%),
+    radial-gradient(70rem 50rem at 50% 110%, rgba(99, 102, 241, 0.14), transparent 60%);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015));
+  backdrop-filter: blur(10px);
+}
+
+.card-hover {
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.card-hover:hover {
+  border-color: rgba(167, 139, 250, 0.45);
+  transform: translateY(-2px);
+}
+
+/*
+  Ken Burns. Es lo que convierte una imagen fija en algo que se mira 60 s sin
+  aburrirse, y es la razón de que el tier "Visión" no necesite modelo de vídeo.
+  Cada escena arranca en una variante distinta para que no se note el patrón.
+*/
+@keyframes kb-in {
+  from { transform: scale(1.02) translate3d(0, 1.5%, 0); }
+  to   { transform: scale(1.18) translate3d(0, -1.5%, 0); }
+}
+@keyframes kb-out {
+  from { transform: scale(1.18) translate3d(-1.5%, 0, 0); }
+  to   { transform: scale(1.02) translate3d(1.5%, 0, 0); }
+}
+@keyframes kb-drift {
+  from { transform: scale(1.12) translate3d(2%, 1%, 0); }
+  to   { transform: scale(1.06) translate3d(-2%, -1.5%, 0); }
+}
+
+.kb-0 { animation: kb-in var(--kb-duration, 8s) ease-out both; }
+.kb-1 { animation: kb-out var(--kb-duration, 8s) ease-out both; }
+.kb-2 { animation: kb-drift var(--kb-duration, 8s) ease-in-out both; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fade-up 0.7s ease-out both; }
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.06); }
+}
+.breathe { animation: breathe 4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-0, .kb-1, .kb-2, .fade-up, .breathe { animation: none !important; }
+}
+
+/* El scroll horizontal del market, sin barra a la vista. */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }

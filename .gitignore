@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+.env
+.env.local
+.data/*
+!.data/.gitkeep
+public/uploads/*
+!public/uploads/.gitkeep
+public/generated/*
+!public/generated/.gitkeep
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
