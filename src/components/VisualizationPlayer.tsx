@@ -64,14 +64,24 @@ export function VisualizationPlayer({ project }: Props) {
     [project.affirmations, scale],
   );
 
-  const sceneIndex = Math.max(
-    0,
-    scenes.findIndex((s, i) => time >= s.startSec && (time < s.endSec || i === scenes.length - 1)),
-  );
-  const lineIndex = Math.max(
-    0,
-    lines.findIndex((l, i) => time >= l.startSec && (time < l.endSec || i === lines.length - 1)),
-  );
+  /**
+   * "El ultimo que ya ha empezado", no "aquel en cuyo rango caigo".
+   *
+   * Las afirmaciones dejan un hueco de silencio al final de cada franja para
+   * que el usuario repita; con una busqueda por rango, ese hueco no casa con
+   * nada y la frase (y la escena) saltarian a la primera en cada pausa.
+   */
+  const lastStarted = (items: { startSec: number }[]) => {
+    let index = 0;
+    for (let i = 0; i < items.length; i++) {
+      if (time >= items[i].startSec) index = i;
+      else break;
+    }
+    return index;
+  };
+
+  const sceneIndex = lastStarted(scenes);
+  const lineIndex = lastStarted(lines);
   const activeLine = lines[lineIndex];
   /** Entre el final de una frase y el inicio de la siguiente: turno del usuario. */
   const inEcho = !!activeLine && time > activeLine.endSec;

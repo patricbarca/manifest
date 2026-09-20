@@ -152,6 +152,22 @@ const BANK: Record<LifeArea, { affirmations: string[]; scenes: string[] }> = {
   },
 };
 
+/**
+ * Titulo a partir de la intencion del usuario.
+ *
+ * Corta por palabra, no por caracter: "Dirijo mi propio estudio en Lisboa, con
+ * tres personas en el" es peor que no tener titulo. Con LLM este camino no se
+ * usa, porque el modelo devuelve un titulo escrito.
+ */
+function shortTitle(intention: string): string {
+  const clean = intention.trim().replace(/\s+/g, " ");
+  if (!clean) return "Mi visualización";
+  if (clean.length <= 48) return clean;
+  const cut = clean.slice(0, 48);
+  const lastSpace = cut.lastIndexOf(" ");
+  return (lastSpace > 20 ? cut.slice(0, lastSpace) : cut).replace(/[,;:]$/, "") + "…";
+}
+
 /** Mezcla determinista: el mismo proyecto da siempre el mismo guion. */
 function seededShuffle<T>(items: T[], seed: string): T[] {
   let h = 2166136261;
@@ -191,13 +207,22 @@ export function draftScript(input: {
   // que hablan de lo que el usuario escribio salen del camino con LLM
   // (lib/ai/llm.ts); este banco es la red de seguridad.
   return {
-    title: input.intention.trim().slice(0, 60) || "Mi visualización",
+    title: shortTitle(input.intention),
     hook: "Respira. Esto ya está en camino.",
     affirmations,
     closing: "Ya es tuyo. Solo tienes que sostenerlo.",
     sceneBriefs: briefs,
   };
 }
+
+/**
+ * Fraccion del hueco de cada frase que ocupa la voz. El resto es silencio, y
+ * ese silencio es el ejercicio: repetir en alto una frase de seis o siete
+ * palabras lleva dos o tres segundos, asi que el hueco tiene que ser
+ * comparable a lo que dura decirla. Con 45 % de aire, un video de 30 s con 6
+ * frases deja ~2,2 s por frase para repetirla.
+ */
+const SPOKEN_RATIO = 0.55;
 
 /** Reparte las afirmaciones a lo largo de la duracion, con aire para repetirlas. */
 export function layoutTimeline(
@@ -208,8 +233,7 @@ export function layoutTimeline(
   return affirmations.map((text, i) => ({
     text,
     startSec: +(i * slot).toFixed(2),
-    // Un pequeno hueco al final de cada slot: el silencio es donde el usuario repite.
-    endSec: +((i + 1) * slot - slot * 0.12).toFixed(2),
+    endSec: +(i * slot + slot * SPOKEN_RATIO).toFixed(2),
   }));
 }
 
@@ -226,17 +250,24 @@ export function buildScenePrompt(brief: string, style: VisualStyle, hasSelfie: b
   ].join(", ");
 }
 
+/**
+ * Las escenas NO usan el final de la afirmacion como final propio: la voz calla
+ * antes de que acabe el hueco, pero la imagen tiene que seguir ahi mientras el
+ * usuario repite. Cada escena ocupa su franja entera, sin huecos entre una y
+ * la siguiente.
+ */
 export function buildScenes(
   briefs: string[],
   style: VisualStyle,
   hasSelfie: boolean,
-  timeline: Affirmation[],
+  durationSec: number,
 ): Scene[] {
+  const slot = durationSec / Math.max(1, briefs.length);
   return briefs.map((brief, i) => ({
     id: `sc_${i + 1}`,
     prompt: buildScenePrompt(brief, style, hasSelfie),
-    startSec: timeline[i]?.startSec ?? 0,
-    endSec: timeline[i]?.endSec ?? 0,
+    startSec: +(i * slot).toFixed(2),
+    endSec: +((i + 1) * slot).toFixed(2),
     affirmationIndex: i,
   }));
 }

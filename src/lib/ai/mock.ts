@@ -53,10 +53,10 @@ function svgScene(seedIndex: number, label: string): string {
   <path d="M170 1280 C 230 900, 490 900, 550 1280 Z" fill="#000" opacity="0.32"/>
   <rect width="720" height="1280" fill="url(#vig)"/>
   <rect width="720" height="1280" filter="url(#grain)" opacity="0.07"/>
-  <text x="360" y="1216" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif"
-        font-size="19" fill="#ffffff" opacity="0.5">${safe}</text>
-  <text x="360" y="1246" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif"
-        font-size="14" fill="#ffffff" opacity="0.3">vista previa · modo demo</text>
+  <text x="360" y="64" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif"
+        font-size="17" fill="#ffffff" opacity="0.45">${safe}</text>
+  <text x="360" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif"
+        font-size="13" fill="#ffffff" opacity="0.28">vista previa · modo demo</text>
 </svg>`;
 }
 
@@ -82,8 +82,10 @@ export const mockImage: ImageProvider = {
   name: "mock",
   async generate({ prompt, projectId, sceneId }) {
     const index = Number(sceneId.replace(/\D/g, "")) || 1;
-    // Primeras palabras del brief, que es lo legible del prompt.
-    const label = prompt.split(",").slice(1, 3).join(",").trim();
+    // Solo la descripcion de la escena: el resto del prompt es estilo y
+    // encuadre, que no dicen nada al mirar la vista previa.
+    const brief = prompt.split(",")[1]?.trim() ?? "escena";
+    const label = brief.charAt(0).toUpperCase() + brief.slice(1);
     const url = await writePublic(
       path.join("generated", projectId, `${sceneId}.svg`),
       svgScene(index, label),

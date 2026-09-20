@@ -60,7 +60,10 @@ export function VideoStage({ initial }: { initial: Project }) {
           <div>
             <p className="text-sm text-gold">{project.tier === "vision" ? "Visión" : "Cine"} · {project.durationSec} s</p>
             <h1 className="mt-1 font-display text-3xl leading-tight">{project.title}</h1>
-            <p className="mt-3 text-white/55">{project.intention}</p>
+            {/* Sin LLM el titulo sale de la intencion, y entonces repetirla sobra. */}
+            {!project.intention.startsWith(project.title.replace(/…$/, "")) && (
+              <p className="mt-3 text-white/55">{project.intention}</p>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-3">

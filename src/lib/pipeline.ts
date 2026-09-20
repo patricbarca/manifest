@@ -91,7 +91,12 @@ export async function runPipeline(projectId: string): Promise<void> {
     });
     const script = scriptOut.result;
     const timeline = layoutTimeline(script.affirmations, start.durationSec);
-    const scenes = buildScenes(script.sceneBriefs, start.style, !!start.selfieUrl, timeline);
+    const scenes = buildScenes(
+      script.sceneBriefs,
+      start.style,
+      !!start.selfieUrl,
+      start.durationSec,
+    );
 
     await db.patchProject(projectId, (p) => ({
       ...p,
