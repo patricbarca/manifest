@@ -16,13 +16,19 @@ import { PROVIDER_COST } from "../pricing";
  * tests del pipeline.
  */
 
+/*
+  Paletas desaturadas a proposito. Estas cajas ocupan el sitio de una
+  fotografia, asi que tienen que comportarse como una: gama corta, luz que
+  viene de un lado y nada de color de caramelo. Un degradado saturado delata
+  al instante que ahi no hay una foto.
+*/
 const PALETTES = [
-  ["#1b1035", "#4c1d95", "#f59e0b"],
-  ["#0b1220", "#1e3a8a", "#38bdf8"],
-  ["#1a0b14", "#831843", "#fb7185"],
-  ["#0f1a14", "#14532d", "#86efac"],
-  ["#1a1206", "#78350f", "#fbbf24"],
-  ["#120b1f", "#5b21b6", "#c4b5fd"],
+  ["#0b0d10", "#243040", "#8a9bb0"], // azul noche
+  ["#0d0b0a", "#33261e", "#b89574"], // ambar tenue
+  ["#0a0c0b", "#1f2e2a", "#7d9c90"], // verde salvia
+  ["#0c0a0d", "#2b2333", "#9a8fae"], // malva frio
+  ["#0d0c0a", "#36332b", "#b3ab94"], // arena
+  ["#090b0d", "#1e2a33", "#7e98a8"], // acero
 ];
 
 function svgScene(seedIndex: number, label: string): string {
@@ -36,8 +42,8 @@ function svgScene(seedIndex: number, label: string): string {
       <stop offset="55%" stop-color="${p[1]}"/>
       <stop offset="100%" stop-color="${p[2]}"/>
     </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="32%" r="60%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.34"/>
+    <radialGradient id="glow" cx="72%" cy="22%" r="62%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22"/>
       <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="vig" cx="50%" cy="50%" r="75%">
@@ -49,14 +55,12 @@ function svgScene(seedIndex: number, label: string): string {
   </defs>
   <rect width="720" height="1280" fill="url(#g)"/>
   <rect width="720" height="1280" fill="url(#glow)"/>
-  <ellipse cx="360" cy="470" rx="150" ry="180" fill="#000" opacity="0.28"/>
-  <path d="M170 1280 C 230 900, 490 900, 550 1280 Z" fill="#000" opacity="0.32"/>
   <rect width="720" height="1280" fill="url(#vig)"/>
-  <rect width="720" height="1280" filter="url(#grain)" opacity="0.07"/>
-  <text x="360" y="64" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif"
-        font-size="17" fill="#ffffff" opacity="0.45">${safe}</text>
-  <text x="360" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif"
-        font-size="13" fill="#ffffff" opacity="0.28">vista previa · modo demo</text>
+  <rect width="720" height="1280" filter="url(#grain)" opacity="0.11"/>
+  <text x="360" y="62" text-anchor="middle" font-family="Inter,ui-sans-serif,system-ui,sans-serif"
+        font-size="16" letter-spacing="-0.2" fill="#ffffff" opacity="0.38">${safe}</text>
+  <text x="360" y="88" text-anchor="middle" font-family="Inter,ui-sans-serif,system-ui,sans-serif"
+        font-size="11" letter-spacing="1.1" fill="#ffffff" opacity="0.22">VISTA PREVIA · MODO DEMO</text>
 </svg>`;
 }
 

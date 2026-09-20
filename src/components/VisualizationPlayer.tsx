@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Project } from "@/lib/types";
 import { AmbientPad } from "@/lib/audio/ambient";
+import { Icon, type IconName } from "./Icon";
 
 /**
  * El reproductor.
@@ -211,10 +212,10 @@ export function VisualizationPlayer({ project }: Props) {
   const progress = duration ? Math.min(100, (time / duration) * 100) : 0;
 
   return (
-    <div className="mx-auto w-full max-w-md">
+    <div className="mx-auto w-full max-w-[380px]">
       <div
         ref={shellRef}
-        className="relative aspect-[9/16] w-full overflow-hidden rounded-xl2 bg-ink-900 shadow-2xl ring-1 ring-white/10"
+        className="relative aspect-[9/16] w-full overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-hairline)] bg-black shadow-[0_40px_90px_-24px_rgba(0,0,0,0.95)]"
       >
         {/* Escena */}
         {scene?.videoUrl ? (
@@ -235,43 +236,50 @@ export function VisualizationPlayer({ project }: Props) {
             className={`absolute inset-0 h-full w-full object-cover kb-${sceneIndex % 3}`}
             style={
               {
-                "--kb-duration": `${Math.max(2, (scene.endSec - scene.startSec) * 1.3)}s`,
+                "--kb-duration": `${Math.max(2, (scene.endSec - scene.startSec) * 1.25)}s`,
                 animationPlayState: playing ? "running" : "paused",
               } as React.CSSProperties
             }
           />
         ) : (
-          <div className="absolute inset-0 grid place-items-center text-white/40">
-            Sin escenas todavía
+          <div className="absolute inset-0 grid place-items-center">
+            <span className="t-sub text-[var(--color-label-3)]">Sin escenas todavía</span>
           </div>
         )}
 
-        {/* Legibilidad del texto sobre cualquier imagen */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/45" />
+        {/*
+          Degradado de legibilidad. Más denso abajo de lo que parece necesario:
+          la frase tiene que leerse sobre cualquier escena, incluida una playa
+          a mediodía, sin tener que oscurecer la imagen entera.
+        */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/92 via-black/15 to-black/35" />
 
         {/* Afirmación */}
-        <div className="absolute inset-x-0 bottom-0 p-6 pb-24">
+        <div className="absolute inset-x-0 bottom-0 px-6 pb-[88px]">
           <p
             key={lineIndex}
-            className="fade-up font-display text-3xl leading-tight text-white drop-shadow-lg"
+            className="rise text-[1.75rem] font-semibold leading-[1.15] tracking-[-0.032em] text-white"
           >
             {activeLine?.text ?? project.script?.hook ?? ""}
           </p>
 
-          <div className="mt-4 h-6">
+          <div className="mt-3.5 h-5">
             {inEcho && playing ? (
-              <p className="breathe text-sm font-medium tracking-wide text-gold">
+              <p className="pulse-soft t-sub flex items-center gap-2 font-medium text-white">
+                <span className="h-1.5 w-1.5 rounded-full bg-white" />
                 ahora tú — dilo en voz alta
               </p>
             ) : lines[lineIndex + 1] ? (
-              <p className="truncate text-sm text-white/35">{lines[lineIndex + 1].text}</p>
+              <p className="t-sub truncate text-[var(--color-label-3)]">
+                {lines[lineIndex + 1].text}
+              </p>
             ) : null}
           </div>
         </div>
 
         {project.watermark && (
-          <span className="absolute right-3 top-3 rounded-full bg-black/40 px-2.5 py-1 text-[10px] tracking-wider text-white/60">
-            MANIFEST
+          <span className="t-eyebrow absolute right-4 top-4 rounded-full bg-black/35 px-2.5 py-1.5 text-white/70 backdrop-blur-md">
+            Manifest
           </span>
         )}
 
@@ -280,27 +288,25 @@ export function VisualizationPlayer({ project }: Props) {
           <button
             onClick={toggle}
             aria-label="Reproducir"
-            className="absolute inset-0 grid place-items-center bg-black/35 transition hover:bg-black/25"
+            className="absolute inset-0 grid place-items-center bg-black/25 transition-colors duration-300 hover:bg-black/15"
           >
-            <span className="grid h-20 w-20 place-items-center rounded-full bg-white/95 text-ink-950 shadow-xl">
-              <svg width="26" height="30" viewBox="0 0 26 30" fill="currentColor" aria-hidden>
-                <path d="M2 2.6c0-1.2 1.3-2 2.4-1.4l19 12.4c1 .7 1 2.2 0 2.9l-19 12.4c-1.1.7-2.4-.1-2.4-1.4V2.6Z" />
-              </svg>
+            <span className="grid h-[68px] w-[68px] place-items-center rounded-full border border-white/25 bg-white/15 text-white backdrop-blur-xl transition-transform duration-300 hover:scale-[1.06]">
+              <Icon name="play" size={26} className="translate-x-[2px]" />
             </span>
           </button>
         )}
 
         {/* Progreso con marcas por escena */}
-        <div className="absolute inset-x-0 bottom-14 px-6">
-          <div className="relative h-0.5 w-full rounded bg-white/20">
+        <div className="absolute inset-x-0 bottom-[52px] px-6">
+          <div className="relative h-[3px] w-full overflow-hidden rounded-full bg-white/15">
             <div
-              className="absolute inset-y-0 left-0 rounded bg-gold transition-[width] duration-100"
-              style={{ width: `${progress}%` }}
+              className="absolute inset-y-0 left-0 rounded-full bg-white"
+              style={{ width: `${progress}%`, transition: "width 120ms linear" }}
             />
-            {scenes.map((s) => (
+            {scenes.slice(1).map((s) => (
               <span
                 key={s.id}
-                className="absolute top-1/2 h-2 w-px -translate-y-1/2 bg-white/35"
+                className="absolute inset-y-0 w-px bg-black/45"
                 style={{ left: `${(s.startSec / duration) * 100}%` }}
               />
             ))}
@@ -308,42 +314,33 @@ export function VisualizationPlayer({ project }: Props) {
         </div>
 
         {/* Controles */}
-        <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 px-5 pb-4 text-white/75">
-          <IconButton label={playing ? "Pausa" : "Reproducir"} onClick={toggle}>
-            {playing ? "❚❚" : "▶"}
-          </IconButton>
-          <IconButton label="Empezar de nuevo" onClick={restart}>
-            ↺
-          </IconButton>
+        <div className="absolute inset-x-0 bottom-0 flex items-center gap-1 px-4 pb-4">
+          <IconButton label={playing ? "Pausa" : "Reproducir"} onClick={toggle} icon={playing ? "pause" : "play"} />
+          <IconButton label="Empezar de nuevo" onClick={restart} icon="restart" />
           <IconButton
             label={loop ? "Repetición activada" : "Repetición desactivada"}
             active={loop}
             onClick={() => setLoop((v) => !v)}
-          >
-            ∞
-          </IconButton>
+            icon="repeat"
+          />
           <IconButton
             label={music ? "Silenciar música" : "Activar música"}
             active={music}
             onClick={() => setMusic((v) => !v)}
-          >
-            ♪
-          </IconButton>
+            icon="music"
+          />
           {useBrowserVoice && (
             <IconButton
               label={voiceOn ? "Silenciar voz" : "Activar voz"}
               active={voiceOn}
               onClick={() => setVoiceOn((v) => !v)}
-            >
-              ☊
-            </IconButton>
+              icon="voice"
+            />
           )}
-          <span className="ml-auto text-xs tabular-nums text-white/55">
+          <span className="t-caption ml-auto mr-1 tabular-nums text-white/55">
             {fmt(time)} / {fmt(duration)}
           </span>
-          <IconButton label="Pantalla completa" onClick={goFullscreen}>
-            ⛶
-          </IconButton>
+          <IconButton label="Pantalla completa" onClick={goFullscreen} icon="expand" />
         </div>
 
         {hasVoiceFile && (
@@ -359,22 +356,22 @@ export function VisualizationPlayer({ project }: Props) {
         )}
       </div>
 
-      <p className="mt-4 text-center text-xs leading-relaxed text-white/40">
+      <p className="t-caption mx-auto mt-5 max-w-[320px] text-center leading-relaxed text-[var(--color-label-3)]">
         Ponte los auriculares, míralo entero y repite cada frase en voz alta cuando
-        aparezca <span className="text-gold/80">ahora tú</span>. Dos veces al día, mañana y
-        antes de dormir.
+        aparezca <span className="text-[var(--color-label-1)]">ahora tú</span>. Dos veces
+        al día, mañana y antes de dormir.
       </p>
     </div>
   );
 }
 
 function IconButton({
-  children,
+  icon,
   label,
   onClick,
   active,
 }: {
-  children: React.ReactNode;
+  icon: IconName;
   label: string;
   onClick: () => void;
   active?: boolean;
@@ -384,11 +381,14 @@ function IconButton({
       onClick={onClick}
       title={label}
       aria-label={label}
-      className={`grid h-8 w-8 place-items-center rounded-full text-sm transition ${
-        active ? "bg-white/20 text-white" : "bg-black/35 hover:bg-white/15"
+      aria-pressed={active}
+      className={`grid h-9 w-9 place-items-center rounded-full transition-all duration-200 active:scale-90 ${
+        active
+          ? "bg-white/20 text-white"
+          : "text-white/65 hover:bg-white/10 hover:text-white"
       }`}
     >
-      {children}
+      <Icon name={icon} size={17} />
     </button>
   );
 }

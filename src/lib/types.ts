@@ -1,3 +1,5 @@
+import type { IconName } from "@/components/Icon";
+
 /** Dominio de Manifest. Un "proyecto" es un video de visualizacion. */
 
 export type LifeArea =
@@ -8,13 +10,18 @@ export type LifeArea =
   | "confianza"
   | "libertad";
 
-export const LIFE_AREAS: { id: LifeArea; label: string; blurb: string; emoji: string }[] = [
-  { id: "carrera", label: "Carrera y propósito", blurb: "Ascenso, negocio propio, reconocimiento", emoji: "◆" },
-  { id: "abundancia", label: "Abundancia", blurb: "Dinero, libertad financiera, prosperidad", emoji: "❖" },
-  { id: "salud", label: "Salud y cuerpo", blurb: "Energía, fuerza, hábitos que sostienes", emoji: "✦" },
-  { id: "amor", label: "Amor y vínculos", blurb: "Pareja, familia, relaciones sanas", emoji: "♡" },
-  { id: "confianza", label: "Confianza", blurb: "Autoestima, presencia, hablar sin miedo", emoji: "△" },
-  { id: "libertad", label: "Libertad y viaje", blurb: "Nómada, tiempo propio, vivir donde quieras", emoji: "◇" },
+export const LIFE_AREAS: {
+  id: LifeArea;
+  label: string;
+  blurb: string;
+  icon: IconName;
+}[] = [
+  { id: "carrera", label: "Carrera y propósito", blurb: "Ascenso, negocio propio, reconocimiento", icon: "briefcase" },
+  { id: "abundancia", label: "Abundancia", blurb: "Dinero, libertad financiera, prosperidad", icon: "growth" },
+  { id: "salud", label: "Salud y cuerpo", blurb: "Energía, fuerza, hábitos que sostienes", icon: "pulse" },
+  { id: "amor", label: "Amor y vínculos", blurb: "Pareja, familia, relaciones sanas", icon: "heart" },
+  { id: "confianza", label: "Confianza", blurb: "Autoestima, presencia, hablar sin miedo", icon: "person" },
+  { id: "libertad", label: "Libertad y viaje", blurb: "Nómada, tiempo propio, vivir donde quieras", icon: "compass" },
 ];
 
 /** Los dos productos. `vision` = imagenes fijas con movimiento. `cinematic` = escenas animadas. */

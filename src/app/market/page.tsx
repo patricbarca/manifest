@@ -6,58 +6,63 @@ export const metadata = { title: "Market — Manifest" };
 
 export default function MarketPage() {
   return (
-    <div className="mx-auto max-w-6xl px-5 py-16">
-      <header className="max-w-2xl">
-        <h1 className="font-display text-4xl leading-tight">El market</h1>
-        <p className="mt-4 text-white/60">
+    <div className="mx-auto max-w-[1120px] px-6 py-20">
+      <header className="mx-auto max-w-2xl text-center">
+        <h1 className="t-display">El market</h1>
+        <p className="t-body mx-auto mt-6 max-w-lg text-pretty text-[var(--color-label-2)]">
           Aquí no se venden vídeos acabados, se venden <em>blueprints</em>: el guion, las
           escenas, el estilo y el tono que alguien ya ha afinado. Tú le pones tu cara y
           generas tu propia versión.
         </p>
-        <p className="mt-3 text-sm text-white/40">
+        <p className="t-caption mx-auto mt-4 max-w-md text-[var(--color-label-3)]">
           Un vídeo con la cara de otra persona no te sirve para visualizarte, y revenderlo
-          sería tratar datos biométricos ajenos. El blueprint sí es tuyo desde el momento
-          en que lo generas.
+          sería tratar datos biométricos ajenos.
         </p>
       </header>
 
-      <div className="mt-10 flex flex-wrap gap-2">
-        <span className="rounded-full border border-gold/50 bg-gold/10 px-4 py-1.5 text-sm text-gold">
+      <div className="no-scrollbar mt-14 flex flex-wrap justify-center gap-2">
+        <span className="t-caption rounded-full bg-white px-4 py-1.5 font-medium text-black">
           Todos
         </span>
         {LIFE_AREAS.map((a) => (
           <span
             key={a.id}
-            className="rounded-full border border-white/12 px-4 py-1.5 text-sm text-white/55"
+            className="interactive t-caption cursor-pointer rounded-full border border-[var(--color-hairline)] px-4 py-1.5 text-[var(--color-label-2)]"
           >
             {a.label}
           </span>
         ))}
       </div>
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {BLUEPRINTS.map((bp) => (
           <Link
             key={bp.slug}
             href={`/market/${bp.slug}`}
-            className="card card-hover overflow-hidden rounded-xl2"
+            className="card interactive overflow-hidden rounded-[var(--radius-lg)]"
           >
             <div
-              className="relative h-44"
-              style={{ background: `linear-gradient(140deg, ${bp.cover.from}, ${bp.cover.to})` }}
+              className="relative h-48"
+              style={{ background: `linear-gradient(150deg, ${bp.cover.from}, ${bp.cover.to})` }}
             >
-              <span className="absolute left-3 top-3 rounded-full bg-black/40 px-2.5 py-1 text-[11px] text-white/80">
+              {/* Vineta: le quita al degradado el aspecto de relleno plano. */}
+              <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_70%_15%,rgba(255,255,255,0.12),transparent_55%),linear-gradient(to_top,rgba(0,0,0,0.45),transparent_60%)]" />
+              <span className="t-eyebrow absolute left-4 top-4 rounded-full bg-black/35 px-2.5 py-1.5 text-white/85 backdrop-blur-md">
                 {bp.tier === "vision" ? "Visión" : "Cine"}
               </span>
             </div>
-            <div className="p-5">
-              <h2 className="font-medium">{bp.title}</h2>
-              <p className="mt-1 text-xs text-white/40">de {bp.author}</p>
-              <p className="mt-3 line-clamp-2 text-sm text-white/55">{bp.summary}</p>
-              <div className="mt-4 flex items-center justify-between text-sm">
-                <span className="text-gold">{(bp.priceCents / 100).toFixed(2)} €</span>
-                <span className="text-white/35">
-                  ★ {bp.rating} · {bp.sales.toLocaleString("es-ES")} ventas
+            <div className="p-6">
+              <h2 className="t-headline">{bp.title}</h2>
+              <p className="t-caption mt-1 text-[var(--color-label-3)]">de {bp.author}</p>
+              <p className="t-sub mt-3.5 line-clamp-2 text-[var(--color-label-2)]">
+                {bp.summary}
+              </p>
+              <div className="mt-5 flex items-center justify-between">
+                <span className="t-sub font-medium tabular-nums">
+                  {(bp.priceCents / 100).toFixed(2)} €
+                </span>
+                <span className="t-caption tabular-nums text-[var(--color-label-3)]">
+                  {bp.rating} · {bp.sales.toLocaleString("es-ES")} ventas
                 </span>
               </div>
             </div>

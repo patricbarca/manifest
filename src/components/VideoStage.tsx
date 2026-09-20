@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Project } from "@/lib/types";
 import { VisualizationPlayer } from "./VisualizationPlayer";
+import { Icon } from "./Icon";
 
 /**
  * La pantalla del vídeo.
@@ -33,15 +34,17 @@ export function VideoStage({ initial }: { initial: Project }) {
 
   if (project.status === "failed") {
     return (
-      <div className="mx-auto max-w-lg px-5 py-24 text-center">
-        <h1 className="font-display text-3xl">No se pudo terminar tu vídeo</h1>
-        <p className="mt-3 text-white/55">{project.error ?? "Error desconocido"}</p>
-        <p className="mt-2 text-sm text-white/40">
+      <div className="mx-auto max-w-lg px-6 py-28 text-center">
+        <h1 className="t-title">No se pudo terminar tu vídeo</h1>
+        <p className="t-body mt-4 text-[var(--color-label-2)]">
+          {project.error ?? "Error desconocido"}
+        </p>
+        <p className="t-caption mt-2 text-[var(--color-label-3)]">
           Si no llegó a generarse ninguna escena, tus créditos se han devuelto.
         </p>
         <Link
           href="/crear"
-          className="mt-8 inline-block rounded-full bg-gold px-6 py-3 font-medium text-ink-950"
+          className="interactive mt-9 inline-block rounded-full bg-white px-6 py-2.5 text-[15px] font-medium text-black"
         >
           Intentarlo otra vez
         </Link>
@@ -52,17 +55,19 @@ export function VideoStage({ initial }: { initial: Project }) {
   if (working) return <GenerationProgress project={project} />;
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-12">
-      <div className="grid gap-12 lg:grid-cols-[minmax(0,420px)_1fr] lg:items-start">
+    <div className="mx-auto max-w-[1120px] px-6 py-14">
+      <div className="grid gap-14 lg:grid-cols-[minmax(0,380px)_1fr] lg:items-start">
         <VisualizationPlayer project={project} />
 
         <div className="space-y-8">
           <div>
-            <p className="text-sm text-gold">{project.tier === "vision" ? "Visión" : "Cine"} · {project.durationSec} s</p>
-            <h1 className="mt-1 font-display text-3xl leading-tight">{project.title}</h1>
+            <p className="t-eyebrow text-[var(--color-label-3)]">
+              {project.tier === "vision" ? "Visión" : "Cine"} · {project.durationSec} s
+            </p>
+            <h1 className="t-title mt-3 text-balance">{project.title}</h1>
             {/* Sin LLM el titulo sale de la intencion, y entonces repetirla sobra. */}
             {!project.intention.startsWith(project.title.replace(/…$/, "")) && (
-              <p className="mt-3 text-white/55">{project.intention}</p>
+              <p className="t-body mt-3 text-[var(--color-label-2)]">{project.intention}</p>
             )}
           </div>
 
@@ -71,33 +76,34 @@ export function VideoStage({ initial }: { initial: Project }) {
               <a
                 href={project.exportUrl}
                 download
-                className="rounded-full bg-gold px-6 py-3 text-sm font-medium text-ink-950 transition hover:bg-gold-deep"
+                className="interactive inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[14px] font-medium text-black hover:bg-white/90"
               >
+                <Icon name="download" size={16} />
                 Descargar MP4
               </a>
             ) : (
-              <span className="rounded-full border border-white/12 px-6 py-3 text-sm text-white/40">
+              <span className="t-sub rounded-full border border-[var(--color-hairline)] px-5 py-2.5 text-[var(--color-label-3)]">
                 Descarga MP4 no disponible en este entorno
               </span>
             )}
             <Link
               href="/crear"
-              className="rounded-full border border-white/15 px-6 py-3 text-sm transition hover:border-white/35"
+              className="interactive t-sub rounded-full border border-[var(--color-hairline)] px-5 py-2.5 text-[var(--color-label-1)]"
             >
               Crear otro
             </Link>
           </div>
 
           {/* El guion en texto: mucha gente lo imprime o lo lee sin el vídeo. */}
-          <div className="card rounded-xl2 p-6">
-            <h2 className="font-display text-xl">Tu guion</h2>
-            <p className="mt-1 text-sm text-white/45">
+          <div className="card rounded-[var(--radius-lg)] p-7">
+            <h2 className="t-headline">Tu guion</h2>
+            <p className="t-sub mt-1 text-[var(--color-label-2)]">
               Léelo en voz alta por la mañana aunque no pongas el vídeo.
             </p>
-            <ol className="mt-5 space-y-3">
+            <ol className="mt-6 space-y-3.5">
               {project.affirmations.map((a, i) => (
-                <li key={i} className="flex gap-3 text-white/85">
-                  <span className="mt-0.5 w-5 shrink-0 text-right text-xs text-gold">
+                <li key={i} className="t-body flex gap-3.5">
+                  <span className="t-caption mt-[5px] w-4 shrink-0 text-right tabular-nums text-[var(--color-label-3)]">
                     {i + 1}
                   </span>
                   {a.text}
@@ -105,22 +111,22 @@ export function VideoStage({ initial }: { initial: Project }) {
               ))}
             </ol>
             {project.script?.closing && (
-              <p className="mt-5 border-t border-white/8 pt-4 font-display text-lg text-gold">
+              <p className="t-body mt-6 border-t border-[var(--color-hairline)] pt-5 font-medium">
                 {project.script.closing}
               </p>
             )}
           </div>
 
           <div>
-            <h2 className="mb-3 font-display text-xl">Escenas</h2>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            <h2 className="t-headline mb-4">Escenas</h2>
+            <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
               {project.scenes.map((s) =>
                 s.imageUrl ? (
                   <img
                     key={s.id}
                     src={s.imageUrl}
                     alt=""
-                    className="aspect-[9/16] w-full rounded-lg object-cover ring-1 ring-white/10"
+                    className="aspect-[9/16] w-full rounded-[var(--radius-ctl)] object-cover ring-1 ring-[var(--color-hairline)]"
                   />
                 ) : null,
               )}
@@ -140,63 +146,68 @@ function GenerationProgress({ project }: { project: Project }) {
   const preview = project.scenes.filter((s) => s.imageUrl);
 
   return (
-    <div className="mx-auto max-w-xl px-5 py-20">
-      <h1 className="font-display text-3xl leading-tight">Estamos creando tu vídeo</h1>
-      <p className="mt-2 text-white/50">
+    <div className="mx-auto max-w-xl px-6 py-24">
+      <h1 className="t-title text-balance">Estamos creando tu vídeo</h1>
+      <p className="t-body mt-3 text-[var(--color-label-2)]">
         {project.tier === "cinematic"
           ? "El tier Cine tarda unos minutos: cada escena se anima por separado."
           : "Suele tardar menos de dos minutos."}
       </p>
 
-      <div className="mt-8 h-1 w-full overflow-hidden rounded bg-white/10">
+      <div className="mt-10 h-[3px] w-full overflow-hidden rounded-full bg-white/12">
         <div
-          className="h-full rounded bg-gold transition-[width] duration-500"
+          className="h-full rounded-full bg-white transition-[width] duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]"
           style={{ width: `${pct}%` }}
         />
       </div>
 
-      <ul className="mt-8 space-y-4">
+      <ul className="mt-10 space-y-5">
         {project.steps.map((step) => (
           <li key={step.id} className="flex items-start gap-3">
             <span
-              className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] ${
+              className={`mt-[3px] grid h-[18px] w-[18px] shrink-0 place-items-center rounded-full transition-colors duration-300 ${
                 step.status === "done"
-                  ? "bg-gold text-ink-950"
+                  ? "bg-white text-black"
                   : step.status === "running"
-                    ? "breathe bg-gold/30 text-gold"
+                    ? "pulse-soft border border-white/70"
                     : step.status === "failed"
                       ? "bg-red-500/80"
-                      : "bg-white/10 text-white/40"
+                      : "border border-[var(--color-hairline)]"
               }`}
             >
-              {step.status === "done" ? "✓" : step.status === "skipped" ? "–" : ""}
+              {step.status === "done" && <Icon name="check" size={11} />}
+              {step.status === "skipped" && (
+                <span className="h-px w-2 bg-[var(--color-label-4)]" />
+              )}
             </span>
             <div>
               <p
-                className={
+                className={`t-body ${
                   step.status === "pending" || step.status === "skipped"
-                    ? "text-white/35"
-                    : "text-white/85"
-                }
+                    ? "text-[var(--color-label-3)]"
+                    : "text-[var(--color-label-1)]"
+                }`}
               >
                 {step.label}
               </p>
-              {step.error && <p className="text-xs text-white/40">{step.error}</p>}
+              {step.error && (
+                <p className="t-caption mt-0.5 text-[var(--color-label-3)]">{step.error}</p>
+              )}
             </div>
           </li>
         ))}
       </ul>
 
       {preview.length > 0 && (
-        <div className="mt-10">
-          <p className="mb-3 text-sm text-white/45">Primeras escenas</p>
-          <div className="grid grid-cols-4 gap-2">
+        <div className="mt-12">
+          <p className="t-sub mb-3 text-[var(--color-label-2)]">Primeras escenas</p>
+          <div className="grid grid-cols-4 gap-2.5">
             {preview.map((s) => (
               <img
                 key={s.id}
                 src={s.imageUrl}
                 alt=""
-                className="fade-up aspect-[9/16] w-full rounded-lg object-cover ring-1 ring-white/10"
+                className="rise aspect-[9/16] w-full rounded-[var(--radius-ctl)] object-cover ring-1 ring-[var(--color-hairline)]"
               />
             ))}
           </div>
@@ -209,9 +220,11 @@ function GenerationProgress({ project }: { project: Project }) {
 /** Transparencia de coste. En producción esto va detrás de un flag interno. */
 function CostPanel({ project }: { project: Project }) {
   return (
-    <details className="card rounded-xl2 p-5 text-sm">
-      <summary className="cursor-pointer text-white/55">Detalle de producción</summary>
-      <dl className="mt-4 space-y-2 text-white/60">
+    <details className="card rounded-[var(--radius-md)] p-5">
+      <summary className="t-sub cursor-pointer text-[var(--color-label-2)]">
+        Detalle de producción
+      </summary>
+      <dl className="t-sub mt-4 space-y-2.5 text-[var(--color-label-2)]">
         <Row label="Créditos gastados" value={`${project.creditsSpent}`} />
         <Row label="Coste de proveedor" value={`${(project.costCents / 100).toFixed(3)} $`} />
         <Row label="Escenas" value={`${project.scenes.length}`} />
@@ -228,7 +241,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4">
       <dt>{label}</dt>
-      <dd className="tabular-nums text-white/85">{value}</dd>
+      <dd className="tabular-nums text-[var(--color-label-1)]">{value}</dd>
     </div>
   );
 }

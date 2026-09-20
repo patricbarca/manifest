@@ -56,6 +56,40 @@ Reloj: si hay pista de voz manda el `<audio>` (su duración real nunca coincide
 con la teórica, así que las escenas se escalan a ella); si no, un `requestAnimationFrame`
 lleva el tiempo y la voz del navegador lee cada frase al entrar.
 
+### El chrome no lleva color
+
+`src/app/globals.css` define tokens neutros y un único acento, y ese acento es
+blanco. No es minimalismo por moda: el producto genera fotografías con la cara
+del usuario, y una interfaz con degradados y dorados compite con ellas. El
+resultado es que el vídeo parece un widget dentro de una web en lugar de ser lo
+que se ha venido a ver. Neutro alrededor, color dentro.
+
+Cuatro decisiones sostienen eso:
+
+- **Jerarquía por opacidad, no por color.** Cuatro niveles de etiqueta
+  (95/58/32/18 %) y ni uno más. En cuanto hay un quinto deja de leerse como
+  jerarquía y pasa a leerse como descuido.
+- **Tracking que se aprieta con el cuerpo.** Un titular a 64 px con el tracking
+  de un párrafo se ve suelto y barato. Las clases `t-*` llevan el ajuste
+  incorporado para que no dependa de que alguien se acuerde.
+- **Desenfoque con saturación.** `blur()` solo apaga lo que hay detrás;
+  `saturate(180%)` le devuelve la vida. Esa pareja es la diferencia entre un
+  panel translúcido y algo que parece cristal.
+- **Una sola curva de movimiento.** `--ease-spring` en todo. Varias curvas
+  distintas en la misma pantalla se notan aunque nadie sepa decir por qué.
+
+Para reintroducir un color de marca basta cambiar `--color-accent`.
+
+### Los iconos son un sistema, no caracteres
+
+`src/components/Icon.tsx`. Antes los iconos eran glifos tipográficos (`◆ ▶ ∞ ♪
+⛶`). Un glifo usado como icono nunca alinea igual que sus vecinos, cambia de
+forma según la fuente instalada y no comparte grosor de trazo con nada.
+
+Es, por encima de la paleta, lo que hace que una interfaz parezca sin terminar.
+Todos los iconos viven en un lienzo de 24, trazo 1.6, extremos redondos y
+`currentColor`.
+
 ### Ken Burns en CSS, no en el servidor
 
 El tier Visión no necesita modelo de vídeo: tres animaciones CSS de
@@ -102,6 +136,8 @@ ffmpeg, así que ese camino está escrito pero **no probado en ejecución**.
 | `src/lib/db/{store,session}.ts` | Persistencia y "auth" |
 | `src/lib/audio/ambient.ts` | Pad generativo con Web Audio |
 | `src/lib/render/assemble.ts` | Montaje a MP4 con ffmpeg |
+| `src/app/globals.css` | Tokens, tipografía, materiales y movimiento |
+| `src/components/Icon.tsx` | Sistema de iconos |
 | `src/components/VisualizationPlayer.tsx` | El reproductor |
 | `src/components/CreateWizard.tsx` | Asistente de 4 pasos |
 | `src/components/VideoStage.tsx` | Progreso de generación y resultado |

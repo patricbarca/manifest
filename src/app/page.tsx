@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
 import { BLUEPRINTS } from "@/lib/blueprints";
 import { creditCost, CREDIT_EUR, estimateCostCents } from "@/lib/pricing";
 import { LIFE_AREAS } from "@/lib/types";
@@ -28,67 +29,67 @@ export default function HomePage() {
   return (
     <div>
       {demo && (
-        <div className="border-b border-gold/20 bg-gold/10 px-5 py-2.5 text-center text-xs text-gold">
-          Modo demo: sin claves de API, las escenas y la voz se generan en local y no
-          cuestan nada. Añade tus claves en <code className="font-mono">.env.local</code> para
-          producción.
+        <div className="border-b border-[var(--color-hairline)] px-6 py-2.5 text-center">
+          <p className="t-caption text-[var(--color-label-3)]">
+            Modo demo · sin claves de API las escenas y la voz se generan en local, sin coste
+          </p>
         </div>
       )}
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-5 pt-20 pb-16 sm:pt-28">
-        <div className="grid gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div>
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs text-white/60">
-              <span className="h-1.5 w-1.5 rounded-full bg-gold" />
-              Visualización guiada, hecha para ti
-            </p>
-            <h1 className="font-display text-5xl leading-[1.05] sm:text-6xl">
-              Verte viviéndolo
-              <br />
-              <span className="text-gold">antes de que pase.</span>
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/65">
-              Sube una foto y recibe un vídeo de 30 o 60 segundos donde apareces tú
-              logrando lo que estás persiguiendo. Con un guion escrito para tu caso y una
-              voz que lo dice en alto, para que lo repitas con ella.
-            </p>
+      <section className="mx-auto max-w-[1120px] px-6 pt-20 pb-16 sm:pt-24">
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="t-eyebrow rise text-[var(--color-label-3)]">
+            Visualización guiada
+          </p>
+          <h1 className="t-display rise mt-5 text-balance">
+            Verte viviéndolo
+            <br />
+            <span className="text-[var(--color-label-2)]">antes de que pase.</span>
+          </h1>
+          <p className="t-body rise mx-auto mt-5 max-w-md text-pretty text-[var(--color-label-2)]">
+            Sube una foto y recibe un vídeo de 30 o 60 segundos donde apareces tú
+            logrando lo que estás persiguiendo. Con un guion escrito para tu caso y una
+            voz que lo dice en alto, para que lo repitas con ella.
+          </p>
 
-            <div className="mt-9 flex flex-wrap items-center gap-3">
-              <Link
-                href="/crear"
-                className="rounded-full bg-gold px-7 py-3.5 font-medium text-ink-950 transition hover:bg-gold-deep"
-              >
-                Crear mi vídeo gratis
-              </Link>
-              <Link
-                href="/market"
-                className="rounded-full border border-white/15 px-7 py-3.5 text-white/80 transition hover:border-white/35 hover:text-white"
-              >
-                Ver el market
-              </Link>
-            </div>
-            <p className="mt-4 text-sm text-white/40">
-              30 créditos de regalo. Un vídeo de 30 s sin poner tarjeta.
-            </p>
+          <div className="rise mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/crear"
+              className="interactive rounded-full bg-white px-6 py-3 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90"
+            >
+              Crear mi vídeo
+            </Link>
+            <Link
+              href="/market"
+              className="interactive t-sub inline-flex items-center gap-1.5 rounded-full border border-[var(--color-hairline)] px-6 py-3 text-[var(--color-label-1)]"
+            >
+              Ver el market
+              <Icon name="arrow-right" size={15} />
+            </Link>
           </div>
+          <p className="t-caption mt-4 text-[var(--color-label-3)]">
+            30 créditos de regalo. Sin tarjeta.
+          </p>
+        </div>
 
-          {/* Maqueta del reproductor, estática: la de verdad está en /video */}
-          <div className="relative mx-auto w-full max-w-xs">
-            <div className="absolute -inset-8 -z-10 rounded-full bg-violet-glow/20 blur-3xl" />
-            <div className="aspect-[9/16] overflow-hidden rounded-xl2 ring-1 ring-white/10">
-              <div className="relative h-full w-full bg-gradient-to-br from-ink-700 via-[#4c1d95] to-gold-deep">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/30" />
-                <div className="absolute inset-x-0 bottom-0 p-6">
-                  <p className="font-display text-2xl leading-tight">
-                    Dirijo mi propio estudio.
-                  </p>
-                  <p className="breathe mt-3 text-sm font-medium text-gold">
-                    ahora tú — dilo en voz alta
-                  </p>
-                  <div className="mt-5 h-0.5 w-full rounded bg-white/20">
-                    <div className="h-full w-2/5 rounded bg-gold" />
-                  </div>
+        {/* El reproductor, centrado y grande: es el producto. */}
+        <div className="relative mx-auto mt-14 w-full max-w-[272px]">
+          <div className="absolute -inset-16 -z-10 rounded-full bg-white/[0.045] blur-3xl" />
+          <div className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-hairline)] bg-black shadow-[0_40px_80px_-20px_rgba(0,0,0,0.9)]">
+            <div className="relative aspect-[9/16] w-full">
+              <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_15%,#2b3350_0%,#161a28_45%,#08090d_100%)]" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/20" />
+              <div className="absolute inset-x-0 bottom-0 p-6">
+                <p className="text-[1.6rem] font-semibold leading-[1.15] tracking-[-0.03em]">
+                  Dirijo mi propio estudio.
+                </p>
+                <p className="t-sub pulse-soft mt-3 flex items-center gap-2 text-white">
+                  <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                  ahora tú — dilo en voz alta
+                </p>
+                <div className="mt-5 h-[3px] w-full overflow-hidden rounded-full bg-white/15">
+                  <div className="h-full w-2/5 rounded-full bg-white" />
                 </div>
               </div>
             </div>
@@ -97,32 +98,33 @@ export default function HomePage() {
       </section>
 
       {/* ── Cómo funciona ────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-5 py-16">
-        <div className="grid gap-6 sm:grid-cols-3">
+      <section className="mx-auto max-w-[1120px] px-6 py-20">
+        <div className="grid gap-px overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-hairline)] bg-[var(--color-hairline)] sm:grid-cols-3">
           {STEPS.map((step) => (
-            <div key={step.n} className="card rounded-xl2 p-7">
-              <span className="font-display text-sm text-gold">{step.n}</span>
-              <h3 className="mt-3 text-lg font-medium">{step.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-white/55">{step.body}</p>
+            <div key={step.n} className="bg-[var(--color-surface-2)] p-8">
+              <span className="t-eyebrow text-[var(--color-label-3)]">{step.n}</span>
+              <h3 className="t-headline mt-4">{step.title}</h3>
+              <p className="t-sub mt-2 text-[var(--color-label-2)]">{step.body}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── Los dos productos ────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-5 py-16">
-        <h2 className="font-display text-3xl">Dos formas de verlo</h2>
-        <p className="mt-2 max-w-2xl text-white/55">
-          La diferencia no es la calidad de la imagen: es si las escenas se mueven de
-          verdad. Las dos funcionan para visualizar, y cuestan muy distinto de producir.
-        </p>
+      <section className="mx-auto max-w-[1120px] px-6 py-20">
+        <div className="mx-auto max-w-xl text-center">
+          <h2 className="t-title">Dos formas de verlo</h2>
+          <p className="t-body mt-3 text-[var(--color-label-2)]">
+            La diferencia no es la calidad de la imagen: es si las escenas se mueven de
+            verdad. Las dos funcionan para visualizar, y cuestan muy distinto de producir.
+          </p>
+        </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <div className="mt-12 grid gap-4 lg:grid-cols-2">
           <TierCard
             name="Visión"
             tagline="Imágenes tuyas con movimiento de cámara"
             credits={creditCost("vision", 60)}
-            durationLabel="30 s o 60 s"
             costCents={estimateCostCents("vision", 60)}
             points={[
               "6 a 12 escenas generadas con tu cara",
@@ -135,7 +137,6 @@ export default function HomePage() {
             name="Cine"
             tagline="Escenas animadas de verdad, con movimiento propio"
             credits={creditCost("cinematic", 60)}
-            durationLabel="30 s o 60 s"
             costCents={estimateCostCents("cinematic", 60)}
             highlight
             points={[
@@ -149,53 +150,61 @@ export default function HomePage() {
       </section>
 
       {/* ── Áreas ────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-5 py-16">
-        <h2 className="font-display text-3xl">¿Qué quieres ver?</h2>
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="mx-auto max-w-[1120px] px-6 py-20">
+        <h2 className="t-title text-center">¿Qué quieres ver?</h2>
+        <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {LIFE_AREAS.map((area) => (
             <Link
               key={area.id}
               href={`/crear?area=${area.id}`}
-              className="card card-hover rounded-xl2 p-5"
+              className="card interactive group rounded-[var(--radius-md)] p-6"
             >
-              <span className="text-gold">{area.emoji}</span>
-              <h3 className="mt-2 font-medium">{area.label}</h3>
-              <p className="mt-1 text-sm text-white/50">{area.blurb}</p>
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.07] text-[var(--color-label-1)]">
+                <Icon name={area.icon} size={18} />
+              </span>
+              <h3 className="t-headline mt-4">{area.label}</h3>
+              <p className="t-sub mt-1 text-[var(--color-label-2)]">{area.blurb}</p>
             </Link>
           ))}
         </div>
       </section>
 
       {/* ── Market ───────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-5 py-16">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h2 className="font-display text-3xl">Del market</h2>
-            <p className="mt-2 max-w-xl text-white/55">
+      <section className="mx-auto max-w-[1120px] px-6 py-20">
+        <div className="flex items-end justify-between gap-6">
+          <div className="max-w-lg">
+            <h2 className="t-title">Del market</h2>
+            <p className="t-body mt-3 text-[var(--color-label-2)]">
               Guiones y escenas creados por otros. Tú les pones tu cara y generas tu
               propia versión.
             </p>
           </div>
-          <Link href="/market" className="shrink-0 text-sm text-gold hover:underline">
-            Ver todo →
+          <Link
+            href="/market"
+            className="t-sub inline-flex shrink-0 items-center gap-1.5 text-[var(--color-label-1)] transition-opacity hover:opacity-60"
+          >
+            Ver todo
+            <Icon name="arrow-right" size={15} />
           </Link>
         </div>
 
-        <div className="no-scrollbar mt-8 flex gap-4 overflow-x-auto pb-2">
+        <div className="no-scrollbar mt-10 flex gap-4 overflow-x-auto pb-2">
           {BLUEPRINTS.slice(0, 4).map((bp) => (
             <Link
               key={bp.slug}
               href={`/market/${bp.slug}`}
-              className="card card-hover w-64 shrink-0 overflow-hidden rounded-xl2"
+              className="card interactive w-[264px] shrink-0 overflow-hidden rounded-[var(--radius-md)]"
             >
               <div
-                className="h-36"
-                style={{ background: `linear-gradient(140deg, ${bp.cover.from}, ${bp.cover.to})` }}
+                className="h-40"
+                style={{ background: `linear-gradient(150deg, ${bp.cover.from}, ${bp.cover.to})` }}
               />
-              <div className="p-4">
-                <h3 className="font-medium">{bp.title}</h3>
-                <p className="mt-1 line-clamp-2 text-xs text-white/45">{bp.summary}</p>
-                <p className="mt-3 text-sm text-gold">
+              <div className="p-5">
+                <h3 className="t-headline">{bp.title}</h3>
+                <p className="t-caption mt-1.5 line-clamp-2 text-[var(--color-label-2)]">
+                  {bp.summary}
+                </p>
+                <p className="t-sub mt-4 tabular-nums">
                   {(bp.priceCents / 100).toFixed(2)} €
                 </p>
               </div>
@@ -205,15 +214,13 @@ export default function HomePage() {
       </section>
 
       {/* ── Cierre ───────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-3xl px-5 py-20 text-center">
-        <h2 className="font-display text-4xl leading-tight">
-          Lo que miras todos los días
-          <br />
-          acaba pareciéndote posible.
+      <section className="mx-auto max-w-2xl px-6 py-28 text-center">
+        <h2 className="t-title text-balance">
+          Lo que miras todos los días acaba pareciéndote posible.
         </h2>
         <Link
           href="/crear"
-          className="mt-8 inline-block rounded-full bg-gold px-8 py-3.5 font-medium text-ink-950 transition hover:bg-gold-deep"
+          className="interactive mt-9 inline-block rounded-full bg-white px-7 py-3 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90"
         >
           Empezar
         </Link>
@@ -226,7 +233,6 @@ function TierCard({
   name,
   tagline,
   credits,
-  durationLabel,
   costCents,
   points,
   highlight,
@@ -234,38 +240,45 @@ function TierCard({
   name: string;
   tagline: string;
   credits: number;
-  durationLabel: string;
   costCents: number;
   points: string[];
   highlight?: boolean;
 }) {
   return (
     <div
-      className={`card rounded-xl2 p-8 ${highlight ? "ring-1 ring-gold/40" : ""}`}
+      className={`card rounded-[var(--radius-lg)] p-8 ${
+        highlight ? "border-[var(--color-hairline-strong)]" : ""
+      }`}
     >
       <div className="flex items-baseline justify-between gap-4">
-        <h3 className="font-display text-2xl">{name}</h3>
-        <span className="text-sm text-white/45">{durationLabel}</span>
+        <h3 className="t-headline">{name}</h3>
+        <span className="t-caption text-[var(--color-label-3)]">30 s o 60 s</span>
       </div>
-      <p className="mt-1 text-sm text-white/55">{tagline}</p>
+      <p className="t-sub mt-1 text-[var(--color-label-2)]">{tagline}</p>
 
-      <p className="mt-6">
-        <span className="font-display text-4xl text-gold">{credits}</span>
-        <span className="ml-2 text-sm text-white/50">
-          créditos · ~{(credits * CREDIT_EUR).toFixed(2)} € el de 60 s
+      <p className="mt-7 flex items-baseline gap-2">
+        <span className="text-[2.5rem] font-semibold leading-none tracking-[-0.03em] tabular-nums">
+          {credits}
+        </span>
+        <span className="t-sub text-[var(--color-label-2)]">
+          créditos · {(credits * CREDIT_EUR).toFixed(2)} € el de 60 s
         </span>
       </p>
 
-      <ul className="mt-6 space-y-2.5 text-sm text-white/65">
+      <ul className="mt-7 space-y-3">
         {points.map((p) => (
-          <li key={p} className="flex gap-2.5">
-            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />
+          <li key={p} className="t-sub flex gap-3 text-[var(--color-label-2)]">
+            <Icon
+              name="check"
+              size={15}
+              className="mt-[3px] shrink-0 text-[var(--color-label-1)]"
+            />
             {p}
           </li>
         ))}
       </ul>
 
-      <p className="mt-6 border-t border-white/8 pt-4 text-xs text-white/35">
+      <p className="t-caption mt-7 border-t border-[var(--color-hairline)] pt-5 text-[var(--color-label-3)]">
         Coste de producción estimado: {(costCents / 100).toFixed(2)} $ por vídeo de 60 s.
       </p>
     </div>

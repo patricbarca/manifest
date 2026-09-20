@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { BLUEPRINTS, blueprintBySlug } from "@/lib/blueprints";
 import { creditCost } from "@/lib/pricing";
 import { LIFE_AREAS, VISUAL_STYLES } from "@/lib/types";
+import { Icon } from "@/components/Icon";
 
 export function generateStaticParams() {
   return BLUEPRINTS.map((bp) => ({ slug: bp.slug }));
@@ -21,50 +22,54 @@ export default async function BlueprintPage({
   const style = VISUAL_STYLES.find((s) => s.id === bp.style);
 
   return (
-    <div className="mx-auto max-w-5xl px-5 py-14">
-      <Link href="/market" className="text-sm text-white/45 hover:text-white">
-        ← Market
+    <div className="mx-auto max-w-5xl px-6 py-16">
+      <Link
+        href="/market"
+        className="t-sub inline-flex items-center gap-1.5 text-[var(--color-label-2)] transition-opacity hover:text-[var(--color-label-1)]"
+      >
+        <Icon name="arrow-left" size={15} />
+        Market
       </Link>
 
-      <div className="mt-6 grid gap-10 lg:grid-cols-[340px_1fr] lg:items-start">
+      <div className="mt-8 grid gap-12 lg:grid-cols-[320px_1fr] lg:items-start">
         <div
-          className="aspect-[9/16] rounded-xl2 ring-1 ring-white/10"
+          className="aspect-[9/16] rounded-[var(--radius-xl)] ring-1 ring-[var(--color-hairline)]"
           style={{ background: `linear-gradient(150deg, ${bp.cover.from}, ${bp.cover.to})` }}
         />
 
         <div>
-          <p className="text-sm text-gold">
+          <p className="t-eyebrow text-[var(--color-label-3)]">
             {area?.label} · {bp.tier === "vision" ? "Visión" : "Cine"}
           </p>
-          <h1 className="mt-1 font-display text-4xl leading-tight">{bp.title}</h1>
-          <p className="mt-2 text-sm text-white/45">
-            de {bp.author} · ★ {bp.rating} · {bp.sales.toLocaleString("es-ES")} personas lo usan
+          <h1 className="t-title mt-3 text-balance">{bp.title}</h1>
+          <p className="t-caption mt-2.5 tabular-nums text-[var(--color-label-3)]">
+            de {bp.author} · {bp.rating} · {bp.sales.toLocaleString("es-ES")} personas lo usan
           </p>
-          <p className="mt-5 leading-relaxed text-white/65">{bp.summary}</p>
+          <p className="t-body mt-6 text-[var(--color-label-2)]">{bp.summary}</p>
 
-          <div className="card mt-8 flex flex-wrap items-center justify-between gap-4 rounded-xl2 p-5">
+          <div className="card mt-9 flex flex-wrap items-center justify-between gap-5 rounded-[var(--radius-lg)] p-6">
             <div>
-              <p className="font-display text-3xl text-gold">
+              <p className="text-[2rem] font-semibold leading-none tracking-[-0.03em] tabular-nums">
                 {(bp.priceCents / 100).toFixed(2)} €
               </p>
-              <p className="mt-1 text-sm text-white/45">
+              <p className="t-caption mt-2 text-[var(--color-label-2)]">
                 Pago único. La generación son {creditCost(bp.tier, 60)} créditos aparte.
               </p>
             </div>
             <Link
               href={`/crear?blueprint=${bp.slug}`}
-              className="rounded-full bg-gold px-6 py-3 font-medium text-ink-950 transition hover:bg-gold-deep"
+              className="interactive rounded-full bg-white px-6 py-2.5 text-[15px] font-medium text-black hover:bg-white/90"
             >
               Usar este blueprint
             </Link>
           </div>
 
-          <section className="mt-10">
-            <h2 className="font-display text-xl">Las afirmaciones</h2>
-            <ol className="mt-4 space-y-2.5">
+          <section className="mt-12">
+            <h2 className="t-headline">Las afirmaciones</h2>
+            <ol className="mt-5 space-y-3">
               {bp.affirmations.map((a, i) => (
-                <li key={i} className="flex gap-3 text-white/80">
-                  <span className="mt-0.5 w-5 shrink-0 text-right text-xs text-gold">
+                <li key={i} className="t-body flex gap-3.5">
+                  <span className="t-caption mt-[5px] w-4 shrink-0 text-right tabular-nums text-[var(--color-label-3)]">
                     {i + 1}
                   </span>
                   {a}
@@ -73,15 +78,18 @@ export default async function BlueprintPage({
             </ol>
           </section>
 
-          <section className="mt-8">
-            <h2 className="font-display text-xl">Las escenas</h2>
-            <p className="mt-1 text-sm text-white/40">
+          <section className="mt-12">
+            <h2 className="t-headline">Las escenas</h2>
+            <p className="t-caption mt-1.5 text-[var(--color-label-3)]">
               Descripciones en inglés: es el idioma con el que mejor responden los modelos
               de imagen. Estilo {style?.label.toLowerCase()}.
             </p>
-            <ul className="mt-4 space-y-2 text-sm text-white/50">
+            <ul className="t-sub mt-5 space-y-2 text-[var(--color-label-2)]">
               {bp.sceneBriefs.map((s, i) => (
-                <li key={i} className="rounded-lg border border-white/8 bg-white/3 px-4 py-2.5">
+                <li
+                  key={i}
+                  className="rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3"
+                >
                   {s}
                 </li>
               ))}

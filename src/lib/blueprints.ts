@@ -46,7 +46,7 @@ export const BLUEPRINTS: Blueprint[] = [
       "walking unhurried through a calm high-end space",
       "reading on a terrace with the sea in the distance, golden hour",
     ],
-    cover: { from: "#78350f", to: "#fbbf24" },
+    cover: { from: "#0d0b0a", to: "#9d7f5e" },
   },
   {
     slug: "salir-al-escenario",
@@ -77,7 +77,7 @@ export const BLUEPRINTS: Blueprint[] = [
       "answering a question with an easy smile",
       "walking off stage to applause, quiet satisfaction",
     ],
-    cover: { from: "#1e1b4b", to: "#818cf8" },
+    cover: { from: "#0a0b10", to: "#6f7a99" },
   },
   {
     slug: "fundadora-en-lisboa",
@@ -108,7 +108,7 @@ export const BLUEPRINTS: Blueprint[] = [
       "team toast on a rooftop at sunset over a pastel city",
       "walking home through tiled streets, unhurried",
     ],
-    cover: { from: "#0f766e", to: "#5eead4" },
+    cover: { from: "#0a0c0c", to: "#6d8f87" },
   },
   {
     slug: "cuerpo-fuerte-90-dias",
@@ -139,7 +139,7 @@ export const BLUEPRINTS: Blueprint[] = [
       "sleeping peacefully in a quiet bedroom at dawn",
       "laughing outdoors with friends after exercise",
     ],
-    cover: { from: "#14532d", to: "#86efac" },
+    cover: { from: "#0a0c0a", to: "#71906f" },
   },
   {
     slug: "amor-tranquilo",
@@ -170,7 +170,7 @@ export const BLUEPRINTS: Blueprint[] = [
       "laughing at a candlelit dinner with close friends",
       "watching the sunset from a balcony together",
     ],
-    cover: { from: "#831843", to: "#fda4af" },
+    cover: { from: "#0d0a0b", to: "#9b7480" },
   },
   {
     slug: "un-ano-sin-oficina",
@@ -201,7 +201,7 @@ export const BLUEPRINTS: Blueprint[] = [
       "driving an empty coastal road at golden hour",
       "watching stars from a quiet campsite",
     ],
-    cover: { from: "#0c4a6e", to: "#7dd3fc" },
+    cover: { from: "#090b0d", to: "#68849b" },
   },
 ];
 

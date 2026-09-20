@@ -6,6 +6,7 @@ import { LIFE_AREAS, VISUAL_STYLES } from "@/lib/types";
 import type { Blueprint, LifeArea, Tier, VisualStyle, VoiceTone } from "@/lib/types";
 import { creditCost } from "@/lib/pricing";
 import { SELFIE_CONSENT } from "@/lib/safety";
+import { Icon } from "./Icon";
 
 /**
  * El asistente de creación.
@@ -132,13 +133,14 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-14">
+    <div className="mx-auto max-w-2xl px-6 py-16">
       <Steps current={step} />
 
       {blueprint && (
-        <div className="mt-8 card rounded-xl2 p-4 text-sm">
+        <div className="card t-sub mt-8 rounded-[var(--radius-md)] p-4 text-[var(--color-label-2)]">
           Partiendo de{" "}
-          <span className="font-medium text-gold">{blueprint.title}</span> de {blueprint.author}.
+          <span className="font-medium text-[var(--color-label-1)]">{blueprint.title}</span> de{" "}
+          {blueprint.author}.
           El guion y las escenas vienen dados; tú pones tu cara y tu intención.
         </div>
       )}
@@ -154,13 +156,15 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
               <button
                 key={a.id}
                 onClick={() => setArea(a.id)}
-                className={`card card-hover rounded-xl2 p-5 text-left ${
-                  area === a.id ? "!border-gold/60" : ""
+                className={`card interactive rounded-[var(--radius-md)] p-5 text-left ${
+                  area === a.id ? "is-selected" : ""
                 }`}
               >
-                <span className="text-gold">{a.emoji}</span>
-                <p className="mt-2 font-medium">{a.label}</p>
-                <p className="mt-1 text-sm text-white/50">{a.blurb}</p>
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.07]">
+                  <Icon name={a.icon} size={17} />
+                </span>
+                <p className="t-headline mt-3.5">{a.label}</p>
+                <p className="t-sub mt-1 text-[var(--color-label-2)]">{a.blurb}</p>
               </button>
             ))}
           </div>
@@ -179,17 +183,19 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
             rows={4}
             maxLength={600}
             placeholder="Dirijo mi propio estudio en Lisboa, con tres personas en el equipo y clientes que me buscan a mí."
-            className="w-full resize-none rounded-xl2 border border-white/10 bg-white/5 p-4 text-base leading-relaxed outline-none transition placeholder:text-white/25 focus:border-gold/50"
+            className="t-body w-full resize-none rounded-[var(--radius-md)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] p-4 outline-none transition-colors duration-200 placeholder:text-[var(--color-label-4)] focus:border-[var(--color-hairline-strong)]"
           />
-          <p className="mt-2 text-right text-xs text-white/30">{intention.length}/600</p>
+          <p className="t-caption mt-2 text-right tabular-nums text-[var(--color-label-3)]">
+            {intention.length}/600
+          </p>
 
-          <p className="mt-6 mb-3 text-sm text-white/45">O empieza por una de estas:</p>
+          <p className="t-sub mt-8 mb-3 text-[var(--color-label-2)]">O empieza por una de estas:</p>
           <div className="space-y-2">
             {PROMPT_IDEAS[area].map((idea) => (
               <button
                 key={idea}
                 onClick={() => setIntention(idea)}
-                className="w-full rounded-xl border border-white/8 bg-white/3 px-4 py-3 text-left text-sm text-white/70 transition hover:border-gold/40 hover:text-white"
+                className="interactive t-sub w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 text-left text-[var(--color-label-2)] hover:text-[var(--color-label-1)]"
               >
                 {idea}
               </button>
@@ -205,21 +211,21 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
           hint="Un selfie de frente, con luz natural y sin gafas de sol. Sin foto también funciona: se generan escenas sin rostro visible."
         >
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-            <div className="grid h-40 w-40 shrink-0 place-items-center overflow-hidden rounded-xl2 border border-dashed border-white/15 bg-white/3">
+            <div className="grid h-40 w-40 shrink-0 place-items-center overflow-hidden rounded-[var(--radius-lg)] border border-dashed border-[var(--color-hairline-strong)] bg-[var(--color-surface-2)]">
               {selfieUrl ? (
                 <img src={selfieUrl} alt="Tu selfie" className="h-full w-full object-cover" />
               ) : (
-                <span className="text-sm text-white/30">Sin foto</span>
+                <span className="t-caption text-[var(--color-label-3)]">Sin foto</span>
               )}
             </div>
 
             <div className="flex-1 space-y-4">
-              <label className="flex cursor-pointer items-start gap-3 text-sm text-white/70">
+              <label className="t-sub flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
                 <input
                   type="checkbox"
                   checked={consent}
                   onChange={(e) => setConsent(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 accent-[#e9c46a]"
+                  className="mt-[3px] h-4 w-4 accent-white"
                 />
                 <span>{SELFIE_CONSENT}</span>
               </label>
@@ -232,11 +238,11 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
                   const file = e.target.files?.[0];
                   if (file) void upload(file);
                 }}
-                className="block w-full text-sm text-white/60 file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-white/10 file:px-5 file:py-2.5 file:text-sm file:text-white hover:file:bg-white/20 disabled:opacity-40"
+                className="t-sub block w-full text-[var(--color-label-2)] file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-white file:px-5 file:py-2 file:text-[13px] file:font-medium file:text-black hover:file:bg-white/90 disabled:opacity-35"
               />
-              {uploading && <p className="text-sm text-white/50">Subiendo…</p>}
+              {uploading && <p className="t-sub text-[var(--color-label-2)]">Subiendo…</p>}
 
-              <p className="text-xs leading-relaxed text-white/35">
+              <p className="t-caption leading-relaxed text-[var(--color-label-3)]">
                 Tu foto es tuya. No se publica, no se usa para entrenar modelos y la
                 puedes borrar desde tu biblioteca junto con el vídeo.
               </p>
@@ -273,10 +279,10 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
                 <button
                   key={d}
                   onClick={() => setDurationSec(d)}
-                  className={`rounded-full border px-6 py-2.5 text-sm transition ${
+                  className={`interactive t-sub rounded-full border px-5 py-2 ${
                     durationSec === d
-                      ? "border-gold/60 bg-gold/10 text-gold"
-                      : "border-white/12 text-white/60 hover:border-white/30"
+                      ? "border-white bg-white text-black"
+                      : "border-[var(--color-hairline)] text-[var(--color-label-2)]"
                   }`}
                 >
                   {d} segundos
@@ -291,10 +297,10 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
                 <button
                   key={s.id}
                   onClick={() => setStyle(s.id)}
-                  className={`rounded-full border px-4 py-2 text-sm transition ${
+                  className={`interactive t-sub rounded-full border px-4 py-2 ${
                     style === s.id
-                      ? "border-gold/60 bg-gold/10 text-gold"
-                      : "border-white/12 text-white/60 hover:border-white/30"
+                      ? "border-white bg-white text-black"
+                      : "border-[var(--color-hairline)] text-[var(--color-label-2)]"
                   }`}
                 >
                   {s.label}
@@ -317,18 +323,26 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
             </div>
           </Field>
 
-          <div className="card mt-8 flex items-center justify-between rounded-xl2 p-5">
+          <div className="card mt-9 flex items-center justify-between rounded-[var(--radius-md)] p-5">
             <div>
-              <p className="text-sm text-white/55">Coste de este vídeo</p>
-              <p className="font-display text-2xl text-gold">{cost} créditos</p>
+              <p className="t-caption text-[var(--color-label-2)]">Coste de este vídeo</p>
+              <p className="mt-1 text-[1.75rem] font-semibold leading-none tracking-[-0.03em] tabular-nums">
+                {cost} <span className="t-sub font-normal text-[var(--color-label-2)]">créditos</span>
+              </p>
             </div>
-            <div className="text-right text-sm">
-              <p className="text-white/55">Te quedan</p>
-              <p className={affordable ? "text-white" : "text-red-400"}>{credits} créditos</p>
+            <div className="text-right">
+              <p className="t-caption text-[var(--color-label-2)]">Te quedan</p>
+              <p
+                className={`t-sub mt-1 tabular-nums ${
+                  affordable ? "text-[var(--color-label-1)]" : "text-red-400"
+                }`}
+              >
+                {credits} créditos
+              </p>
             </div>
           </div>
           {!affordable && (
-            <p className="mt-3 text-sm text-red-400">
+            <p className="t-sub mt-3 text-red-400">
               No te llegan los créditos. Baja a 30 segundos, cambia a Visión o{" "}
               <a href="/precios" className="underline">
                 consigue más
@@ -340,7 +354,7 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
       )}
 
       {error && (
-        <p className="mt-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+        <p className="t-sub mt-6 rounded-[var(--radius-ctl)] border border-red-500/25 bg-red-500/[0.08] p-4 text-red-300">
           {error}
         </p>
       )}
@@ -350,24 +364,26 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
         <button
           onClick={() => setStep((s) => Math.max(0, s - 1))}
           disabled={step === 0}
-          className="text-sm text-white/50 transition hover:text-white disabled:invisible"
+          className="t-sub inline-flex items-center gap-1.5 text-[var(--color-label-2)] transition-opacity duration-200 hover:text-[var(--color-label-1)] disabled:invisible"
         >
-          ← Atrás
+          <Icon name="arrow-left" size={15} />
+          Atrás
         </button>
 
         {step < 3 ? (
           <button
             onClick={() => setStep((s) => s + 1)}
             disabled={!canContinue}
-            className="rounded-full bg-gold px-7 py-3 font-medium text-ink-950 transition hover:bg-gold-deep disabled:cursor-not-allowed disabled:opacity-35"
+            className="interactive inline-flex items-center gap-1.5 rounded-full bg-white px-6 py-2.5 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30"
           >
             Continuar
+            <Icon name="arrow-right" size={15} />
           </button>
         ) : (
           <button
             onClick={submit}
             disabled={!affordable || submitting}
-            className="rounded-full bg-gold px-7 py-3 font-medium text-ink-950 transition hover:bg-gold-deep disabled:cursor-not-allowed disabled:opacity-35"
+            className="interactive rounded-full bg-white px-6 py-2.5 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30"
           >
             {submitting ? "Creando…" : "Crear mi vídeo"}
           </button>
@@ -381,19 +397,29 @@ const STEP_LABELS = ["Área", "Intención", "Foto", "Formato"];
 
 function Steps({ current }: { current: number }) {
   return (
-    <ol className="flex items-center gap-2 text-xs">
+    <ol className="t-caption flex items-center gap-2">
       {STEP_LABELS.map((label, i) => (
         <li key={label} className="flex flex-1 items-center gap-2">
           <span
-            className={`grid h-6 w-6 shrink-0 place-items-center rounded-full ${
-              i <= current ? "bg-gold text-ink-950" : "bg-white/10 text-white/40"
+            className={`grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full text-[11px] font-medium transition-colors duration-300 ${
+              i < current
+                ? "bg-white text-black"
+                : i === current
+                  ? "border border-white/70 text-white"
+                  : "border border-[var(--color-hairline)] text-[var(--color-label-3)]"
             }`}
           >
-            {i + 1}
+            {i < current ? <Icon name="check" size={12} /> : i + 1}
           </span>
-          <span className={i <= current ? "text-white/80" : "text-white/30"}>{label}</span>
+          <span className={i <= current ? "text-[var(--color-label-1)]" : "text-[var(--color-label-3)]"}>
+            {label}
+          </span>
           {i < STEP_LABELS.length - 1 && (
-            <span className={`h-px flex-1 ${i < current ? "bg-gold/50" : "bg-white/10"}`} />
+            <span
+              className={`h-px flex-1 transition-colors duration-300 ${
+                i < current ? "bg-white/45" : "bg-[var(--color-hairline)]"
+              }`}
+            />
           )}
         </li>
       ))}
@@ -412,8 +438,8 @@ function Section({
 }) {
   return (
     <div className="mt-10">
-      <h1 className="font-display text-3xl leading-tight">{title}</h1>
-      <p className="mt-2 mb-7 text-white/50">{hint}</p>
+      <h1 className="t-title text-balance">{title}</h1>
+      <p className="t-body mt-3 mb-8 max-w-xl text-pretty text-[var(--color-label-2)]">{hint}</p>
       {children}
     </div>
   );
@@ -422,7 +448,7 @@ function Section({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mt-7 first:mt-0">
-      <p className="mb-3 text-sm font-medium text-white/70">{label}</p>
+      <p className="t-sub mb-3 font-medium text-[var(--color-label-2)]">{label}</p>
       {children}
     </div>
   );
@@ -444,11 +470,13 @@ function Choice({
   return (
     <button
       onClick={onClick}
-      className={`card card-hover rounded-xl2 p-4 text-left ${selected ? "!border-gold/60" : ""}`}
+      className={`card interactive rounded-[var(--radius-md)] p-4 text-left ${
+        selected ? "is-selected" : ""
+      }`}
     >
-      <p className="font-medium">{title}</p>
-      <p className="mt-1 text-sm text-white/50">{sub}</p>
-      {price && <p className="mt-2 text-sm text-gold">{price}</p>}
+      <p className="t-headline">{title}</p>
+      <p className="t-sub mt-1 text-[var(--color-label-2)]">{sub}</p>
+      {price && <p className="t-sub mt-2.5 tabular-nums text-[var(--color-label-1)]">{price}</p>}
     </button>
   );
 }
