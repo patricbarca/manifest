@@ -31,6 +31,17 @@ de datos es un JSON y los ficheros están en disco. Sin migrar nada.
 2. Elige `patricbarca/manifest`
 3. Railway detecta `railway.json` y construye con el `Dockerfile`
 
+> **Trampa del Dockerfile.** Railway rechaza el Dockerfile entero si encuentra
+> una instrucción `VOLUME`:
+>
+> ```
+> dockerfile invalid: docker VOLUME at Line 48 is not supported,
+> use Railway Volumes
+> ```
+>
+> Ya está quitada. Si alguien la vuelve a añadir, el build falla antes de
+> empezar, y el log solo da esa línea.
+
 ### 2. Montar el volumen — no te lo saltes
 
 **Service → Settings → Volumes → New Volume**, con punto de montaje:
@@ -40,8 +51,21 @@ de datos es un JSON y los ficheros están en disco. Sin migrar nada.
 ```
 
 Sin esto la app arranca igual, pero **cada despliegue borra todos los vídeos y
-las cuentas**: el disco de un contenedor es efímero. Es el único paso del que
-no avisa nada hasta que ya ha pasado.
+las cuentas**: el disco de un contenedor es efímero.
+
+La app se defende sola de este fallo. Al arrancar compara el número de
+dispositivo de `DATA_DIR` con el del directorio de la app; si coinciden, no hay
+volumen montado, y lo dice en los logs:
+
+```
+┌───────────────────────────────────────────────────────────────┐
+│  AVISO: ALMACENAMIENTO EFÍMERO                                │
+│  EL PRÓXIMO DESPLIEGUE BORRARÁ TODOS LOS VÍDEOS Y CUENTAS.    │
+└───────────────────────────────────────────────────────────────┘
+```
+
+Y `/api/health` lo devuelve en `storage.persistent`, así que se puede
+comprobar con un `curl` sin entrar al panel.
 
 ### 3. Variables de entorno
 

@@ -44,8 +44,16 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # Punto de montaje del volumen. Aquí viven la base de datos JSON, los selfies
 # y las escenas: todo lo que tiene que sobrevivir a un despliegue.
+#
+# Ojo: NO lleva `VOLUME ["/data"]`. Railway rechaza el Dockerfile entero si lo
+# encuentra ("docker VOLUME is not supported, use Railway Volumes"), porque la
+# persistencia la gestiona su propio sistema de volúmenes. El directorio se
+# crea igual para que la app arranque aunque nadie haya montado nada — y en
+# ese caso `instrumentation.ts` avisa a gritos en el arranque.
+#
+# Para `docker run` a pelo, la persistencia sigue funcionando con
+# `-v manifest-data:/data`: la instrucción VOLUME nunca fue necesaria.
 RUN mkdir -p /data && chown -R nextjs:nodejs /data
-VOLUME ["/data"]
 
 USER nextjs
 EXPOSE 3000
