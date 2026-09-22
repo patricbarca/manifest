@@ -19,7 +19,7 @@ const CreateProject = z.object({
   style: z.enum(["cinematic", "editorial", "golden", "minimal", "dream"]),
   tone: z.enum(["calma", "firme", "cercana"]),
   durationSec: z.union([z.literal(30), z.literal(60)]),
-  selfieUrl: z.string().startsWith("/uploads/").optional(),
+  selfieUrl: z.string().startsWith("/media/uploads/").optional(),
   blueprintSlug: z.string().optional(),
 });
 

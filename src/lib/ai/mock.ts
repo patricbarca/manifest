@@ -1,5 +1,3 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import type {
   ImageProvider,
   ScriptProvider,
@@ -8,6 +6,7 @@ import type {
 } from "./contracts";
 import { draftScript } from "../script-engine";
 import { PROVIDER_COST } from "../pricing";
+import { persistBuffer } from "./storage";
 
 /**
  * Proveedores de mentira, pero de verdad utiles: con ellos el producto entero
@@ -64,13 +63,6 @@ function svgScene(seedIndex: number, label: string): string {
 </svg>`;
 }
 
-async function writePublic(rel: string, contents: string): Promise<string> {
-  const abs = path.join(process.cwd(), "public", rel);
-  await mkdir(path.dirname(abs), { recursive: true });
-  await writeFile(abs, contents, "utf8");
-  return "/" + rel.split(path.sep).join("/");
-}
-
 export const mockScript: ScriptProvider = {
   name: "mock",
   async write(input) {
@@ -90,10 +82,7 @@ export const mockImage: ImageProvider = {
     // encuadre, que no dicen nada al mirar la vista previa.
     const brief = prompt.split(",")[1]?.trim() ?? "escena";
     const label = brief.charAt(0).toUpperCase() + brief.slice(1);
-    const url = await writePublic(
-      path.join("generated", projectId, `${sceneId}.svg`),
-      svgScene(index, label),
-    );
+    const url = await persistBuffer(svgScene(index, label), projectId, `${sceneId}.svg`);
     // Latencia fingida para que la UI de progreso se pueda ver de verdad.
     await new Promise((r) => setTimeout(r, 120));
     return { result: { url }, costCents: 0, provider: "mock" };

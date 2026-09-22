@@ -3,12 +3,9 @@ node_modules
 out
 .env
 .env.local
-.data/*
-!.data/.gitkeep
-public/uploads/*
-!public/uploads/.gitkeep
-public/generated/*
-!public/generated/.gitkeep
+# Todo lo que la app escribe vive aquí: base de datos, selfies y escenas.
+# Nunca se commitea: lleva caras de personas.
+.data
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store

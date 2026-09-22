@@ -54,6 +54,7 @@ VOICE_PROVIDER=elevenlabs
 | [`docs/business-model.md`](docs/business-model.md) | Costes verificados con fuentes, unit economics, planes, el market, riesgos |
 | [`docs/architecture.md`](docs/architecture.md) | Cómo está montado y por qué |
 | [`docs/roadmap.md`](docs/roadmap.md) | Lo que falta, ordenado por lo que bloquea |
+| [`docs/deploy.md`](docs/deploy.md) | Cómo desplegarlo, y por qué GitHub Pages no sirve |
 
 ## Stack
 
@@ -66,4 +67,12 @@ Sin base de datos ni servicios externos para arrancar.
 npm run dev        # desarrollo
 npm run build      # build de producción
 npm run typecheck  # tsc --noEmit
+
+docker build -t manifest .                              # imagen de producción
+docker run -p 3000:3000 -v manifest-data:/data manifest # con volumen
 ```
+
+Todo lo que la app escribe —base de datos, selfies, escenas— vive bajo
+`DATA_DIR` (`.data/` en local, el volumen `/data` en el contenedor). Nada de
+eso se sirve desde `/public`: los ficheros pasan por `/media/...`, que
+comprueba de quién son.

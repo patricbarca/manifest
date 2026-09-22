@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import type { VideoProvider } from "./contracts";
 import { PROVIDER_COST } from "../pricing";
 import { persistRemoteAsset } from "./storage";
+import { localPathForMediaUrl } from "../paths";
 
 /**
  * Kling directo, sin pasar por fal.
@@ -28,11 +29,14 @@ function token(): string {
   return `${body}.${sig}`;
 }
 
-async function fetchImageBase64(url: string): Promise<string> {
-  const absolute = url.startsWith("http")
-    ? url
-    : `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}${url}`;
-  const res = await fetch(absolute);
+/** Kling quiere la imagen en base64 pelado, sin la cabecera del data URI. */
+async function imageBase64(url: string): Promise<string> {
+  const local = localPathForMediaUrl(url);
+  if (local) {
+    const { readFile } = await import("node:fs/promises");
+    return (await readFile(local)).toString("base64");
+  }
+  const res = await fetch(url);
   if (!res.ok) throw new Error(`No se pudo leer la imagen base: ${res.status}`);
   return Buffer.from(await res.arrayBuffer()).toString("base64");
 }
@@ -48,7 +52,7 @@ export const klingVideo: VideoProvider = {
       headers: { Authorization: `Bearer ${jwt}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model_name: process.env.KLING_MODEL ?? "kling-v2-master",
-        image: await fetchImageBase64(imageUrl),
+        image: await imageBase64(imageUrl),
         prompt,
         duration,
         mode: process.env.KLING_MODE ?? "std",

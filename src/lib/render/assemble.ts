@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { access, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Project } from "../types";
+import { DATA_DIR, localPathForMediaUrl } from "../paths";
 
 /**
  * Ensamblado a MP4.
@@ -47,8 +48,10 @@ async function run(args: string[]): Promise<void> {
   });
 }
 
-function publicPath(url: string): string {
-  return path.join(process.cwd(), "public", url.replace(/^\//, ""));
+function mediaFile(url: string): string {
+  const local = localPathForMediaUrl(url);
+  if (!local) throw new Error(`Ruta de media no válida: ${url}`);
+  return local;
 }
 
 export async function assembleMp4(project: Project): Promise<AssembleResult> {
@@ -63,10 +66,10 @@ export async function assembleMp4(project: Project): Promise<AssembleResult> {
   const usable = project.scenes.filter((s) => s.videoUrl ?? s.imageUrl);
   if (!usable.length) return { skipped: true, reason: "No hay escenas generadas" };
 
-  const outDir = path.join(process.cwd(), "public", "generated", project.id);
+  const outDir = path.join(DATA_DIR, "generated", project.id);
   await mkdir(outDir, { recursive: true });
-  const outRel = `/generated/${project.id}/manifest.mp4`;
-  const outAbs = publicPath(outRel);
+  const outRel = `/media/generated/${project.id}/manifest.mp4`;
+  const outAbs = path.join(outDir, "manifest.mp4");
 
   // Las escenas de tier vision son imagenes: se concatenan con duracion fija
   // via demuxer concat, que es lo mas barato y no recodifica de mas.
@@ -81,15 +84,17 @@ export async function assembleMp4(project: Project): Promise<AssembleResult> {
       };
     }
     const dur = Math.max(1, scene.endSec - scene.startSec);
-    lines.push(`file '${publicPath(src)}'`, `duration ${dur.toFixed(2)}`);
+    lines.push(`file '${mediaFile(src)}'`, `duration ${dur.toFixed(2)}`);
   }
   // concat exige repetir el ultimo fichero para que respete su duracion.
-  lines.push(`file '${publicPath(usable[usable.length - 1].videoUrl ?? usable[usable.length - 1].imageUrl!)}'`);
+  lines.push(
+    `file '${mediaFile(usable[usable.length - 1].videoUrl ?? usable[usable.length - 1].imageUrl!)}'`,
+  );
   await writeFile(listFile, lines.join("\n"), "utf8");
 
   const args = ["-y", "-f", "concat", "-safe", "0", "-i", listFile];
 
-  const voiceAbs = project.voiceUrl ? publicPath(project.voiceUrl) : undefined;
+  const voiceAbs = project.voiceUrl ? mediaFile(project.voiceUrl) : undefined;
   const hasVoice = voiceAbs ? await access(voiceAbs).then(() => true, () => false) : false;
   if (hasVoice) args.push("-i", voiceAbs!);
 

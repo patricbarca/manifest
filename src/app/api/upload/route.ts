@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/db/session";
+import { mediaPath, mediaUrl } from "@/lib/paths";
 
 export const runtime = "nodejs";
 
@@ -41,12 +42,13 @@ export async function POST(request: Request) {
   }
 
   const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+  // El id del dueño va en el nombre: es lo que luego deja a /media comprobar
+  // de quién es la foto sin tener que guardar una tabla aparte.
   const name = `${user.id}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const rel = path.join("uploads", name);
-  const abs = path.join(process.cwd(), "public", rel);
+  const abs = mediaPath("uploads", name);
 
   await mkdir(path.dirname(abs), { recursive: true });
   await writeFile(abs, Buffer.from(await file.arrayBuffer()));
 
-  return NextResponse.json({ url: "/" + rel.split(path.sep).join("/") });
+  return NextResponse.json({ url: mediaUrl("uploads", name) });
 }

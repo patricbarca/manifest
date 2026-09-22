@@ -1,7 +1,7 @@
-import { readFile } from "node:fs/promises";
 import type { ImageProvider, VideoProvider } from "./contracts";
 import { PROVIDER_COST } from "../pricing";
-import { persistRemoteAsset } from "./storage";
+import { fileToDataUri, persistRemoteAsset } from "./storage";
+import { localPathForMediaUrl } from "../paths";
 
 /**
  * fal.ai como pasarela unica para imagen y video.
@@ -69,14 +69,6 @@ async function falQueue(
   return (await out.json()) as Record<string, unknown>;
 }
 
-/** El selfie viaja como data URI: evita montar un bucket publico en el MVP. */
-async function toDataUri(absPath: string): Promise<string> {
-  const buf = await readFile(absPath);
-  const ext = absPath.split(".").pop()?.toLowerCase() ?? "jpg";
-  const mime = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
-  return `data:${mime};base64,${buf.toString("base64")}`;
-}
-
 function firstImageUrl(payload: Record<string, unknown>): string {
   const images = payload.images as { url?: string }[] | undefined;
   if (images?.[0]?.url) return images[0].url;
@@ -96,7 +88,7 @@ export const falImage: ImageProvider = {
       output_format: "jpeg",
       safety_tolerance: "2",
     };
-    if (referencePath) body.image_url = await toDataUri(referencePath);
+    if (referencePath) body.image_url = await fileToDataUri(referencePath);
 
     const payload = await falCall(model, body);
     // Se copia a nuestro almacenamiento: las URLs de fal caducan.
@@ -110,13 +102,14 @@ export const falVideo: VideoProvider = {
   async animate({ imageUrl, prompt, durationSec, projectId, sceneId }) {
     const model =
       process.env.FAL_VIDEO_MODEL ?? "fal-ai/kling-video/v2/standard/image-to-video";
-    const absolute = imageUrl.startsWith("http")
-      ? imageUrl
-      : `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}${imageUrl}`;
+    // La imagen base se manda incrustada, no por URL: generar no puede
+    // depender de que nuestra app sea alcanzable desde fuera.
+    const local = localPathForMediaUrl(imageUrl);
+    const image = local ? await fileToDataUri(local) : imageUrl;
 
     const payload = await falQueue(model, {
       prompt,
-      image_url: absolute,
+      image_url: image,
       duration: String(Math.min(10, Math.max(5, Math.round(durationSec)))),
       aspect_ratio: "9:16",
     });

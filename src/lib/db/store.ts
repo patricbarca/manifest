@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Project, User } from "../types";
+import { dbDir } from "../paths";
 
 /**
  * Persistencia del MVP: un JSON por coleccion en .data/.
@@ -11,11 +12,9 @@ import type { Project, User } from "../types";
  * seis funciones.
  */
 
-const DATA_DIR = path.join(process.cwd(), ".data");
-
 async function readCollection<T>(name: string): Promise<Record<string, T>> {
   try {
-    const raw = await readFile(path.join(DATA_DIR, `${name}.json`), "utf8");
+    const raw = await readFile(path.join(dbDir(), `${name}.json`), "utf8");
     return JSON.parse(raw) as Record<string, T>;
   } catch {
     return {};
@@ -24,8 +23,8 @@ async function readCollection<T>(name: string): Promise<Record<string, T>> {
 
 /** Escritura atomica: temporal + rename, para no dejar un JSON a medias. */
 async function writeCollection<T>(name: string, data: Record<string, T>): Promise<void> {
-  await mkdir(DATA_DIR, { recursive: true });
-  const target = path.join(DATA_DIR, `${name}.json`);
+  await mkdir(dbDir(), { recursive: true });
+  const target = path.join(dbDir(), `${name}.json`);
   const tmp = `${target}.${process.pid}.tmp`;
   await writeFile(tmp, JSON.stringify(data, null, 2), "utf8");
   await rename(tmp, target);

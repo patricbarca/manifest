@@ -1,8 +1,8 @@
-import path from "node:path";
 import { providers } from "./ai";
 import { db } from "./db/store";
 import { buildScenes, layoutTimeline, narrationText } from "./script-engine";
 import { assembleMp4 } from "./render/assemble";
+import { localPathForMediaUrl } from "./paths";
 import type { PipelineStep, Project, StepId } from "./types";
 
 /**
@@ -63,7 +63,7 @@ async function setStep(
 
 function selfieAbsolutePath(project: Project): string | undefined {
   if (!project.selfieUrl) return undefined;
-  return path.join(process.cwd(), "public", project.selfieUrl.replace(/^\//, ""));
+  return localPathForMediaUrl(project.selfieUrl) ?? undefined;
 }
 
 export async function runPipeline(projectId: string): Promise<void> {

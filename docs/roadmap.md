@@ -9,7 +9,7 @@ Ordenado por lo que bloquea. Lo de arriba no es opcional.
 | 1 | **Auth real** (Supabase Auth / Clerk / NextAuth) | Ahora la identidad es una cookie anónima. Sustituye `src/lib/db/session.ts`. |
 | 2 | **Base de datos real** (Postgres) | El store JSON no aguanta dos procesos. Sustituye `src/lib/db/store.ts`. |
 | 3 | **Pagos** (Stripe) | Suscripciones, packs de créditos, webhooks de renovación y reparto del market. |
-| 4 | **Almacenamiento privado** | Los selfies y los vídeos están en `/public` con URL adivinable. Tienen que ir a un bucket privado con URLs firmadas y caducidad. |
+| 4 | ~~**Almacenamiento privado**~~ | ✅ Hecho. Los ficheros salieron de `/public` a `DATA_DIR`, y `/media/[...path]` comprueba de quién es cada uno. Queda moverlo a un bucket cuando toque Vercel. |
 | 5 | **Borrado real** | Botón de borrar cuenta que borre de verdad fotos, escenas y vídeos. Obligación legal, no cortesía. |
 
 ## Bloqueante para abrir Cine
@@ -37,9 +37,24 @@ Ordenado por lo que bloquea. Lo de arriba no es opcional.
 - Música: catálogo con licencia además del pad generativo.
 - Idiomas: el guion ya sale en el idioma del usuario, falta la UI.
 
+## Aprendido por el camino
+
+- **`/media` filtraba la base de datos entera.** La primera versión comprobaba
+  que la ruta resuelta cayera dentro de `DATA_DIR`. Con
+  `..%2f..%2fdb%2fusers.json` (barra codificada, que Next no normaliza) el
+  destino era `DATA_DIR/db/users.json` — *dentro* de `DATA_DIR`, así que la
+  comprobación pasaba y el servidor entregaba todos los usuarios. Arreglado
+  confinando al subdirectorio del tipo y exigiendo que cada segmento sea un
+  nombre de fichero pelado. La lección: validar dónde cae la ruta resuelta, no
+  el texto de entrada, y confinar al directorio más estrecho posible.
+- **Generar dependía de ser alcanzable desde internet.** Los proveedores
+  recibían una URL de nuestra app y tenían que descargarla. Ahora se les manda
+  el fichero incrustado, leído de disco.
+
 ## Deuda técnica conocida
 
 - `src/lib/db/store.ts` — un proceso, sin transacciones.
-- `src/lib/ai/fal.ts` — el selfie viaja como data URI; con imágenes grandes va justo.
-- `src/lib/render/assemble.ts` — escrito pero **no ejecutado nunca**: no hay ffmpeg en el entorno de desarrollo.
+- `src/lib/ai/fal.ts` — las imágenes viajan como data URI; con ficheros grandes va justo.
+- `src/lib/render/assemble.ts` — escrito pero **no ejecutado nunca** en el entorno de desarrollo. La imagen de Docker sí trae ffmpeg, así que el primer uso real será en Railway.
+- El `Dockerfile` **no se ha construido nunca**: no hay demonio de Docker aquí. Sí está probado el output `standalone` que corre dentro.
 - Sin tests. El primero que hay que escribir es del pipeline en modo mock, que es determinista y por tanto fácil de afirmar.
