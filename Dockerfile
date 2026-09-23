@@ -25,7 +25,9 @@ WORKDIR /app
 
 # ffmpeg es lo que monta el MP4 descargable. Sin él la app funciona igual
 # (el vídeo se ve en el reproductor web) pero la descarga queda deshabilitada.
-RUN apk add --no-cache ffmpeg
+# su-exec baja privilegios en el entrypoint, después de arreglar el dueño del
+# volumen. Es el equivalente ligero de gosu en Alpine.
+RUN apk add --no-cache ffmpeg su-exec
 
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
@@ -35,6 +37,8 @@ ENV NODE_ENV=production \
     FFMPEG_PATH=/usr/bin/ffmpeg
 
 # Usuario sin privilegios: si alguien escapa del proceso, no es root.
+# El contenedor arranca como root solo para ajustar el dueño del volumen y
+# baja a este usuario antes de ejecutar la app (ver docker-entrypoint.sh).
 RUN addgroup -g 1001 -S nodejs && adduser -S -u 1001 -G nodejs nextjs
 
 # El server.js de standalone no copia public ni .next/static: van a mano.
@@ -55,10 +59,12 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 # `-v manifest-data:/data`: la instrucción VOLUME nunca fue necesaria.
 RUN mkdir -p /data && chown -R nextjs:nodejs /data
 
-USER nextjs
+COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "server.js"]

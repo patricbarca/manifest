@@ -31,16 +31,37 @@ de datos es un JSON y los ficheros están en disco. Sin migrar nada.
 2. Elige `patricbarca/manifest`
 3. Railway detecta `railway.json` y construye con el `Dockerfile`
 
-> **Trampa del Dockerfile.** Railway rechaza el Dockerfile entero si encuentra
-> una instrucción `VOLUME`:
+> **Tres trampas que costaron tres despliegues fallidos.** Las tres están ya
+> resueltas en el repo; se documentan para que nadie las reintroduzca.
+>
+> **1. `VOLUME` en el Dockerfile.** Railway rechaza el Dockerfile entero si
+> encuentra una instrucción `VOLUME`:
 >
 > ```
 > dockerfile invalid: docker VOLUME at Line 48 is not supported,
 > use Railway Volumes
 > ```
 >
-> Ya está quitada. Si alguien la vuelve a añadir, el build falla antes de
-> empezar, y el log solo da esa línea.
+> Si alguien la vuelve a añadir, el build falla antes de empezar a construir, y
+> el log solo da esa línea.
+>
+> **2. El volumen llega perteneciendo a root.** El `chown` del Dockerfile no
+> sirve: el volumen se monta en arranque y tapa ese directorio con su propio
+> sistema de ficheros. El proceso corre como `nextjs` (uid 1001) y se encuentra
+> un `/data` que no puede tocar:
+>
+> ```
+> EACCES: permission denied, open '/data/.write-probe'
+> ```
+>
+> Lo resuelve `docker-entrypoint.sh`: el contenedor arranca como root, ajusta
+> el dueño del punto de montaje **ya montado**, y baja privilegios con
+> `su-exec` antes de ejecutar la app. La app nunca corre como root.
+>
+> **3. Railway inyecta `PORT=8080`.** Sobrescribe el `ENV PORT=3000` del
+> Dockerfile, así que la app escucha en 8080 mientras el dominio apunta al
+> 3000 — y no responde nada, sin ningún error. Resuelto fijando `PORT=3000`
+> como variable del servicio, que gana a la inyección.
 
 ### 2. Montar el volumen — no te lo saltes
 
