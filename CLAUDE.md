@@ -24,4 +24,11 @@
 - Verificar sigue siendo obligatorio: build, typecheck y probar de verdad.
 - Ahorra en cómo lo cuentas, no en si lo haces.
 
+## Delegación a modelos más baratos
+
+- Buscar en el código (dónde está algo, qué lo usa, barrer muchos ficheros):
+  delega en el subagente `buscar` (Haiku) en vez de hacerlo en la sesión principal.
+- Verificación mecánica (build, typecheck, lint): delega en `chequeo` (Sonnet).
+- El razonamiento de producto, precios, arquitectura y seguridad NO se delega.
+
 @AGENTS.md
