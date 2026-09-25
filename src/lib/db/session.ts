@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { db } from "./store";
-import { PLANS } from "../pricing";
 import type { User } from "../types";
+import { FREE_VIDEOS, PAYMENTS_ENABLED } from "../pricing";
 
 /**
  * "Auth" del MVP: una cookie con un id anonimo.
@@ -35,27 +35,59 @@ export async function currentUser(): Promise<User> {
   const existing = await db.getUser(id);
   if (existing) return existing;
 
-  const free = PLANS[0];
   const user: User = {
     id,
     email: "",
     name: "Invitado",
-    plan: "free",
-    credits: free.creditsPerMonth,
     createdAt: Date.now(),
+    freeVideosUsed: 0,
   };
   await db.putUser(user);
   return user;
 }
 
-export async function spendCredits(userId: string, amount: number): Promise<boolean> {
+/**
+ * Cobra un vídeo, o lo deja pasar.
+ *
+ * Distingue tres casos, y la distinción importa porque solo uno de ellos lleva
+ * marca de agua:
+ *
+ *  - `free`      — el vídeo que invita la casa. Lleva marca de agua: es el
+ *                  anuncio, y quien lo comparte anuncia por nosotros.
+ *  - `prelaunch` — todavía no hay pasarela de pago. Se enseña el precio y se
+ *                  genera igual, pero SIN marca de agua: no es un vídeo de
+ *                  regalo, es que aún no sabemos cobrar.
+ *  - `paid`      — pagado de verdad. Sin marca de agua.
+ */
+export type ChargeKind = "free" | "prelaunch" | "paid";
+
+export async function chargeForVideo(
+  userId: string,
+  priceCents: number,
+): Promise<
+  { ok: true; kind: ChargeKind; paidCents: number } | { ok: false; reason: string }
+> {
   const user = await db.getUser(userId);
-  if (!user || user.credits < amount) return false;
-  await db.putUser({ ...user, credits: user.credits - amount });
-  return true;
+  if (!user) return { ok: false, reason: "Usuario no encontrado" };
+
+  if (user.freeVideosUsed < FREE_VIDEOS) {
+    await db.putUser({ ...user, freeVideosUsed: user.freeVideosUsed + 1 });
+    return { ok: true, kind: "free", paidCents: 0 };
+  }
+
+  if (!PAYMENTS_ENABLED) {
+    return { ok: true, kind: "prelaunch", paidCents: 0 };
+  }
+
+  // Aquí irá el cobro real cuando entre Stripe.
+  void priceCents;
+  return {
+    ok: false,
+    reason: "Ya has usado tu vídeo gratis. Los pagos todavía no están activos.",
+  };
 }
 
-export async function refundCredits(userId: string, amount: number): Promise<void> {
-  const user = await db.getUser(userId);
-  if (user) await db.putUser({ ...user, credits: user.credits + amount });
+/** Cuántos vídeos gratis le quedan a este usuario. */
+export function freeVideosLeft(user: User): number {
+  return Math.max(0, FREE_VIDEOS - user.freeVideosUsed);
 }

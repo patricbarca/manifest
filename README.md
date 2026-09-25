@@ -32,17 +32,16 @@ VOICE_PROVIDER=elevenlabs
 
 ## Qué hay dentro
 
-- **Dos productos.** *Visión* (imágenes tuyas con movimiento de cámara, ~0,58 $
-  de coste) y *Cine* (escenas animadas de verdad, ~6,50 $). El porqué de esa
-  diferencia y del precio está en [`docs/business-model.md`](docs/business-model.md).
+- **Dos productos y dos precios.** *Imágenes* (9 $) y *Animado* (39 $). Sin
+  suscripción, sin créditos. El primero es gratis. El porqué de cada número
+  está en [`docs/business-model.md`](docs/business-model.md).
 - **Un reproductor que es el producto.** Cada afirmación aparece grande, la voz
   la dice, y después se calla para que la repitas. Ese hueco es la mitad del
   ejercicio.
-- **Créditos, no "vídeos incluidos".** Porque un plan de "5 vídeos" se arbitra
-  solo gastándolos todos en el producto caro.
-- **Un market de *blueprints*, no de vídeos.** Se vende el guion y las escenas;
-  la cara la pone quien compra. El razonamiento (y por qué vender vídeos acabados
-  no funciona) está en el análisis.
+- **Un market donde publicas tu vídeo.** Otra persona le pone su cara y recibe
+  su propia versión: mismas escenas, mismo guion, ella dentro. Paga lo mismo que
+  crear de cero, y el 30 % va a quien lo creó. Lo que se publica es la receta,
+  no el vídeo montado — nadie recibe nunca un vídeo con la cara de otro.
 - **Capa de proveedores intercambiable.** Los precios de API cambian cada pocos
   meses y los modelos se jubilan con fecha. Cambiar de modelo es una variable de
   entorno.

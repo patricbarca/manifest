@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { Project } from "@/lib/types";
 import { VisualizationPlayer } from "./VisualizationPlayer";
 import { Icon } from "./Icon";
+import { PRODUCTS, formatUsd } from "@/lib/pricing";
 
 /**
  * La pantalla del vídeo.
@@ -62,7 +63,7 @@ export function VideoStage({ initial }: { initial: Project }) {
         <div className="space-y-8">
           <div>
             <p className="t-eyebrow text-[var(--color-label-3)]">
-              {project.tier === "vision" ? "Visión" : "Cine"} · {project.durationSec} s
+              {PRODUCTS[project.tier].name} · {project.durationSec} s
             </p>
             <h1 className="t-title mt-3 text-balance">{project.title}</h1>
             {/* Sin LLM el titulo sale de la intencion, y entonces repetirla sobra. */}
@@ -150,7 +151,7 @@ function GenerationProgress({ project }: { project: Project }) {
       <h1 className="t-title text-balance">Estamos creando tu vídeo</h1>
       <p className="t-body mt-3 text-[var(--color-label-2)]">
         {project.tier === "cinematic"
-          ? "El tier Cine tarda unos minutos: cada escena se anima por separado."
+          ? "El vídeo animado tarda unos minutos: cada escena se genera por separado."
           : "Suele tardar menos de dos minutos."}
       </p>
 
@@ -225,7 +226,10 @@ function CostPanel({ project }: { project: Project }) {
         Detalle de producción
       </summary>
       <dl className="t-sub mt-4 space-y-2.5 text-[var(--color-label-2)]">
-        <Row label="Créditos gastados" value={`${project.creditsSpent}`} />
+        <Row
+          label="Pagado"
+          value={project.paidCents === 0 ? "gratis" : formatUsd(project.paidCents / 100)}
+        />
         <Row label="Coste de proveedor" value={`${(project.costCents / 100).toFixed(3)} $`} />
         <Row label="Escenas" value={`${project.scenes.length}`} />
         <Row

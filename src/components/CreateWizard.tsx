@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { LIFE_AREAS, VISUAL_STYLES } from "@/lib/types";
-import type { Blueprint, LifeArea, Tier, VisualStyle, VoiceTone } from "@/lib/types";
-import { creditCost } from "@/lib/pricing";
+import type { LifeArea, Template, Tier, VisualStyle, VoiceTone } from "@/lib/types";
+import { PRODUCTS, formatUsd, priceUsd } from "@/lib/pricing";
 import { SELFIE_CONSENT } from "@/lib/safety";
 import { Icon } from "./Icon";
 
@@ -57,35 +57,35 @@ const TONES: { id: VoiceTone; label: string; blurb: string }[] = [
 
 type Props = {
   initialArea?: LifeArea;
-  blueprint?: Blueprint;
-  credits: number;
+  template?: Template;
+  /** Vídeos gratis que le quedan. El primero lo invita la casa. */
+  freeLeft: number;
 };
 
-export function CreateWizard({ initialArea, blueprint, credits }: Props) {
+export function CreateWizard({ initialArea, template, freeLeft }: Props) {
   const router = useRouter();
 
-  const [step, setStep] = useState(blueprint ? 1 : 0);
-  const [area, setArea] = useState<LifeArea>(blueprint?.area ?? initialArea ?? "carrera");
+  const [step, setStep] = useState(template ? 1 : 0);
+  const [area, setArea] = useState<LifeArea>(template?.area ?? initialArea ?? "carrera");
   const [intention, setIntention] = useState("");
   const [selfieUrl, setSelfieUrl] = useState<string>();
   const [consent, setConsent] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [tier, setTier] = useState<Tier>(blueprint?.tier ?? "vision");
-  const [style, setStyle] = useState<VisualStyle>(blueprint?.style ?? "cinematic");
-  const [tone, setTone] = useState<VoiceTone>(blueprint?.tone ?? "calma");
-  const [durationSec, setDurationSec] = useState<30 | 60>(30);
+  const [tier, setTier] = useState<Tier>(template?.tier ?? "vision");
+  const [style, setStyle] = useState<VisualStyle>(template?.style ?? "cinematic");
+  const [tone, setTone] = useState<VoiceTone>(template?.tone ?? "calma");
+  const [durationSec, setDurationSec] = useState<30 | 60>(template?.durationSec ?? 30);
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
 
-  const cost = creditCost(tier, durationSec);
-  const affordable = credits >= cost;
+  const price = priceUsd(tier);
+  const isFree = freeLeft > 0;
 
   const canContinue = useMemo(() => {
     if (step === 0) return true;
     if (step === 1) return intention.trim().length >= 8;
-    if (step === 2) return true; // la foto es opcional
-    return affordable;
-  }, [step, intention, affordable]);
+    return true; // la foto es opcional, y el formato siempre es válido
+  }, [step, intention]);
 
   async function upload(file: File) {
     setUploading(true);
@@ -120,7 +120,7 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
           tone,
           durationSec,
           selfieUrl,
-          blueprintSlug: blueprint?.slug,
+          templateSlug: template?.slug,
         }),
       });
       const data = await res.json();
@@ -136,12 +136,12 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
     <div className="mx-auto max-w-2xl px-6 py-16">
       <Steps current={step} />
 
-      {blueprint && (
+      {template && (
         <div className="card t-sub mt-8 rounded-[var(--radius-md)] p-4 text-[var(--color-label-2)]">
           Partiendo de{" "}
-          <span className="font-medium text-[var(--color-label-1)]">{blueprint.title}</span> de{" "}
-          {blueprint.author}.
-          El guion y las escenas vienen dados; tú pones tu cara y tu intención.
+          <span className="font-medium text-[var(--color-label-1)]">{template.title}</span> de{" "}
+          {template.author}. El guion y las escenas vienen dados; tú pones tu cara
+          y tu intención.
         </div>
       )}
 
@@ -254,22 +254,18 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
       {/* ── Paso 3: formato ────────────────────────────────────────────── */}
       {step === 3 && (
         <Section title="Cómo quieres que se vea" hint="Esto es lo que determina el precio.">
-          <Field label="Tipo de vídeo">
+          <Field label="Qué tipo de vídeo">
             <div className="grid gap-3 sm:grid-cols-2">
-              <Choice
-                selected={tier === "vision"}
-                onClick={() => setTier("vision")}
-                title="Visión"
-                sub="Imágenes tuyas con movimiento de cámara"
-                price={`${creditCost("vision", durationSec)} créditos`}
-              />
-              <Choice
-                selected={tier === "cinematic"}
-                onClick={() => setTier("cinematic")}
-                title="Cine"
-                sub="Escenas animadas de verdad"
-                price={`${creditCost("cinematic", durationSec)} créditos`}
-              />
+              {(["vision", "cinematic"] as const).map((id) => (
+                <Choice
+                  key={id}
+                  selected={tier === id}
+                  onClick={() => setTier(id)}
+                  title={PRODUCTS[id].name}
+                  sub={PRODUCTS[id].tagline}
+                  price={formatUsd(PRODUCTS[id].priceUsd)}
+                />
+              ))}
             </div>
           </Field>
 
@@ -323,33 +319,30 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
             </div>
           </Field>
 
-          <div className="card mt-9 flex items-center justify-between rounded-[var(--radius-md)] p-5">
+          <div className="card mt-9 flex items-center justify-between gap-4 rounded-[var(--radius-md)] p-5">
             <div>
-              <p className="t-caption text-[var(--color-label-2)]">Coste de este vídeo</p>
+              <p className="t-caption text-[var(--color-label-2)]">
+                {isFree ? "Tu primer vídeo" : "Precio"}
+              </p>
               <p className="mt-1 text-[1.75rem] font-semibold leading-none tracking-[-0.03em] tabular-nums">
-                {cost} <span className="t-sub font-normal text-[var(--color-label-2)]">créditos</span>
+                {isFree ? (
+                  <>
+                    Gratis{" "}
+                    <span className="t-sub font-normal text-[var(--color-label-3)] line-through">
+                      {formatUsd(price)}
+                    </span>
+                  </>
+                ) : (
+                  formatUsd(price)
+                )}
               </p>
             </div>
-            <div className="text-right">
-              <p className="t-caption text-[var(--color-label-2)]">Te quedan</p>
-              <p
-                className={`t-sub mt-1 tabular-nums ${
-                  affordable ? "text-[var(--color-label-1)]" : "text-red-400"
-                }`}
-              >
-                {credits} créditos
-              </p>
-            </div>
-          </div>
-          {!affordable && (
-            <p className="t-sub mt-3 text-red-400">
-              No te llegan los créditos. Baja a 30 segundos, cambia a Visión o{" "}
-              <a href="/precios" className="underline">
-                consigue más
-              </a>
-              .
+            <p className="t-caption max-w-[45%] text-right text-[var(--color-label-2)]">
+              {PRODUCTS[tier].waitLabel}
+              {isFree && " · lleva marca de agua"}
             </p>
-          )}
+          </div>
+
         </Section>
       )}
 
@@ -382,7 +375,7 @@ export function CreateWizard({ initialArea, blueprint, credits }: Props) {
         ) : (
           <button
             onClick={submit}
-            disabled={!affordable || submitting}
+            disabled={submitting}
             className="interactive rounded-full bg-white px-6 py-2.5 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30"
           >
             {submitting ? "Creando…" : "Crear mi vídeo"}

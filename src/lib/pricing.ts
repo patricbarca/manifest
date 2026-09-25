@@ -1,36 +1,94 @@
-import type { PlanId, Tier } from "./types";
+import type { Tier } from "./types";
 
 /**
  * MODELO DE COSTES
  *
- * Precios de proveedor verificados en septiembre de 2026 (ver docs/business-model.md
- * para las fuentes). Son rangos publicos de lista: cambian a menudo y bajan con
- * volumen, asi que todo el calculo vive aqui para poder re-tarifar en un sitio.
+ * Precios de proveedor verificados en septiembre de 2026 (fuentes en
+ * docs/business-model.md). Cambian a menudo y bajan con volumen, así que todo
+ * el cálculo vive aquí para poder re-tarifar en un solo sitio.
  *
- * Unidades: centimos de USD.
+ * Unidades: centavos de USD.
  */
 export const PROVIDER_COST = {
-  /** Imagen con identidad preservada. Rango observado 0.3–4.0 c/imagen. */
+  /** Imagen con identidad preservada. Rango observado 0,3–4,0 ¢/imagen. */
   imageCents: 4.0,
-  /** Video image-to-video, por segundo. Rango observado 5–40 c/s segun modelo. */
+  /** Vídeo image-to-video, por segundo. Rango observado 5–40 ¢/s según modelo. */
   videoCentsPerSec: 10.0,
-  /** Video premium (Kling Pro y similares) por segundo. */
+  /** Modelos premium (Kling Pro y similares), por segundo. */
   videoPremiumCentsPerSec: 22.4,
   /** TTS por 1.000 caracteres (modelos flash/turbo). */
   voiceCentsPer1kChars: 5.0,
-  /** Guion via LLM. Practicamente ruido, pero se contabiliza. */
+  /** Guion vía LLM. Prácticamente ruido, pero se contabiliza. */
   scriptCents: 1.0,
-  /** Almacenamiento + CDN + orquestacion amortizados por video. */
+  /** Almacenamiento + CDN + orquestación amortizados por vídeo. */
   infraCents: 5.0,
 } as const;
 
-/** Cuantas escenas lleva cada combinacion de tier y duracion. */
+/**
+ * LOS DOS PRODUCTOS
+ *
+ * Dos, y nada más. Un catálogo de dos líneas se entiende de un vistazo; en
+ * cuanto hay cuatro precios la gente se para a comparar en vez de comprar.
+ *
+ * El precio es plano por producto: la duración la elige el usuario y no cambia
+ * lo que paga. Un vídeo de 30 s nos cuesta la mitad que uno de 60, así que el
+ * margen solo mejora si eligen corto — no hace falta cobrarlo aparte.
+ */
+export interface Product {
+  id: Tier;
+  name: string;
+  tagline: string;
+  /** Precio al usuario, en dólares. */
+  priceUsd: number;
+  points: string[];
+  /** Minutos aproximados de espera, para decirlo antes de que pulse. */
+  waitLabel: string;
+}
+
+export const PRODUCTS: Record<Tier, Product> = {
+  vision: {
+    id: "vision",
+    name: "Imágenes",
+    tagline: "Escenas tuyas con movimiento de cámara",
+    priceUsd: 9,
+    waitLabel: "listo en un par de minutos",
+    points: [
+      "6 a 12 escenas generadas con tu cara",
+      "Movimiento de cámara suave sobre cada una",
+      "Guion escrito para tu caso y voz incluida",
+      "Descarga en MP4",
+    ],
+  },
+  cinematic: {
+    id: "cinematic",
+    name: "Animado",
+    tagline: "Escenas que se mueven de verdad",
+    priceUsd: 39,
+    waitLabel: "tarda entre 4 y 10 minutos",
+    points: [
+      "Cada escena es un clip generado, no una foto",
+      "Tú te mueves dentro de la escena",
+      "Mismo guion y voz, con más aire entre frases",
+      "Descarga en MP4",
+    ],
+  },
+};
+
+export function productFor(tier: Tier): Product {
+  return PRODUCTS[tier];
+}
+
+export function priceUsd(tier: Tier): number {
+  return PRODUCTS[tier].priceUsd;
+}
+
+/** Cuántas escenas lleva cada combinación de producto y duración. */
 export function sceneCount(tier: Tier, durationSec: 30 | 60): number {
   if (tier === "vision") return durationSec === 30 ? 6 : 12;
   return durationSec === 30 ? 6 : 10;
 }
 
-/** Estimacion de coste de proveedor, en centimos de USD, antes de generar. */
+/** Coste de proveedor estimado, en centavos de USD, antes de generar. */
 export function estimateCostCents(tier: Tier, durationSec: 30 | 60, premium = false): number {
   const scenes = sceneCount(tier, durationSec);
   const chars = durationSec === 30 ? 420 : 780;
@@ -48,127 +106,44 @@ export function estimateCostCents(tier: Tier, durationSec: 30 | 60, premium = fa
   return Math.round(cents * 100) / 100;
 }
 
-/**
- * PRECIO AL USUARIO
- *
- * Todo se paga en creditos. 1 credito = 0,10 EUR de valor nominal, para que
- * el usuario pueda razonar sobre lo que gasta sin aprender una tabla nueva.
- */
-export const CREDIT_EUR = 0.1;
-
-export const CREDIT_COST: Record<string, number> = {
-  "vision:30": 25,
-  "vision:60": 40,
-  "cinematic:30": 200,
-  "cinematic:60": 380,
-  /** Rehacer una escena suelta sin repetir todo el video. */
-  "regen:image": 3,
-  "regen:clip": 25,
-  /** Cambiar la voz o el guion manteniendo las escenas. */
-  "regen:voice": 4,
-};
-
-export function creditCost(tier: Tier, durationSec: 30 | 60): number {
-  return CREDIT_COST[`${tier}:${durationSec}`] ?? 0;
-}
-
-export interface Plan {
-  id: PlanId;
-  name: string;
-  priceEur: number;
-  creditsPerMonth: number;
-  tagline: string;
-  perks: string[];
-  highlight?: boolean;
-  /** Los planes de pago quitan la marca de agua. */
-  watermark: boolean;
-  /** % que se lleva el creador al vender un blueprint en el market. */
-  marketShare: number;
-}
-
-export const PLANS: Plan[] = [
-  {
-    id: "free",
-    name: "Prueba",
-    priceEur: 0,
-    creditsPerMonth: 30,
-    tagline: "Un video de visión para ver si te resuena",
-    perks: [
-      "30 créditos una sola vez",
-      "1 video Visión de 30 s",
-      "Reproductor con afirmaciones sincronizadas",
-      "Marca de agua",
-    ],
-    watermark: true,
-    marketShare: 0,
-  },
-  {
-    id: "semilla",
-    name: "Semilla",
-    priceEur: 9.99,
-    creditsPerMonth: 120,
-    tagline: "Para una práctica diaria con 3 videos al mes",
-    perks: [
-      "120 créditos al mes",
-      "Hasta 3 videos Visión de 60 s",
-      "Sin marca de agua",
-      "Descarga MP4 y audio suelto",
-      "Biblioteca personal",
-    ],
-    watermark: false,
-    marketShare: 70,
-  },
-  {
-    id: "creador",
-    name: "Creador",
-    priceEur: 24.99,
-    creditsPerMonth: 350,
-    tagline: "Mezcla visión y cine, y vende en el market",
-    perks: [
-      "350 créditos al mes",
-      "1 video Cine de 30 s incluido",
-      "Voz clonada propia",
-      "Publica y vende blueprints (70% para ti)",
-      "Rehacer escenas sueltas",
-    ],
-    highlight: true,
-    watermark: false,
-    marketShare: 70,
-  },
-  {
-    id: "visionario",
-    name: "Visionario",
-    priceEur: 59.99,
-    creditsPerMonth: 900,
-    tagline: "Para coaches y quien lo usa con clientes",
-    perks: [
-      "900 créditos al mes",
-      "2 videos Cine de 60 s incluidos",
-      "Modelos de video premium",
-      "Licencia comercial para clientes",
-      "Marca propia en la portada",
-      "80% de tus ventas en el market",
-    ],
-    watermark: false,
-    marketShare: 80,
-  },
-];
-
-/** Packs sueltos, para quien no quiere suscripcion. */
-export const CREDIT_PACKS = [
-  { credits: 60, priceEur: 8.99, label: "Pack pequeño" },
-  { credits: 200, priceEur: 24.99, label: "Pack medio", best: true },
-  { credits: 500, priceEur: 54.99, label: "Pack grande" },
-];
-
-export function planById(id: PlanId): Plan {
-  return PLANS.find((p) => p.id === id) ?? PLANS[0];
-}
-
-/** Margen bruto de un producto al precio de catalogo, 0–1. Para el panel interno. */
+/** Margen bruto a precio de catálogo, 0–1. Para el panel interno. */
 export function grossMargin(tier: Tier, durationSec: 30 | 60, premium = false): number {
-  const revenueCents = creditCost(tier, durationSec) * CREDIT_EUR * 100;
+  const revenueCents = priceUsd(tier) * 100;
   const costCents = estimateCostCents(tier, durationSec, premium);
-  if (revenueCents === 0) return 0;
   return (revenueCents - costCents) / revenueCents;
 }
+
+/**
+ * EL MARKET
+ *
+ * Quien usa la plantilla de otro paga exactamente lo mismo que si empezara de
+ * cero — $9 o $39 — y de ese pago se lleva un 30 % quien la creó.
+ *
+ * Sin tarifa de plantilla aparte. Dos cobros por una compra obligan a explicar
+ * por qué son dos, y ninguna explicación mejora que no haya nada que explicar.
+ */
+export const CREATOR_SHARE = 0.3;
+
+export function creatorPayoutUsd(tier: Tier): number {
+  return Math.round(priceUsd(tier) * CREATOR_SHARE * 100) / 100;
+}
+
+/** Lo que se muestra en dólares, sin decimales cuando son redondos. */
+export function formatUsd(amount: number): string {
+  return Number.isInteger(amount) ? `$${amount}` : `$${amount.toFixed(2)}`;
+}
+
+/**
+ * PRIMER VÍDEO GRATIS
+ *
+ * El output es un vídeo vertical con la cara del usuario, que él mismo
+ * comparte. Es el anuncio más barato que se puede comprar: cuesta ~0,58 $ y
+ * se lo lleva puesto.
+ */
+export const FREE_VIDEOS = Number(process.env.FREE_VIDEOS ?? 1);
+
+/**
+ * Mientras no haya pasarela de pago, no se cobra: se enseña el precio y se
+ * genera igual. Se activa poniendo PAYMENTS_ENABLED=true cuando entre Stripe.
+ */
+export const PAYMENTS_ENABLED = process.env.PAYMENTS_ENABLED === "true";

@@ -1,21 +1,21 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BLUEPRINTS, blueprintBySlug } from "@/lib/blueprints";
-import { creditCost } from "@/lib/pricing";
+import { TEMPLATES, templateBySlug } from "@/lib/templates";
+import { PRODUCTS, formatUsd } from "@/lib/pricing";
 import { LIFE_AREAS, VISUAL_STYLES } from "@/lib/types";
 import { Icon } from "@/components/Icon";
 
 export function generateStaticParams() {
-  return BLUEPRINTS.map((bp) => ({ slug: bp.slug }));
+  return TEMPLATES.map((t) => ({ slug: t.slug }));
 }
 
-export default async function BlueprintPage({
+export default async function TemplatePage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const bp = blueprintBySlug(slug);
+  const bp = templateBySlug(slug);
   if (!bp) notFound();
 
   const area = LIFE_AREAS.find((a) => a.id === bp.area);
@@ -39,30 +39,39 @@ export default async function BlueprintPage({
 
         <div>
           <p className="t-eyebrow text-[var(--color-label-3)]">
-            {area?.label} · {bp.tier === "vision" ? "Visión" : "Cine"}
+            {area?.label} · {PRODUCTS[bp.tier].name} · {bp.durationSec} s
           </p>
           <h1 className="t-title mt-3 text-balance">{bp.title}</h1>
-          <p className="t-caption mt-2.5 tabular-nums text-[var(--color-label-3)]">
-            de {bp.author} · {bp.rating} · {bp.sales.toLocaleString("es-ES")} personas lo usan
+          <p className="t-caption mt-2.5 text-[var(--color-label-3)]">
+            de {bp.author}
+            {bp.uses > 0 &&
+              ` · ${bp.uses.toLocaleString("es-ES")} ${bp.uses === 1 ? "persona lo ha usado" : "personas lo han usado"}`}
           </p>
           <p className="t-body mt-6 text-[var(--color-label-2)]">{bp.summary}</p>
 
           <div className="card mt-9 flex flex-wrap items-center justify-between gap-5 rounded-[var(--radius-lg)] p-6">
             <div>
               <p className="text-[2rem] font-semibold leading-none tracking-[-0.03em] tabular-nums">
-                {(bp.priceCents / 100).toFixed(2)} €
+                {formatUsd(PRODUCTS[bp.tier].priceUsd)}
               </p>
               <p className="t-caption mt-2 text-[var(--color-label-2)]">
-                Pago único. La generación son {creditCost(bp.tier, 60)} créditos aparte.
+                Lo mismo que crear uno de cero. Sin tarifa aparte por la plantilla.
               </p>
             </div>
             <Link
-              href={`/crear?blueprint=${bp.slug}`}
+              href={`/crear?template=${bp.slug}`}
               className="interactive rounded-full bg-white px-6 py-2.5 text-[15px] font-medium text-black hover:bg-white/90"
             >
-              Usar este blueprint
+              Usar esta plantilla
             </Link>
           </div>
+
+          {bp.protocol && (
+            <section className="mt-12">
+              <h2 className="t-headline">Cómo usarlo</h2>
+              <p className="t-body mt-3 text-[var(--color-label-2)]">{bp.protocol}</p>
+            </section>
+          )}
 
           <section className="mt-12">
             <h2 className="t-headline">Las afirmaciones</h2>

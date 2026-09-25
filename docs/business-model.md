@@ -30,16 +30,17 @@ para compartir.
 
 ## 2. Los dos productos
 
-| | **Visión** | **Cine** |
+| | **Imágenes** | **Animado** |
 |---|---|---|
-| Qué es | 6–12 imágenes con tu cara + movimiento de cámara (Ken Burns) | 6–10 clips animados de verdad |
-| Duración | 30 s / 60 s | 30 s / 60 s |
+| Qué es | 6–12 escenas con tu cara + movimiento de cámara | 6–10 clips animados de verdad |
+| Duración | 30 s o 60 s, mismo precio | 30 s o 60 s, mismo precio |
 | Tiempo de generación | 1–2 min | 4–10 min |
-| Coste de producción (60 s) | ~0,58 $ | ~6,50 $ (hasta ~14 $ con modelo premium) |
-| Precio | 40 créditos (~4 €) | 380 créditos (~38 €) |
-| Margen bruto | ~86 % | ~83 % (~63 % en premium) |
+| Coste de producción (60 s) | ~0,58 $ | ~6,50 $ |
+| **Precio** | **9 $** | **39 $** |
+| Margen bruto (60 s) | ~94 % | ~83 % |
+| Margen bruto (30 s) | ~96 % | ~91 % |
 
-**Recomendación: que el producto por defecto sea Visión, no Cine.**
+**Recomendación: que el producto por defecto sea Imágenes, no Animado.**
 
 El motivo no es solo el coste. Para el uso real —verlo a diario, dos veces al
 día— una secuencia de imágenes bien encuadradas con movimiento de cámara
@@ -47,14 +48,13 @@ funciona casi igual de bien que vídeo animado, y tiene dos ventajas grandes:
 
 - **Consistencia de identidad.** Mantener la misma cara reconocible a lo largo de
   8 clips generados es el riesgo técnico número uno del producto *(Probable, no
-  medido: hay que validarlo con pruebas reales antes de vender Cine a escala)*.
+  medido: hay que validarlo con pruebas reales antes de vender Animado a escala)*.
   Con imágenes fijas el problema es mucho menor, porque cada imagen se genera
-  desde la foto de referencia y se puede descartar y rehacer una suelta por
-  3 créditos.
+  desde la foto de referencia y se puede descartar y rehacer una suelta.
 - **Velocidad.** 90 segundos de espera se aguantan; 8 minutos hacen que la
   gente cierre la pestaña.
 
-Cine es el producto de escaparate y de upsell: la gente lo quiere una vez, para
+Animado es el producto de escaparate y de upsell: la gente lo quiere una vez, para
 su objetivo grande del año. No es el producto de uso diario.
 
 ---
@@ -111,83 +111,107 @@ Céntimos por vídeo. Contabilizado a 0,01 $ y redondeando hacia arriba.
 
 ## 4. Unit economics
 
-Supuesto de tipo de cambio: **1 € ≈ 1 $** para simplificar. No es real; si el
-euro se mueve, los márgenes se mueven 5–10 puntos. *(Supuesto, no verificado.)*
+Todo en dólares. Dos precios y ninguna otra cifra que aprenderse.
 
-Precio por crédito: **1 crédito = 0,10 €**.
+| Producto | Duración | Precio | Coste proveedor | Margen bruto |
+|---|---|---:|---:|---:|
+| Imágenes | 30 s | 9 $ | 0,32 $ | **~96 %** |
+| Imágenes | 60 s | 9 $ | 0,58 $ | **~94 %** |
+| Animado | 30 s | 39 $ | 3,32 $ | **~91 %** |
+| Animado | 60 s | 39 $ | 6,50 $ | **~83 %** |
 
-| Producto | Créditos | Ingreso | Coste proveedor | Margen bruto |
-|---|---:|---:|---:|---:|
-| Visión 30 s | 25 | 2,50 € | 0,32 $ | **~87 %** |
-| Visión 60 s | 40 | 4,00 € | 0,58 $ | **~86 %** |
-| Cine 30 s | 200 | 20,00 € | 3,32 $ | **~83 %** |
-| Cine 60 s | 380 | 38,00 € | 6,50 $ | **~83 %** |
-| Cine 60 s (modelo premium) | 380 | 38,00 € | 13,94 $ | **~63 %** |
+Desglose de un Animado de 60 s: 10 imágenes (0,40 $) + 60 s de animación a
+0,10 $/s (6,00 $) + voz (0,04 $) + guion (0,01 $) + infraestructura (0,05 $).
 
-Desglose de un Cine de 60 s: 10 imágenes (0,40 $) + 60 s de animación a 0,10 $/s
-(6,00 $) + voz (0,04 $) + guion (0,01 $) + infraestructura (0,05 $).
+### Por qué precio plano y no por duración
 
-### Por qué el sistema de créditos y no "vídeos incluidos"
+Un vídeo de 30 s nos cuesta la mitad que uno de 60. Cobrar lo mismo por los dos
+significa que el margen **mejora** cuando el usuario elige corto, y ahorra dos
+precios más en la tabla. La simplicidad se paga sola.
 
-Un plan que diga "5 vídeos al mes" se arbitra solo: el usuario gasta los cinco en
-Cine de 60 s y te cuesta 32,50 $ un plan de 24,99 €. Con créditos, **el precio
-interno refleja el coste real de cada camino**, así que el peor caso de cada plan
-sigue siendo rentable:
+### Por qué se cayó el sistema de créditos
 
-| Plan | Precio | Créditos | Peor caso (todo en el producto más caro) | Coste | Margen |
-|---|---:|---:|---|---:|---:|
-| Semilla | 9,99 € | 120 | 3 × Visión 60 s | ~1,74 $ | ~83 % |
-| Creador | 24,99 € | 350 | 1,75 × Cine 30 s | ~5,80 $ | ~77 % |
-| Visionario | 59,99 € | 900 | 2,37 × Cine 60 s | ~15,40 $ | ~74 % |
+La versión anterior tenía créditos, cuatro planes de suscripción y tres packs:
+nueve números distintos para un catálogo de dos productos. Los créditos tienen
+sentido cuando hay muchas acciones con costes muy distintos; con dos productos
+son una moneda que el usuario tiene que aprender para comprar dos cosas.
 
-El plan gratuito da 30 créditos **una sola vez**: un Visión de 30 s, con marca de
-agua. Coste de adquisición: 0,32 $. Es el mejor anuncio que puedes comprar,
-porque el output es un vídeo vertical con la cara del usuario que él mismo
-comparte.
+Con precio directo, la pregunta "¿cuánto me cuesta esto?" se contesta sin
+convertir nada.
 
----
+### Por qué no hay suscripción
 
-## 5. El market: vende blueprints, no vídeos
+El KPI de este producto no es cuántos vídeos crea la gente: es **cuántas veces
+ve el que ya tiene**. Un vídeo se mira dos veces al día durante semanas, y
+volver a verlo no cuesta nada. Cobrar una cuota mensual por algo que se usa sin
+consumir recursos genera la presión equivocada — empuja a producir vídeos en
+vez de a usarlos.
 
-**Aquí hay que cambiar la idea original.** La propuesta era un mercado donde la
-gente compra "el vídeo en el que cualquiera manifieste". Eso no funciona, por dos
-razones independientes y las dos serias:
+Pago por vídeo: pagas cuando creas, y mirarlo es gratis para siempre.
 
-1. **No tiene valor.** Un vídeo de visualización con la cara de otra persona no
-   te sirve para visualizarte a ti. Todo el producto se apoya en que **eres tú**
-   quien aparece. Comprar el de otro es comprar el producto sin la parte que
-   funciona.
-2. **No es legal de forma cómoda.** Revender un vídeo con la cara de alguien es
-   tratar datos biométricos de un tercero. En la UE eso es categoría especial
-   (RGPD art. 9) y no se arregla con una casilla en el registro.
+### El primer vídeo, gratis
 
-**La versión que sí escala: el *blueprint*.** Se vende el guion, las escenas, el
-estilo y el tono —todo menos la cara—. El comprador le pone su propio selfie y
-genera su propia versión.
+Coste de adquisición: **0,32 $**. El output es un vídeo vertical con la cara del
+usuario que él mismo comparte. Es el anuncio más barato que se puede comprar, y
+se lo lleva puesto.
 
-| | Vender vídeos | Vender blueprints |
-|---|---|---|
-| Valor para el comprador | Nulo (no es su cara) | Alto (es su cara, con curaduría ajena) |
-| Coste marginal para el vendedor | Uno por venta | Cero |
-| Coste de generación | Lo come la plataforma | Lo paga el comprador con sus créditos |
-| Riesgo biométrico | Alto | Ninguno |
+Lleva una marca de agua discreta. Los vídeos de pago no.
 
-Reparto: **70 % para el creador**, 80 % en el plan Visionario. Precio típico
-3–12 €. Se cobra aparte de la generación, y eso se dice claro en la ficha: el
-blueprint es la receta, los créditos son los ingredientes.
+## 5. El market: publicas tu vídeo, otro le pone su cara
 
-Quién crea aquí: coaches, terapeutas y creadores de bienestar que ya tienen
-audiencia. Para ellos el market es distribución; para ti es catálogo gratis y una
-razón para que traigan a su gente.
+Cuando alguien termina un vídeo que le gusta, puede publicarlo. Otra persona lo
+ve en el market, le pone su cara, y recibe su propia versión: las mismas
+escenas, el mismo guion, con ella dentro.
 
----
+**Paga exactamente lo mismo que si empezara de cero** — 9 $ o 39 $. De ese
+pago, el **30 %** va a quien lo creó.
+
+Sin tarifa de plantilla aparte. Dos cobros por una compra obligan a explicar por
+qué son dos, y ninguna explicación mejora que no haya nada que explicar.
+
+| | |
+|---|---|
+| Imágenes | comprador paga 9 $ · creador recibe 2,70 $ |
+| Animado | comprador paga 39 $ · creador recibe 11,70 $ |
+
+### Qué se publica exactamente
+
+**La receta, no el vídeo montado.** El guion, las descripciones de escena, el
+estilo y el tono. El vídeo del creador se ve en la ficha como vista previa —lo
+publica él, a sabiendas— pero lo que el comprador recibe se **genera de nuevo**
+con su cara.
+
+Nunca se entrega el vídeo de una persona con la cara de otra pegada encima. Esa
+línea sostiene dos cosas a la vez: el producto (el vídeo que te sirve para
+visualizarte es aquel en el que sales tú) y lo legal (procesar la cara de un
+tercero para fabricar el producto de otro es otro juego, con consentimiento
+revocable y responsabilidades que no queremos).
+
+### La consecuencia incómoda
+
+Como cada versión se regenera, **la del comprador no será idéntica a la vista
+previa.** Mismas escenas, mismo encuadre, misma luz — pero no el mismo fotograma.
+
+*(Probable, sin medir: falta cuantificar cuánto se parecen dos generaciones del
+mismo prompt con identidades distintas. Es de las primeras cosas que hay que
+medir con proveedores reales.)*
+
+Eso se gestiona diciéndolo, no escondiéndolo: la ficha tiene que dejar claro que
+la vista previa es la versión de otra persona. Prometer un clon exacto y
+entregar un parecido es la forma más rápida de generar reembolsos.
+
+### Por qué escala
+
+El creador hace el trabajo una vez y se vende infinitas. El coste de generación
+lo paga cada comprador con su propia compra. Y el catálogo crece solo: cada
+usuario satisfecho es un proveedor potencial.
 
 ## 6. Riesgos, ordenados por lo que duelen
 
 1. **Consistencia de identidad entre escenas** *(Probable, sin medir)*. Si a la
    escena 6 la cara ya no es reconocible, el producto no vale. Mitigación:
-   Visión por defecto, regenerar escena suelta por 3 créditos, y validar el
-   modelo de identidad antes de abrir Cine al público.
+   Imágenes por defecto, poder regenerar una escena suelta, y validar el
+   modelo de identidad antes de abrir Animado al público.
 2. **Datos biométricos.** Un selfie es dato personal de categoría especial en la
    UE. Hace falta: consentimiento explícito y granular (ya está en el asistente),
    almacenamiento privado con URLs firmadas (**pendiente**, ahora es `/public`),
@@ -195,7 +219,7 @@ razón para que traigan a su gente.
    entrenar nada.
 3. **Volatilidad de precios y jubilación de modelos.** Nano Banana se retira en
    octubre de 2026. Mitigación: la capa de proveedores ya es intercambiable, y
-   los márgenes aguantan un encarecimiento de 2× en imagen sin tocar tarifas.
+   los márgenes aguantan un encarecimiento de 2× sin tocar tarifas.
 4. **Churn.** Las apps de manifestación tienen retención mala *(creencia del
    sector, no verificada — hay que medirlo con cohortes propias)*. El antídoto
    del producto es el reproductor: si la gente vuelve a ver el mismo vídeo a
@@ -218,9 +242,9 @@ razón para que traigan a su gente.
 |---|---|---|
 | Reproducciones / usuario activo / semana | Mide si es una práctica o un juguete | > 5 |
 | Conversión gratis → pago | El vídeo gratis es el anuncio | > 6 % |
-| Coste de proveedor por usuario de pago | El margen se rompe por aquí | < 15 % del ARPU |
+| Coste de proveedor por vídeo vendido | El margen se rompe por aquí | < 17 % del precio |
 | % de vídeos con escena regenerada | Proxy de fallo de identidad | < 20 % |
-| Blueprints con ≥ 1 venta | Si el market tiene oferta viva | > 30 % |
+| Plantillas con ≥ 1 uso | Si el market tiene oferta viva | > 30 % |
 
 ---
 
@@ -231,10 +255,10 @@ razón para que traigan a su gente.
    demás depende de ese número.
 2. **Semanas 3–4.** Auth y pagos (Supabase Auth + Stripe), almacenamiento
    privado, borrado real. Solo entonces se puede cobrar.
-3. **Semana 5.** Lanzar **solo Visión**, en abierto, con el plan gratuito como
-   gancho. Cine en lista de espera.
-4. **Semanas 6–8.** Cola de trabajos real para Cine y apertura del tier.
-5. **Mes 3.** Market en modo curado, con 20–30 blueprints invitados, antes de
+3. **Semana 5.** Lanzar **solo Imágenes**, en abierto, con el primer vídeo gratis como
+   gancho. Animado en lista de espera.
+4. **Semanas 6–8.** Cola de trabajos real para Animado y apertura del producto.
+5. **Mes 3.** Market en modo curado, con 20–30 plantillas invitadas, antes de
    dejar publicar a cualquiera.
 
 El market va al final a propósito: un mercado vacío resta credibilidad, y hasta

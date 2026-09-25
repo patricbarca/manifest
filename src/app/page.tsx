@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
-import { BLUEPRINTS } from "@/lib/blueprints";
-import { creditCost, CREDIT_EUR, estimateCostCents } from "@/lib/pricing";
+import { TEMPLATES } from "@/lib/templates";
+import { PRODUCTS, estimateCostCents, formatUsd } from "@/lib/pricing";
 import { LIFE_AREAS } from "@/lib/types";
 import { isDemoMode } from "@/lib/ai";
 
@@ -120,33 +120,16 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-4 lg:grid-cols-2">
-          <TierCard
-            name="Visión"
-            tagline="Imágenes tuyas con movimiento de cámara"
-            credits={creditCost("vision", 60)}
-            costCents={estimateCostCents("vision", 60)}
-            points={[
-              "6 a 12 escenas generadas con tu cara",
-              "Movimiento de cámara suave sobre cada imagen",
-              "Guion y voz incluidos",
-              "Listo en un par de minutos",
-            ]}
-          />
-          <TierCard
-            name="Cine"
-            tagline="Escenas animadas de verdad, con movimiento propio"
-            credits={creditCost("cinematic", 60)}
-            costCents={estimateCostCents("cinematic", 60)}
-            highlight
-            points={[
-              "Cada escena es un clip generado, no una foto",
-              "Tú te mueves dentro de la escena",
-              "Mismo guion y voz, con más aire entre frases",
-              "Tarda más y cuesta bastante más de producir",
-            ]}
-          />
+        <div className="mx-auto mt-12 grid max-w-3xl gap-4 sm:grid-cols-2">
+          {(["vision", "cinematic"] as const).map((id) => (
+            <TierCard key={id} id={id} />
+          ))}
         </div>
+
+        <p className="t-sub mt-8 text-center text-[var(--color-label-2)]">
+          Tu primer vídeo es gratis. Después pagas solo cuando creas — sin
+          suscripción.
+        </p>
       </section>
 
       {/* ── Áreas ────────────────────────────────────────────────────────── */}
@@ -175,8 +158,8 @@ export default function HomePage() {
           <div className="max-w-lg">
             <h2 className="t-title">Del market</h2>
             <p className="t-body mt-3 text-[var(--color-label-2)]">
-              Guiones y escenas creados por otros. Tú les pones tu cara y generas tu
-              propia versión.
+              Vídeos que ha creado otra gente. Les pones tu cara y se genera tu
+              versión, contigo dentro.
             </p>
           </div>
           <Link
@@ -189,7 +172,7 @@ export default function HomePage() {
         </div>
 
         <div className="no-scrollbar mt-10 flex gap-4 overflow-x-auto pb-2">
-          {BLUEPRINTS.slice(0, 4).map((bp) => (
+          {TEMPLATES.slice(0, 4).map((bp) => (
             <Link
               key={bp.slug}
               href={`/market/${bp.slug}`}
@@ -205,7 +188,7 @@ export default function HomePage() {
                   {bp.summary}
                 </p>
                 <p className="t-sub mt-4 tabular-nums">
-                  {(bp.priceCents / 100).toFixed(2)} €
+                  {formatUsd(PRODUCTS[bp.tier].priceUsd)}
                 </p>
               </div>
             </Link>
@@ -229,57 +212,42 @@ export default function HomePage() {
   );
 }
 
-function TierCard({
-  name,
-  tagline,
-  credits,
-  costCents,
-  points,
-  highlight,
-}: {
-  name: string;
-  tagline: string;
-  credits: number;
-  costCents: number;
-  points: string[];
-  highlight?: boolean;
-}) {
+function TierCard({ id }: { id: "vision" | "cinematic" }) {
+  const product = PRODUCTS[id];
   return (
     <div
       className={`card rounded-[var(--radius-lg)] p-8 ${
-        highlight ? "border-[var(--color-hairline-strong)]" : ""
+        id === "cinematic" ? "border-[var(--color-hairline-strong)]" : ""
       }`}
     >
       <div className="flex items-baseline justify-between gap-4">
-        <h3 className="t-headline">{name}</h3>
+        <h3 className="t-headline">{product.name}</h3>
         <span className="t-caption text-[var(--color-label-3)]">30 s o 60 s</span>
       </div>
-      <p className="t-sub mt-1 text-[var(--color-label-2)]">{tagline}</p>
+      <p className="t-sub mt-1 text-[var(--color-label-2)]">{product.tagline}</p>
 
-      <p className="mt-7 flex items-baseline gap-2">
-        <span className="text-[2.5rem] font-semibold leading-none tracking-[-0.03em] tabular-nums">
-          {credits}
-        </span>
-        <span className="t-sub text-[var(--color-label-2)]">
-          créditos · {(credits * CREDIT_EUR).toFixed(2)} € el de 60 s
-        </span>
+      <p className="mt-7 text-[2.5rem] font-semibold leading-none tracking-[-0.03em] tabular-nums">
+        {formatUsd(product.priceUsd)}
+      </p>
+      <p className="t-caption mt-2 text-[var(--color-label-2)]">
+        por vídeo · {product.waitLabel}
       </p>
 
       <ul className="mt-7 space-y-3">
-        {points.map((p) => (
-          <li key={p} className="t-sub flex gap-3 text-[var(--color-label-2)]">
+        {product.points.map((point) => (
+          <li key={point} className="t-sub flex gap-3 text-[var(--color-label-2)]">
             <Icon
               name="check"
               size={15}
               className="mt-[3px] shrink-0 text-[var(--color-label-1)]"
             />
-            {p}
+            {point}
           </li>
         ))}
       </ul>
 
       <p className="t-caption mt-7 border-t border-[var(--color-hairline)] pt-5 text-[var(--color-label-3)]">
-        Coste de producción estimado: {(costCents / 100).toFixed(2)} $ por vídeo de 60 s.
+        Nos cuesta {formatUsd(estimateCostCents(id, 60) / 100)} producirlo.
       </p>
     </div>
   );

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { BLUEPRINTS } from "@/lib/blueprints";
+import { TEMPLATES } from "@/lib/templates";
+import { PRODUCTS, formatUsd } from "@/lib/pricing";
 import { LIFE_AREAS } from "@/lib/types";
 
 export const metadata = { title: "Market — Manifest" };
@@ -10,13 +11,12 @@ export default function MarketPage() {
       <header className="mx-auto max-w-2xl text-center">
         <h1 className="t-display">El market</h1>
         <p className="t-body mx-auto mt-6 max-w-lg text-pretty text-[var(--color-label-2)]">
-          Aquí no se venden vídeos acabados, se venden <em>blueprints</em>: el guion, las
-          escenas, el estilo y el tono que alguien ya ha afinado. Tú le pones tu cara y
-          generas tu propia versión.
+          Vídeos que ha creado otra gente. Eliges uno, le pones tu cara, y se
+          genera tu versión: las mismas escenas y el mismo guion, contigo dentro.
         </p>
         <p className="t-caption mx-auto mt-4 max-w-md text-[var(--color-label-3)]">
-          Un vídeo con la cara de otra persona no te sirve para visualizarte, y revenderlo
-          sería tratar datos biométricos ajenos.
+          Cuesta lo mismo que crear uno de cero. Del precio, un 30 % va a quien lo
+          creó.
         </p>
       </header>
 
@@ -35,7 +35,7 @@ export default function MarketPage() {
       </div>
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {BLUEPRINTS.map((bp) => (
+        {TEMPLATES.map((bp) => (
           <Link
             key={bp.slug}
             href={`/market/${bp.slug}`}
@@ -48,7 +48,7 @@ export default function MarketPage() {
               {/* Vineta: le quita al degradado el aspecto de relleno plano. */}
               <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_70%_15%,rgba(255,255,255,0.12),transparent_55%),linear-gradient(to_top,rgba(0,0,0,0.45),transparent_60%)]" />
               <span className="t-eyebrow absolute left-4 top-4 rounded-full bg-black/35 px-2.5 py-1.5 text-white/85 backdrop-blur-md">
-                {bp.tier === "vision" ? "Visión" : "Cine"}
+                {PRODUCTS[bp.tier].name}
               </span>
             </div>
             <div className="p-6">
@@ -59,10 +59,10 @@ export default function MarketPage() {
               </p>
               <div className="mt-5 flex items-center justify-between">
                 <span className="t-sub font-medium tabular-nums">
-                  {(bp.priceCents / 100).toFixed(2)} €
+                  {formatUsd(PRODUCTS[bp.tier].priceUsd)}
                 </span>
                 <span className="t-caption tabular-nums text-[var(--color-label-3)]">
-                  {bp.rating} · {bp.sales.toLocaleString("es-ES")} ventas
+                  {bp.durationSec} s
                 </span>
               </div>
             </div>

@@ -118,39 +118,69 @@ export interface Project {
   musicKey?: string;
   /** MP4 final, si el ensamblado corrio. Si no, el player web es la entrega. */
   exportUrl?: string;
-  creditsSpent: number;
+  /** Lo que pagó el usuario, en centavos de USD. 0 si fue el vídeo gratis. */
+  paidCents: number;
   /** Coste de proveedor real, centimos de USD. Para medir margen. */
   costCents: number;
-  /** Plantilla del market de la que nacio, si aplica. */
-  blueprintSlug?: string;
+  /** Plantilla del market de la que nació, si aplica. */
+  templateSlug?: string;
   watermark: boolean;
   error?: string;
 }
 
-export interface Blueprint {
+/**
+ * UNA PLANTILLA DEL MARKET
+ *
+ * Nace de un proyecto real: alguien crea su vídeo, le gusta, y lo publica.
+ * Lo que se publica NO es el vídeo terminado, sino lo que hace falta para
+ * reconstruirlo con otra cara: el guion, las escenas y el estilo.
+ *
+ * Su vídeo sí se ve en la ficha, como vista previa. Es suyo, lo publica a
+ * sabiendas, y es lo que convence al comprador. Pero lo que el comprador
+ * recibe se genera de nuevo con SU cara — nunca se le entrega el vídeo del
+ * creador con una cara pegada encima.
+ *
+ * Esa distinción es la que sostiene el producto: el vídeo que te sirve para
+ * visualizarte es aquel en el que sales tú.
+ */
+export interface Template {
   slug: string;
   title: string;
+  /** Nombre visible de quien la publicó. */
   author: string;
+  /** Usuario real, cuando no es una plantilla de la casa. */
+  creatorId?: string;
+  /** Proyecto del que salió, para poder rastrear el origen. */
+  sourceProjectId?: string;
   area: LifeArea;
   style: VisualStyle;
   tone: VoiceTone;
   tier: Tier;
-  priceCents: number;
-  sales: number;
-  rating: number;
+  durationSec: 30 | 60;
   summary: string;
+  /**
+   * Cuándo y cómo usarla: "los 7 días antes de la charla, al levantarte".
+   * Es lo que separa una plantilla de una lista de frases bonitas.
+   */
+  protocol?: string;
   affirmations: string[];
   sceneBriefs: string[];
+  /** La versión del creador. Lo que se ve en la ficha. */
+  previewUrl?: string;
   cover: { from: string; to: string };
+  publishedAt: number;
+  /**
+   * Cuántos vídeos se han generado a partir de ella. Contador real: empieza
+   * en cero y solo sube cuando alguien la usa de verdad.
+   */
+  uses: number;
 }
 
 export interface User {
   id: string;
   email: string;
   name: string;
-  plan: PlanId;
-  credits: number;
   createdAt: number;
+  /** Vídeos gratis ya consumidos. El primero invita la casa. */
+  freeVideosUsed: number;
 }
-
-export type PlanId = "free" | "semilla" | "creador" | "visionario";

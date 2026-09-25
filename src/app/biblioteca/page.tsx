@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { currentUser } from "@/lib/db/session";
+import { currentUser, freeVideosLeft } from "@/lib/db/session";
 import { db } from "@/lib/db/store";
-import { planById } from "@/lib/pricing";
+import { PRODUCTS } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Biblioteca — Manifest" };
@@ -17,7 +17,7 @@ const STATUS_LABEL: Record<string, string> = {
 export default async function BibliotecaPage() {
   const user = await currentUser();
   const projects = await db.listProjects(user.id);
-  const plan = planById(user.plan);
+  const freeLeft = freeVideosLeft(user);
 
   return (
     <div className="mx-auto max-w-[1120px] px-6 py-16">
@@ -25,10 +25,15 @@ export default async function BibliotecaPage() {
         <div>
           <h1 className="t-title">Biblioteca</h1>
           <p className="t-sub mt-2 text-[var(--color-label-2)]">
-            Plan {plan.name} ·{" "}
-            <span className="tabular-nums text-[var(--color-label-1)]">
-              {user.credits} créditos
-            </span>
+            {projects.length} {projects.length === 1 ? "vídeo" : "vídeos"}
+            {freeLeft > 0 && (
+              <>
+                {" · "}
+                <span className="text-[var(--color-label-1)]">
+                  {freeLeft === 1 ? "tu primer vídeo es gratis" : `${freeLeft} vídeos gratis`}
+                </span>
+              </>
+            )}
           </p>
         </div>
         <Link
@@ -81,7 +86,7 @@ export default async function BibliotecaPage() {
                   <div className="absolute inset-x-0 bottom-0 p-4">
                     <p className="t-sub truncate font-medium">{p.title}</p>
                     <p className="t-caption mt-0.5 text-white/55">
-                      {p.tier === "vision" ? "Visión" : "Cine"} · {p.durationSec} s ·{" "}
+                      {PRODUCTS[p.tier].name} · {p.durationSec} s ·{" "}
                       {new Date(p.createdAt).toLocaleDateString("es-ES")}
                     </p>
                   </div>
