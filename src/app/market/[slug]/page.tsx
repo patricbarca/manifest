@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TEMPLATES, templateBySlug } from "@/lib/templates";
 import { PRODUCTS, formatUsd } from "@/lib/pricing";
-import { LIFE_AREAS, VISUAL_STYLES } from "@/lib/types";
 import { Icon } from "@/components/Icon";
+import { fill } from "@/lib/i18n";
+import { getDictionary } from "@/lib/i18n/server";
 
 export function generateStaticParams() {
   return TEMPLATES.map((t) => ({ slug: t.slug }));
@@ -18,8 +19,7 @@ export default async function TemplatePage({
   const bp = templateBySlug(slug);
   if (!bp) notFound();
 
-  const area = LIFE_AREAS.find((a) => a.id === bp.area);
-  const style = VISUAL_STYLES.find((s) => s.id === bp.style);
+  const { t, locale } = await getDictionary();
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
@@ -28,7 +28,7 @@ export default async function TemplatePage({
         className="t-sub inline-flex items-center gap-1.5 text-[var(--color-label-2)] transition-opacity hover:text-[var(--color-label-1)]"
       >
         <Icon name="arrow-left" size={15} />
-        Market
+        {t.nav.market}
       </Link>
 
       <div className="mt-8 grid gap-12 lg:grid-cols-[320px_1fr] lg:items-start">
@@ -39,15 +39,18 @@ export default async function TemplatePage({
 
         <div>
           <p className="t-eyebrow text-[var(--color-label-3)]">
-            {area?.label} · {PRODUCTS[bp.tier].name} · {bp.durationSec} s
+            {t.areas[bp.area].label} · {t.products[bp.tier].name} · {bp.durationSec}{" "}
+            {t.common.seconds}
           </p>
-          <h1 className="t-title mt-3 text-balance">{bp.title}</h1>
+          <h1 className="t-title mt-3 text-balance">{bp.title[locale]}</h1>
           <p className="t-caption mt-2.5 text-[var(--color-label-3)]">
-            de {bp.author}
+            {t.market.by} {bp.author}
             {bp.uses > 0 &&
-              ` · ${bp.uses.toLocaleString("es-ES")} ${bp.uses === 1 ? "persona lo ha usado" : "personas lo han usado"}`}
+              ` · ${bp.uses.toLocaleString(locale)} ${
+                bp.uses === 1 ? t.market.usedBySingular : t.market.usedByPlural
+              }`}
           </p>
-          <p className="t-body mt-6 text-[var(--color-label-2)]">{bp.summary}</p>
+          <p className="t-body mt-6 text-[var(--color-label-2)]">{bp.summary[locale]}</p>
 
           <div className="card mt-9 flex flex-wrap items-center justify-between gap-5 rounded-[var(--radius-lg)] p-6">
             <div>
@@ -55,28 +58,30 @@ export default async function TemplatePage({
                 {formatUsd(PRODUCTS[bp.tier].priceUsd)}
               </p>
               <p className="t-caption mt-2 text-[var(--color-label-2)]">
-                Lo mismo que crear uno de cero. Sin tarifa aparte por la plantilla.
+                {t.market.priceNote}
               </p>
             </div>
             <Link
               href={`/crear?template=${bp.slug}`}
               className="interactive rounded-full bg-white px-6 py-2.5 text-[15px] font-medium text-black hover:bg-white/90"
             >
-              Usar esta plantilla
+              {t.market.useTemplate}
             </Link>
           </div>
 
           {bp.protocol && (
             <section className="mt-12">
-              <h2 className="t-headline">Cómo usarlo</h2>
-              <p className="t-body mt-3 text-[var(--color-label-2)]">{bp.protocol}</p>
+              <h2 className="t-headline">{t.market.howToUse}</h2>
+              <p className="t-body mt-3 text-[var(--color-label-2)]">
+                {bp.protocol[locale]}
+              </p>
             </section>
           )}
 
           <section className="mt-12">
-            <h2 className="t-headline">Las afirmaciones</h2>
+            <h2 className="t-headline">{t.market.affirmationsTitle}</h2>
             <ol className="mt-5 space-y-3">
-              {bp.affirmations.map((a, i) => (
+              {bp.affirmations[locale].map((a, i) => (
                 <li key={i} className="t-body flex gap-3.5">
                   <span className="t-caption mt-[5px] w-4 shrink-0 text-right tabular-nums text-[var(--color-label-3)]">
                     {i + 1}
@@ -88,10 +93,11 @@ export default async function TemplatePage({
           </section>
 
           <section className="mt-12">
-            <h2 className="t-headline">Las escenas</h2>
+            <h2 className="t-headline">{t.market.scenesTitle}</h2>
             <p className="t-caption mt-1.5 text-[var(--color-label-3)]">
-              Descripciones en inglés: es el idioma con el que mejor responden los modelos
-              de imagen. Estilo {style?.label.toLowerCase()}.
+              {fill(t.market.scenesNote, {
+                style: t.styles[bp.style].toLowerCase(),
+              })}
             </p>
             <ul className="t-sub mt-5 space-y-2 text-[var(--color-label-2)]">
               {bp.sceneBriefs.map((s, i) => (

@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { LIFE_AREAS, VISUAL_STYLES } from "@/lib/types";
 import type { LifeArea, Template, Tier, VisualStyle, VoiceTone } from "@/lib/types";
 import { PRODUCTS, formatUsd, priceUsd } from "@/lib/pricing";
-import { SELFIE_CONSENT } from "@/lib/safety";
+import { fill, type Dictionary, type Locale } from "@/lib/i18n";
 import { Icon } from "./Icon";
 
 /**
@@ -16,53 +16,19 @@ import { Icon } from "./Icon";
  * pedir un selfie en la pantalla uno es donde se cae la gente.
  */
 
-const PROMPT_IDEAS: Record<LifeArea, string[]> = {
-  carrera: [
-    "Dirijo mi propio estudio de diseño y elijo con qué clientes trabajo",
-    "Me ascienden a responsable de equipo y lo llevo con calma",
-    "Doy la charla de apertura en una conferencia de mi sector",
-  ],
-  abundancia: [
-    "Cierro el año con seis meses de gastos ahorrados y sin agobio",
-    "Mi negocio factura lo suficiente para vivir tranquilo",
-    "Compro mi casa y firmo sin miedo",
-  ],
-  salud: [
-    "Corro 10 km sin pararme y me levanto con energía",
-    "Duermo bien, entreno tres veces por semana y me sostengo",
-    "Me veo fuerte y me gusta lo que veo",
-  ],
-  amor: [
-    "Tengo una relación tranquila con alguien que me trata bien",
-    "Digo lo que siento sin miedo a que se rompa",
-    "Me rodeo de gente que me suma",
-  ],
-  confianza: [
-    "Hablo en reuniones sin que me tiemble la voz",
-    "Me presento a lo que quiero aunque no me sienta listo",
-    "Dejo de compararme y sigo mi propio ritmo",
-  ],
-  libertad: [
-    "Trabajo desde donde quiero y organizo mis días yo",
-    "Paso un año viviendo en otro país",
-    "Tengo tiempo para lo mío sin sentirme culpable",
-  ],
-};
-
-const TONES: { id: VoiceTone; label: string; blurb: string }[] = [
-  { id: "calma", label: "Calma", blurb: "Lenta y grave. Para la noche." },
-  { id: "firme", label: "Firme", blurb: "Directa y con empuje. Para la mañana." },
-  { id: "cercana", label: "Cercana", blurb: "Como alguien que te conoce." },
-];
+const TONES: VoiceTone[] = ["calma", "firme", "cercana"];
 
 type Props = {
   initialArea?: LifeArea;
   template?: Template;
   /** Vídeos gratis que le quedan. El primero lo invita la casa. */
   freeLeft: number;
+  /** El diccionario llega por prop: este componente corre en el cliente. */
+  t: Dictionary;
+  locale: Locale;
 };
 
-export function CreateWizard({ initialArea, template, freeLeft }: Props) {
+export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Props) {
   const router = useRouter();
 
   const [step, setStep] = useState(template ? 1 : 0);
@@ -96,7 +62,7 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
     try {
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "No se pudo subir la foto");
+      if (!res.ok) throw new Error(data.error ?? t.errors.uploadFailed);
       setSelfieUrl(data.url);
     } catch (err) {
       setError((err as Error).message);
@@ -124,7 +90,7 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "No se pudo crear el vídeo");
+      if (!res.ok) throw new Error(data.error ?? t.errors.createFailed);
       router.push(`/video/${data.project.id}`);
     } catch (err) {
       setError((err as Error).message);
@@ -134,22 +100,22 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-16">
-      <Steps current={step} />
+      <Steps current={step} labels={t.create.steps} />
 
       {template && (
         <div className="card t-sub mt-8 rounded-[var(--radius-md)] p-4 text-[var(--color-label-2)]">
-          Partiendo de{" "}
-          <span className="font-medium text-[var(--color-label-1)]">{template.title}</span> de{" "}
-          {template.author}. El guion y las escenas vienen dados; tú pones tu cara
-          y tu intención.
+          {fill(t.create.fromTemplate, {
+            title: template.title[locale],
+            author: template.author,
+          })}
         </div>
       )}
 
       {/* ── Paso 0: área ───────────────────────────────────────────────── */}
       {step === 0 && (
         <Section
-          title="¿Qué parte de tu vida quieres ver distinta?"
-          hint="Elige una. Se trabaja mejor de una en una."
+          title={t.create.areaTitle}
+          hint={t.create.areaHint}
         >
           <div className="grid gap-3 sm:grid-cols-2">
             {LIFE_AREAS.map((a) => (
@@ -163,8 +129,10 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.07]">
                   <Icon name={a.icon} size={17} />
                 </span>
-                <p className="t-headline mt-3.5">{a.label}</p>
-                <p className="t-sub mt-1 text-[var(--color-label-2)]">{a.blurb}</p>
+                <p className="t-headline mt-3.5">{t.areas[a.id].label}</p>
+                <p className="t-sub mt-1 text-[var(--color-label-2)]">
+                  {t.areas[a.id].blurb}
+                </p>
               </button>
             ))}
           </div>
@@ -174,24 +142,24 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
       {/* ── Paso 1: intención ──────────────────────────────────────────── */}
       {step === 1 && (
         <Section
-          title="Cuéntalo como si ya hubiera pasado"
-          hint="Cuanto más concreto, mejores escenas. Un lugar, una acción, una persona."
+          title={t.create.intentionTitle}
+          hint={t.create.intentionHint}
         >
           <textarea
             value={intention}
             onChange={(e) => setIntention(e.target.value)}
             rows={4}
             maxLength={600}
-            placeholder="Dirijo mi propio estudio en Lisboa, con tres personas en el equipo y clientes que me buscan a mí."
+            placeholder={t.create.intentionPlaceholder}
             className="t-body w-full resize-none rounded-[var(--radius-md)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] p-4 outline-none transition-colors duration-200 placeholder:text-[var(--color-label-4)] focus:border-[var(--color-hairline-strong)]"
           />
           <p className="t-caption mt-2 text-right tabular-nums text-[var(--color-label-3)]">
             {intention.length}/600
           </p>
 
-          <p className="t-sub mt-8 mb-3 text-[var(--color-label-2)]">O empieza por una de estas:</p>
+          <p className="t-sub mt-8 mb-3 text-[var(--color-label-2)]">{t.create.ideasLabel}</p>
           <div className="space-y-2">
-            {PROMPT_IDEAS[area].map((idea) => (
+            {t.create.ideas[area].map((idea) => (
               <button
                 key={idea}
                 onClick={() => setIntention(idea)}
@@ -207,15 +175,15 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
       {/* ── Paso 2: foto ───────────────────────────────────────────────── */}
       {step === 2 && (
         <Section
-          title="Tu cara en las escenas"
-          hint="Un selfie de frente, con luz natural y sin gafas de sol. Sin foto también funciona: se generan escenas sin rostro visible."
+          title={t.create.photoTitle}
+          hint={t.create.photoHint}
         >
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
             <div className="grid h-40 w-40 shrink-0 place-items-center overflow-hidden rounded-[var(--radius-lg)] border border-dashed border-[var(--color-hairline-strong)] bg-[var(--color-surface-2)]">
               {selfieUrl ? (
                 <img src={selfieUrl} alt="Tu selfie" className="h-full w-full object-cover" />
               ) : (
-                <span className="t-caption text-[var(--color-label-3)]">Sin foto</span>
+                <span className="t-caption text-[var(--color-label-3)]">{t.create.noPhoto}</span>
               )}
             </div>
 
@@ -227,7 +195,7 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
                   onChange={(e) => setConsent(e.target.checked)}
                   className="mt-[3px] h-4 w-4 accent-white"
                 />
-                <span>{SELFIE_CONSENT}</span>
+                <span>{t.consent}</span>
               </label>
 
               <input
@@ -240,11 +208,12 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
                 }}
                 className="t-sub block w-full text-[var(--color-label-2)] file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-white file:px-5 file:py-2 file:text-[13px] file:font-medium file:text-black hover:file:bg-white/90 disabled:opacity-35"
               />
-              {uploading && <p className="t-sub text-[var(--color-label-2)]">Subiendo…</p>}
+              {uploading && (
+                <p className="t-sub text-[var(--color-label-2)]">{t.create.uploading}</p>
+              )}
 
               <p className="t-caption leading-relaxed text-[var(--color-label-3)]">
-                Tu foto es tuya. No se publica, no se usa para entrenar modelos y la
-                puedes borrar desde tu biblioteca junto con el vídeo.
+                {t.create.photoPrivacy}
               </p>
             </div>
           </div>
@@ -253,23 +222,23 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
 
       {/* ── Paso 3: formato ────────────────────────────────────────────── */}
       {step === 3 && (
-        <Section title="Cómo quieres que se vea" hint="Esto es lo que determina el precio.">
-          <Field label="Qué tipo de vídeo">
+        <Section title={t.create.formatTitle} hint={t.create.formatHint}>
+          <Field label={t.create.videoType}>
             <div className="grid gap-3 sm:grid-cols-2">
               {(["vision", "cinematic"] as const).map((id) => (
                 <Choice
                   key={id}
                   selected={tier === id}
                   onClick={() => setTier(id)}
-                  title={PRODUCTS[id].name}
-                  sub={PRODUCTS[id].tagline}
+                  title={t.products[id].name}
+                  sub={t.products[id].tagline}
                   price={formatUsd(PRODUCTS[id].priceUsd)}
                 />
               ))}
             </div>
           </Field>
 
-          <Field label="Duración">
+          <Field label={t.create.duration}>
             <div className="flex gap-3">
               {([30, 60] as const).map((d) => (
                 <button
@@ -281,13 +250,13 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
                       : "border-[var(--color-hairline)] text-[var(--color-label-2)]"
                   }`}
                 >
-                  {d} segundos
+                  {d} {t.common.seconds}
                 </button>
               ))}
             </div>
           </Field>
 
-          <Field label="Estilo visual">
+          <Field label={t.create.visualStyle}>
             <div className="flex flex-wrap gap-2">
               {VISUAL_STYLES.map((s) => (
                 <button
@@ -299,21 +268,21 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
                       : "border-[var(--color-hairline)] text-[var(--color-label-2)]"
                   }`}
                 >
-                  {s.label}
+                  {t.styles[s.id]}
                 </button>
               ))}
             </div>
           </Field>
 
-          <Field label="Voz">
+          <Field label={t.create.voice}>
             <div className="grid gap-3 sm:grid-cols-3">
-              {TONES.map((t) => (
+              {TONES.map((id) => (
                 <Choice
-                  key={t.id}
-                  selected={tone === t.id}
-                  onClick={() => setTone(t.id)}
-                  title={t.label}
-                  sub={t.blurb}
+                  key={id}
+                  selected={tone === id}
+                  onClick={() => setTone(id)}
+                  title={t.tones[id].label}
+                  sub={t.tones[id].blurb}
                 />
               ))}
             </div>
@@ -322,12 +291,12 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
           <div className="card mt-9 flex items-center justify-between gap-4 rounded-[var(--radius-md)] p-5">
             <div>
               <p className="t-caption text-[var(--color-label-2)]">
-                {isFree ? "Tu primer vídeo" : "Precio"}
+                {isFree ? t.create.firstVideo : t.create.price}
               </p>
               <p className="mt-1 text-[1.75rem] font-semibold leading-none tracking-[-0.03em] tabular-nums">
                 {isFree ? (
                   <>
-                    Gratis{" "}
+                    {t.common.free}{" "}
                     <span className="t-sub font-normal text-[var(--color-label-3)] line-through">
                       {formatUsd(price)}
                     </span>
@@ -338,8 +307,8 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
               </p>
             </div>
             <p className="t-caption max-w-[45%] text-right text-[var(--color-label-2)]">
-              {PRODUCTS[tier].waitLabel}
-              {isFree && " · lleva marca de agua"}
+              {t.products[tier].waitLabel}
+              {isFree && t.create.watermarkNote}
             </p>
           </div>
 
@@ -360,7 +329,7 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
           className="t-sub inline-flex items-center gap-1.5 text-[var(--color-label-2)] transition-opacity duration-200 hover:text-[var(--color-label-1)] disabled:invisible"
         >
           <Icon name="arrow-left" size={15} />
-          Atrás
+          {t.common.back}
         </button>
 
         {step < 3 ? (
@@ -369,7 +338,7 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
             disabled={!canContinue}
             className="interactive inline-flex items-center gap-1.5 rounded-full bg-white px-6 py-2.5 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30"
           >
-            Continuar
+            {t.common.continue}
             <Icon name="arrow-right" size={15} />
           </button>
         ) : (
@@ -378,7 +347,7 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
             disabled={submitting}
             className="interactive rounded-full bg-white px-6 py-2.5 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30"
           >
-            {submitting ? "Creando…" : "Crear mi vídeo"}
+            {submitting ? t.create.submitting : t.create.submit}
           </button>
         )}
       </div>
@@ -386,12 +355,10 @@ export function CreateWizard({ initialArea, template, freeLeft }: Props) {
   );
 }
 
-const STEP_LABELS = ["Área", "Intención", "Foto", "Formato"];
-
-function Steps({ current }: { current: number }) {
+function Steps({ current, labels }: { current: number; labels: string[] }) {
   return (
     <ol className="t-caption flex items-center gap-2">
-      {STEP_LABELS.map((label, i) => (
+      {labels.map((label, i) => (
         <li key={label} className="flex flex-1 items-center gap-2">
           <span
             className={`grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full text-[11px] font-medium transition-colors duration-300 ${
@@ -407,7 +374,7 @@ function Steps({ current }: { current: number }) {
           <span className={i <= current ? "text-[var(--color-label-1)]" : "text-[var(--color-label-3)]"}>
             {label}
           </span>
-          {i < STEP_LABELS.length - 1 && (
+          {i < labels.length - 1 && (
             <span
               className={`h-px flex-1 transition-colors duration-300 ${
                 i < current ? "bg-white/45" : "bg-[var(--color-hairline)]"

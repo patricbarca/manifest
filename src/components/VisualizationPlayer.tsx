@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Project } from "@/lib/types";
 import { AmbientPad } from "@/lib/audio/ambient";
 import { Icon, type IconName } from "./Icon";
+import { fill, type Dictionary } from "@/lib/i18n";
 
 /**
  * El reproductor.
@@ -17,9 +18,9 @@ import { Icon, type IconName } from "./Icon";
  * rAF lleva el tiempo y la voz del navegador lee cada frase al entrar.
  */
 
-type Props = { project: Project };
+type Props = { project: Project; t: Dictionary };
 
-export function VisualizationPlayer({ project }: Props) {
+export function VisualizationPlayer({ project, t }: Props) {
   const shellRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const rafRef = useRef<number>(0);
@@ -134,12 +135,13 @@ export function VisualizationPlayer({ project }: Props) {
     if (!text) return;
 
     const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = "es-ES";
+    // El idioma del proyecto, no el de la interfaz: el guion se escribió en uno.
+    utter.lang = project.locale === "en" ? "en-US" : "es-ES";
     utter.rate = project.tone === "calma" ? 0.82 : project.tone === "firme" ? 0.95 : 0.9;
     utter.pitch = project.tone === "firme" ? 0.95 : 1.05;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utter);
-  }, [playing, lineIndex, lines, useBrowserVoice, voiceOn, project.tone]);
+  }, [playing, lineIndex, lines, useBrowserVoice, voiceOn, project.tone, project.locale]);
 
   useEffect(() => {
     if (playing) return;
@@ -243,7 +245,7 @@ export function VisualizationPlayer({ project }: Props) {
           />
         ) : (
           <div className="absolute inset-0 grid place-items-center">
-            <span className="t-sub text-[var(--color-label-3)]">Sin escenas todavía</span>
+            <span className="t-sub text-[var(--color-label-3)]">{t.player.noScenes}</span>
           </div>
         )}
 
@@ -267,7 +269,7 @@ export function VisualizationPlayer({ project }: Props) {
             {inEcho && playing ? (
               <p className="pulse-soft t-sub flex items-center gap-2 font-medium text-white">
                 <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                ahora tú — dilo en voz alta
+                {t.player.speakNow}
               </p>
             ) : lines[lineIndex + 1] ? (
               <p className="t-sub truncate text-[var(--color-label-3)]">
@@ -287,7 +289,7 @@ export function VisualizationPlayer({ project }: Props) {
         {!playing && (
           <button
             onClick={toggle}
-            aria-label="Reproducir"
+            aria-label={t.player.play}
             className="absolute inset-0 grid place-items-center bg-black/25 transition-colors duration-300 hover:bg-black/15"
           >
             <span className="grid h-[68px] w-[68px] place-items-center rounded-full border border-white/25 bg-white/15 text-white backdrop-blur-xl transition-transform duration-300 hover:scale-[1.06]">
@@ -315,23 +317,27 @@ export function VisualizationPlayer({ project }: Props) {
 
         {/* Controles */}
         <div className="absolute inset-x-0 bottom-0 flex items-center gap-1 px-4 pb-4">
-          <IconButton label={playing ? "Pausa" : "Reproducir"} onClick={toggle} icon={playing ? "pause" : "play"} />
-          <IconButton label="Empezar de nuevo" onClick={restart} icon="restart" />
           <IconButton
-            label={loop ? "Repetición activada" : "Repetición desactivada"}
+            label={playing ? t.player.pause : t.player.play}
+            onClick={toggle}
+            icon={playing ? "pause" : "play"}
+          />
+          <IconButton label={t.player.restart} onClick={restart} icon="restart" />
+          <IconButton
+            label={loop ? t.player.loopOn : t.player.loopOff}
             active={loop}
             onClick={() => setLoop((v) => !v)}
             icon="repeat"
           />
           <IconButton
-            label={music ? "Silenciar música" : "Activar música"}
+            label={music ? t.player.musicOn : t.player.musicOff}
             active={music}
             onClick={() => setMusic((v) => !v)}
             icon="music"
           />
           {useBrowserVoice && (
             <IconButton
-              label={voiceOn ? "Silenciar voz" : "Activar voz"}
+              label={voiceOn ? t.player.voiceOn : t.player.voiceOff}
               active={voiceOn}
               onClick={() => setVoiceOn((v) => !v)}
               icon="voice"
@@ -340,7 +346,7 @@ export function VisualizationPlayer({ project }: Props) {
           <span className="t-caption ml-auto mr-1 tabular-nums text-white/55">
             {fmt(time)} / {fmt(duration)}
           </span>
-          <IconButton label="Pantalla completa" onClick={goFullscreen} icon="expand" />
+          <IconButton label={t.player.fullscreen} onClick={goFullscreen} icon="expand" />
         </div>
 
         {hasVoiceFile && (
@@ -357,9 +363,7 @@ export function VisualizationPlayer({ project }: Props) {
       </div>
 
       <p className="t-caption mx-auto mt-5 max-w-[320px] text-center leading-relaxed text-[var(--color-label-3)]">
-        Ponte los auriculares, míralo entero y repite cada frase en voz alta cuando
-        aparezca <span className="text-[var(--color-label-1)]">ahora tú</span>. Dos veces
-        al día, mañana y antes de dormir.
+        {fill(t.player.instructions, { cue: t.player.speakNow.split(" — ")[0] })}
       </p>
     </div>
   );

@@ -14,8 +14,12 @@ import { PROVIDER_COST } from "../pricing";
  * general. Si falla, se cae al banco: nunca dejamos al usuario sin video.
  */
 
-const SYSTEM = `Eres guionista de visualizaciones para manifestación.
-Escribes en el idioma del usuario (por defecto español de España).
+const LANGUAGE_NAME = { es: "español de España", en: "English" } as const;
+
+const SYSTEM = (locale: keyof typeof LANGUAGE_NAME) =>
+  `Eres guionista de visualizaciones para manifestación.
+Escribes las afirmaciones en ${LANGUAGE_NAME[locale]}, SIEMPRE, aunque el
+usuario te escriba su intención en otro idioma.
 
 Reglas de las afirmaciones:
 - Primera persona, tiempo presente, en positivo. Nunca uses "no", "dejaré de", "algún día".
@@ -80,7 +84,7 @@ export const anthropicScript: ScriptProvider = {
       body: JSON.stringify({
         model: process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5",
         max_tokens: 1500,
-        system: SYSTEM,
+        system: SYSTEM(input.locale),
         messages: [{ role: "user", content: userPrompt({ ...input, count }) }],
       }),
     });
@@ -110,7 +114,7 @@ export const openaiScript: ScriptProvider = {
         model: process.env.OPENAI_MODEL ?? "gpt-4.1-mini",
         response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: SYSTEM },
+          { role: "system", content: SYSTEM(input.locale) },
           { role: "user", content: userPrompt({ ...input, count }) },
         ],
       }),

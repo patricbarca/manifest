@@ -97,6 +97,34 @@ El tier Visión no necesita modelo de vídeo: tres animaciones CSS de
 fijas, a coste cero y sin espera. Es lo que hace que Visión cueste ~0,58 $ en
 lugar de ~6,50 $. Respeta `prefers-reduced-motion`.
 
+### Dos idiomas, y el contenido también
+
+El idioma va en una cookie, no en la URL. Lo canónico son segmentos de ruta
+(`/en/precios`) porque dan una URL indexable por idioma; a cambio obligan a
+reescribir todos los enlaces y duplicar el árbol de rutas. El tráfico inicial
+de este producto viene de redes y anuncios, no de búsqueda orgánica, así que
+la cookie basta — y si algún día el SEO importa, `getLocale()` es el único
+sitio que decide.
+
+Lo que sí es innegociable: **traducir la interfaz y dejar el contenido en
+español sería peor que no traducir nada.** Un usuario en inglés que recibe
+afirmaciones en español tiene un producto roto, no uno a medio traducir. Por
+eso el idioma llega hasta el final:
+
+- Las afirmaciones del banco determinista existen en los dos idiomas.
+- Las plantillas del market llevan título, resumen, protocolo y afirmaciones
+  localizados. Las descripciones de escena **no**: van a un modelo de imagen,
+  que responde mejor en inglés.
+- El filtro de seguridad tiene patrones por idioma. Bloquear "curar" no sirve
+  de nada si el usuario escribe "cure my".
+- El `Project` guarda el idioma con el que se generó. Un vídeo hecho en inglés
+  no puede volverse español sin regenerar la voz, así que recuerda el suyo — y
+  el reproductor usa ese, no el de la interfaz.
+
+`src/lib/i18n/index.ts` es puro y lo puede importar el cliente;
+`src/lib/i18n/server.ts` es el que toca cookies. Separarlos no es estética:
+`next/headers` no existe en el cliente y arrastrarlo rompe el build.
+
 ### Persistencia deliberadamente tonta
 
 `src/lib/db/store.ts` es un JSON por colección en `.data/`, con escritura atómica
@@ -126,8 +154,9 @@ ffmpeg, así que ese camino está escrito pero **no probado en ejecución**.
 
 | Ruta | Qué hace |
 |---|---|
-| `src/lib/types.ts` | Dominio: proyecto, escena, afirmación, blueprint |
-| `src/lib/pricing.ts` | Coste de proveedor, créditos, planes, margen |
+| `src/lib/types.ts` | Dominio: proyecto, escena, afirmación, plantilla |
+| `src/lib/i18n/` | Idiomas: diccionarios, cookie, `fill()` para marcadores |
+| `src/lib/pricing.ts` | Coste de proveedor, los dos precios, margen |
 | `src/lib/script-engine.ts` | Banco de afirmaciones, timeline, prompts de escena |
 | `src/lib/safety.ts` | Filtro de intenciones y texto de consentimiento |
 | `src/lib/pipeline.ts` | Orquestación de las 5 etapas |

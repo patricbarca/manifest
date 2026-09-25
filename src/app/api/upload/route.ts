@@ -3,6 +3,7 @@ import path from "node:path";
 import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/db/session";
 import { mediaPath, mediaUrl } from "@/lib/paths";
+import { getDictionary } from "@/lib/i18n/server";
 
 export const runtime = "nodejs";
 
@@ -18,27 +19,28 @@ const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
  */
 export async function POST(request: Request) {
   const user = await currentUser();
+  const { t } = await getDictionary();
   const form = await request.formData();
   const file = form.get("selfie");
   const consent = form.get("consent");
 
   if (!(file instanceof File)) {
-    return NextResponse.json({ error: "Falta el archivo" }, { status: 400 });
+    return NextResponse.json({ error: t.errors.noFile }, { status: 400 });
   }
   if (consent !== "true") {
     return NextResponse.json(
-      { error: "Necesitamos tu confirmación de que la foto es tuya" },
+      { error: t.errors.noConsent },
       { status: 400 },
     );
   }
   if (!ALLOWED.has(file.type)) {
     return NextResponse.json(
-      { error: "Formato no admitido. Usa JPG, PNG o WebP." },
+      { error: t.errors.badFormat },
       { status: 415 },
     );
   }
   if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: "La foto pesa más de 8 MB" }, { status: 413 });
+    return NextResponse.json({ error: t.errors.tooBig }, { status: 413 });
   }
 
   const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";

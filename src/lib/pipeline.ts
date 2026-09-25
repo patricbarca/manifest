@@ -88,6 +88,7 @@ export async function runPipeline(projectId: string): Promise<void> {
       tier: start.tier,
       tone: start.tone,
       seed: start.id,
+      locale: start.locale,
     });
     const script = scriptOut.result;
     const timeline = layoutTimeline(script.affirmations, start.durationSec);

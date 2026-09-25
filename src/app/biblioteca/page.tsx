@@ -1,20 +1,14 @@
 import Link from "next/link";
 import { currentUser, freeVideosLeft } from "@/lib/db/session";
 import { db } from "@/lib/db/store";
-import { PRODUCTS } from "@/lib/pricing";
+import { fill } from "@/lib/i18n";
+import { getDictionary } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Biblioteca — Manifest" };
-
-const STATUS_LABEL: Record<string, string> = {
-  draft: "Borrador",
-  queued: "En cola",
-  generating: "Generando",
-  ready: "Listo",
-  failed: "Falló",
-};
+export const metadata = { title: "Library — Manifest" };
 
 export default async function BibliotecaPage() {
+  const { t, locale } = await getDictionary();
   const user = await currentUser();
   const projects = await db.listProjects(user.id);
   const freeLeft = freeVideosLeft(user);
@@ -23,14 +17,17 @@ export default async function BibliotecaPage() {
     <div className="mx-auto max-w-[1120px] px-6 py-16">
       <div className="flex flex-wrap items-end justify-between gap-5">
         <div>
-          <h1 className="t-title">Biblioteca</h1>
+          <h1 className="t-title">{t.library.title}</h1>
           <p className="t-sub mt-2 text-[var(--color-label-2)]">
-            {projects.length} {projects.length === 1 ? "vídeo" : "vídeos"}
+            {projects.length}{" "}
+            {projects.length === 1 ? t.library.videosSingular : t.library.videosPlural}
             {freeLeft > 0 && (
               <>
                 {" · "}
                 <span className="text-[var(--color-label-1)]">
-                  {freeLeft === 1 ? "tu primer vídeo es gratis" : `${freeLeft} vídeos gratis`}
+                  {freeLeft === 1
+                    ? t.library.freeOne
+                    : fill(t.library.freeMany, { n: freeLeft })}
                 </span>
               </>
             )}
@@ -40,21 +37,21 @@ export default async function BibliotecaPage() {
           href="/crear"
           className="interactive rounded-full bg-white px-5 py-2.5 text-[14px] font-medium text-black hover:bg-white/90"
         >
-          Crear vídeo
+          {t.library.createBtn}
         </Link>
       </div>
 
       {projects.length === 0 ? (
         <div className="card mt-12 rounded-[var(--radius-xl)] px-6 py-20 text-center">
-          <p className="t-title">Todavía no has creado nada</p>
+          <p className="t-title">{t.library.emptyTitle}</p>
           <p className="t-body mx-auto mt-3 max-w-sm text-[var(--color-label-2)]">
-            Empieza por el área que más te pese ahora mismo. Se tarda menos de dos minutos.
+            {t.library.emptyBody}
           </p>
           <Link
             href="/crear"
             className="interactive mt-8 inline-block rounded-full bg-white px-6 py-2.5 text-[15px] font-medium text-black hover:bg-white/90"
           >
-            Crear mi primer vídeo
+            {t.library.emptyCta}
           </Link>
         </div>
       ) : (
@@ -76,18 +73,20 @@ export default async function BibliotecaPage() {
                     />
                   ) : (
                     <div className="grid h-full place-items-center">
-                      <span className="t-caption text-[var(--color-label-4)]">sin escenas</span>
+                      <span className="t-caption text-[var(--color-label-4)]">
+                        {t.library.noScenes}
+                      </span>
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/25" />
                   <span className="t-eyebrow absolute left-3 top-3 rounded-full bg-black/40 px-2.5 py-1.5 text-white/85 backdrop-blur-md">
-                    {STATUS_LABEL[p.status] ?? p.status}
+                    {t.library.status[p.status]}
                   </span>
                   <div className="absolute inset-x-0 bottom-0 p-4">
                     <p className="t-sub truncate font-medium">{p.title}</p>
                     <p className="t-caption mt-0.5 text-white/55">
-                      {PRODUCTS[p.tier].name} · {p.durationSec} s ·{" "}
-                      {new Date(p.createdAt).toLocaleDateString("es-ES")}
+                      {t.products[p.tier].name} · {p.durationSec} {t.common.seconds} ·{" "}
+                      {new Date(p.createdAt).toLocaleDateString(locale)}
                     </p>
                   </div>
                 </div>

@@ -34,44 +34,18 @@ export const PROVIDER_COST = {
  * lo que paga. Un vídeo de 30 s nos cuesta la mitad que uno de 60, así que el
  * margen solo mejora si eligen corto — no hace falta cobrarlo aparte.
  */
+/**
+ * Los números. La copia —nombre, descripción, viñetas— vive en el diccionario
+ * porque cambia con el idioma; el precio no.
+ */
 export interface Product {
   id: Tier;
-  name: string;
-  tagline: string;
-  /** Precio al usuario, en dólares. */
   priceUsd: number;
-  points: string[];
-  /** Minutos aproximados de espera, para decirlo antes de que pulse. */
-  waitLabel: string;
 }
 
 export const PRODUCTS: Record<Tier, Product> = {
-  vision: {
-    id: "vision",
-    name: "Imágenes",
-    tagline: "Escenas tuyas con movimiento de cámara",
-    priceUsd: 9,
-    waitLabel: "listo en un par de minutos",
-    points: [
-      "6 a 12 escenas generadas con tu cara",
-      "Movimiento de cámara suave sobre cada una",
-      "Guion escrito para tu caso y voz incluida",
-      "Descarga en MP4",
-    ],
-  },
-  cinematic: {
-    id: "cinematic",
-    name: "Animado",
-    tagline: "Escenas que se mueven de verdad",
-    priceUsd: 39,
-    waitLabel: "tarda entre 4 y 10 minutos",
-    points: [
-      "Cada escena es un clip generado, no una foto",
-      "Tú te mueves dentro de la escena",
-      "Mismo guion y voz, con más aire entre frases",
-      "Descarga en MP4",
-    ],
-  },
+  vision: { id: "vision", priceUsd: 9 },
+  cinematic: { id: "cinematic", priceUsd: 39 },
 };
 
 export function productFor(tier: Tier): Product {

@@ -6,6 +6,7 @@ import { estimateCostCents, priceUsd } from "@/lib/pricing";
 import { checkIntention } from "@/lib/safety";
 import { initialSteps, runPipeline } from "@/lib/pipeline";
 import { templateBySlug } from "@/lib/templates";
+import { getDictionary } from "@/lib/i18n/server";
 import type { Project } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -30,24 +31,27 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const user = await currentUser();
+  const { t, locale } = await getDictionary();
   const parsed = CreateProject.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Datos incompletos", detail: parsed.error.issues },
+      { error: t.errors.incomplete, detail: parsed.error.issues },
       { status: 400 },
     );
   }
   const input = parsed.data;
 
+  // El filtro devuelve una clave, no un mensaje: el texto sale del
+  // diccionario en el idioma en el que está leyendo el usuario.
   const verdict = checkIntention(input.intention);
   if (!verdict.ok) {
-    return NextResponse.json({ error: verdict.reason }, { status: 422 });
+    return NextResponse.json({ error: t.safety[verdict.key!] }, { status: 422 });
   }
 
   const priceCents = priceUsd(input.tier) * 100;
   const charge = await chargeForVideo(user.id, priceCents);
   if (!charge.ok) {
-    return NextResponse.json({ error: charge.reason }, { status: 402 });
+    return NextResponse.json({ error: t.errors[charge.reason] }, { status: 402 });
   }
 
   const template = input.templateSlug ? templateBySlug(input.templateSlug) : undefined;
@@ -57,13 +61,14 @@ export async function POST(request: Request) {
     ownerId: user.id,
     createdAt: Date.now(),
     updatedAt: Date.now(),
-    title: template?.title ?? input.intention.slice(0, 60),
+    title: template?.title[locale] ?? input.intention.slice(0, 60),
     area: input.area,
     intention: input.intention,
     tier: input.tier,
     style: input.style,
     tone: input.tone,
     durationSec: input.durationSec,
+    locale,
     selfieUrl: input.selfieUrl,
     status: "queued",
     steps: initialSteps(input.tier),

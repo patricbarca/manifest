@@ -1,4 +1,8 @@
 import type { IconName } from "@/components/Icon";
+import type { Locale } from "./i18n/locale";
+
+/** Un texto que existe en cada idioma. */
+export type Localized<T> = Record<Locale, T>;
 
 /** Dominio de Manifest. Un "proyecto" es un video de visualizacion. */
 
@@ -10,18 +14,19 @@ export type LifeArea =
   | "confianza"
   | "libertad";
 
-export const LIFE_AREAS: {
-  id: LifeArea;
-  label: string;
-  blurb: string;
-  icon: IconName;
-}[] = [
-  { id: "carrera", label: "Carrera y propósito", blurb: "Ascenso, negocio propio, reconocimiento", icon: "briefcase" },
-  { id: "abundancia", label: "Abundancia", blurb: "Dinero, libertad financiera, prosperidad", icon: "growth" },
-  { id: "salud", label: "Salud y cuerpo", blurb: "Energía, fuerza, hábitos que sostienes", icon: "pulse" },
-  { id: "amor", label: "Amor y vínculos", blurb: "Pareja, familia, relaciones sanas", icon: "heart" },
-  { id: "confianza", label: "Confianza", blurb: "Autoestima, presencia, hablar sin miedo", icon: "person" },
-  { id: "libertad", label: "Libertad y viaje", blurb: "Nómada, tiempo propio, vivir donde quieras", icon: "compass" },
+/**
+ * Las áreas y los estilos guardan aquí solo lo que NO se traduce: el
+ * identificador, el icono y el prompt que va al modelo de imagen. Las
+ * etiquetas visibles viven en el diccionario (lib/i18n), porque cambian con
+ * el idioma y esto no.
+ */
+export const LIFE_AREAS: { id: LifeArea; icon: IconName }[] = [
+  { id: "carrera", icon: "briefcase" },
+  { id: "abundancia", icon: "growth" },
+  { id: "salud", icon: "pulse" },
+  { id: "amor", icon: "heart" },
+  { id: "confianza", icon: "person" },
+  { id: "libertad", icon: "compass" },
 ];
 
 /** Los dos productos. `vision` = imagenes fijas con movimiento. `cinematic` = escenas animadas. */
@@ -34,12 +39,13 @@ export type VisualStyle =
   | "minimal"
   | "dream";
 
-export const VISUAL_STYLES: { id: VisualStyle; label: string; prompt: string }[] = [
-  { id: "cinematic", label: "Cinematográfico", prompt: "cinematic film still, 35mm, shallow depth of field, moody volumetric light, anamorphic" },
-  { id: "editorial", label: "Editorial", prompt: "high-end editorial photography, clean composition, natural light, magazine cover quality" },
-  { id: "golden", label: "Hora dorada", prompt: "golden hour photography, warm sunlight, lens flare, soft glow, aspirational" },
-  { id: "minimal", label: "Minimal", prompt: "minimal modern photography, neutral palette, architectural negative space, calm" },
-  { id: "dream", label: "Onírico", prompt: "dreamlike ethereal photography, soft focus, pastel haze, surreal serenity" },
+/** El prompt de estilo va siempre en inglés: es lo que entiende el modelo. */
+export const VISUAL_STYLES: { id: VisualStyle; prompt: string }[] = [
+  { id: "cinematic", prompt: "cinematic film still, 35mm, shallow depth of field, moody volumetric light, anamorphic" },
+  { id: "editorial", prompt: "high-end editorial photography, clean composition, natural light, magazine cover quality" },
+  { id: "golden", prompt: "golden hour photography, warm sunlight, lens flare, soft glow, aspirational" },
+  { id: "minimal", prompt: "minimal modern photography, neutral palette, architectural negative space, calm" },
+  { id: "dream", prompt: "dreamlike ethereal photography, soft focus, pastel haze, surreal serenity" },
 ];
 
 export type VoiceTone = "calma" | "firme" | "cercana";
@@ -102,6 +108,12 @@ export interface Project {
   style: VisualStyle;
   tone: VoiceTone;
   durationSec: 30 | 60;
+  /**
+   * Idioma en el que se escribió el guion. Se fija al crear y no cambia
+   * después: un vídeo generado en inglés no puede volverse español sin
+   * regenerar la voz, así que el proyecto recuerda el suyo.
+   */
+  locale: Locale;
   /** Ruta publica del selfie subido. Nunca se comparte fuera de la cuenta. */
   selfieUrl?: string;
   status: ProjectStatus;
@@ -145,8 +157,8 @@ export interface Project {
  */
 export interface Template {
   slug: string;
-  title: string;
-  /** Nombre visible de quien la publicó. */
+  title: Localized<string>;
+  /** Nombre visible de quien la publicó. No se traduce. */
   author: string;
   /** Usuario real, cuando no es una plantilla de la casa. */
   creatorId?: string;
@@ -157,13 +169,14 @@ export interface Template {
   tone: VoiceTone;
   tier: Tier;
   durationSec: 30 | 60;
-  summary: string;
+  summary: Localized<string>;
   /**
    * Cuándo y cómo usarla: "los 7 días antes de la charla, al levantarte".
    * Es lo que separa una plantilla de una lista de frases bonitas.
    */
-  protocol?: string;
-  affirmations: string[];
+  protocol?: Localized<string>;
+  affirmations: Localized<string[]>;
+  /** Siempre en inglés: van a un modelo de imagen. */
   sceneBriefs: string[];
   /** La versión del creador. Lo que se ve en la ficha. */
   previewUrl?: string;

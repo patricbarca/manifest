@@ -2,29 +2,36 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import "@fontsource-variable/inter";
 import "./globals.css";
+import { LocaleToggle } from "@/components/LocaleToggle";
+import { getDictionary } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
-  title: "Manifest — visualiza lo que estás construyendo",
+  title: "Manifest — see yourself living it",
   description:
-    "Sube una foto y recibe un vídeo de visualización con tu cara, tu guion y una voz que te acompaña mientras repites tus afirmaciones en voz alta.",
+    "Upload a photo and get a visualization video with your face, your script and a voice that guides you while you repeat your affirmations out loud.",
 };
 
 export const viewport: Viewport = { themeColor: "#0a0a0b" };
 
-const NAV = [
-  { href: "/crear", label: "Crear" },
-  { href: "/market", label: "Market" },
-  { href: "/precios", label: "Precios" },
-  { href: "/biblioteca", label: "Biblioteca" },
-];
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { t, locale } = await getDictionary();
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const nav = [
+    { href: "/crear", label: t.nav.create },
+    { href: "/market", label: t.nav.market },
+    { href: "/precios", label: t.nav.pricing },
+    { href: "/biblioteca", label: t.nav.library },
+  ];
+
   return (
-    <html lang="es">
+    <html lang={locale}>
       <body className="grain min-h-dvh">
-        {/* La barra flota sobre el contenido y lo deja translucir. */}
         <header className="material-chrome sticky top-0 z-40 border-b border-[var(--color-hairline)]">
-          <div className="mx-auto flex h-14 max-w-[1120px] items-center justify-between px-6">
+          <div className="mx-auto flex h-14 max-w-[1120px] items-center justify-between gap-4 px-6">
             <Link
               href="/"
               className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--color-label-1)]"
@@ -33,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Link>
 
             <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
-              {NAV.map((item) => (
+              {nav.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -44,12 +51,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               ))}
             </nav>
 
-            <Link
-              href="/crear"
-              className="interactive rounded-full bg-white px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-black hover:bg-white/90"
-            >
-              Empezar
-            </Link>
+            <div className="flex items-center gap-2.5">
+              <LocaleToggle current={locale} />
+              <Link
+                href="/crear"
+                className="interactive rounded-full bg-white px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-black hover:bg-white/90"
+              >
+                {t.nav.start}
+              </Link>
+            </div>
           </div>
         </header>
 
@@ -61,8 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               © {new Date().getFullYear()} Manifest
             </p>
             <p className="t-caption max-w-sm leading-relaxed text-[var(--color-label-3)]">
-              Manifest es una herramienta de visualización y enfoque. No sustituye
-              tratamiento médico ni asesoramiento financiero, y no garantiza resultados.
+              {t.footer.disclaimer}
             </p>
           </div>
         </footer>

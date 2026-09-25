@@ -61,14 +61,18 @@ export async function currentUser(): Promise<User> {
  */
 export type ChargeKind = "free" | "prelaunch" | "paid";
 
+/** Clave del diccionario con el motivo, no el mensaje ya escrito. */
+type ChargeError = "noFreeLeft";
+
 export async function chargeForVideo(
   userId: string,
   priceCents: number,
 ): Promise<
-  { ok: true; kind: ChargeKind; paidCents: number } | { ok: false; reason: string }
+  | { ok: true; kind: ChargeKind; paidCents: number }
+  | { ok: false; reason: ChargeError }
 > {
   const user = await db.getUser(userId);
-  if (!user) return { ok: false, reason: "Usuario no encontrado" };
+  if (!user) return { ok: false, reason: "noFreeLeft" };
 
   if (user.freeVideosUsed < FREE_VIDEOS) {
     await db.putUser({ ...user, freeVideosUsed: user.freeVideosUsed + 1 });
@@ -81,10 +85,7 @@ export async function chargeForVideo(
 
   // Aquí irá el cobro real cuando entre Stripe.
   void priceCents;
-  return {
-    ok: false,
-    reason: "Ya has usado tu vídeo gratis. Los pagos todavía no están activos.",
-  };
+  return { ok: false, reason: "noFreeLeft" };
 }
 
 /** Cuántos vídeos gratis le quedan a este usuario. */

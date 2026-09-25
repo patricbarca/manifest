@@ -46,6 +46,13 @@ VOICE_PROVIDER=elevenlabs
   meses y los modelos se jubilan con fecha. Cambiar de modelo es una variable de
   entorno.
 
+## Idiomas
+
+Inglés por defecto, con un toggle EN/ES en la cabecera. La traducción llega
+hasta el contenido: las afirmaciones, las plantillas del market y los patrones
+del filtro de seguridad existen en los dos idiomas. Las descripciones de escena
+se quedan en inglés a propósito — van a un modelo de imagen.
+
 ## Documentación
 
 | | |

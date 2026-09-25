@@ -1,4 +1,5 @@
 import type { LifeArea, ScriptDraft, Tier, VoiceTone } from "../types";
+import type { Locale } from "../i18n/locale";
 
 /**
  * Toda llamada a un proveedor devuelve tambien lo que costo, para poder
@@ -19,6 +20,7 @@ export interface ScriptProvider {
     tier: Tier;
     tone: VoiceTone;
     seed: string;
+    locale: Locale;
   }): Promise<Billed<ScriptDraft>>;
 }
 

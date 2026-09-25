@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import type { Project } from "@/lib/types";
 import { VisualizationPlayer } from "./VisualizationPlayer";
 import { Icon } from "./Icon";
-import { PRODUCTS, formatUsd } from "@/lib/pricing";
+import { formatUsd } from "@/lib/pricing";
+import type { Dictionary } from "@/lib/i18n";
 
 /**
  * La pantalla del vídeo.
@@ -14,7 +15,7 @@ import { PRODUCTS, formatUsd } from "@/lib/pricing";
  * caen. Enseñar el progreso real (y las primeras imágenes) es lo que hace
  * soportable una espera de minutos en el tier cine.
  */
-export function VideoStage({ initial }: { initial: Project }) {
+export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) {
   const [project, setProject] = useState(initial);
   const working = project.status === "queued" || project.status === "generating";
 
@@ -36,34 +37,34 @@ export function VideoStage({ initial }: { initial: Project }) {
   if (project.status === "failed") {
     return (
       <div className="mx-auto max-w-lg px-6 py-28 text-center">
-        <h1 className="t-title">No se pudo terminar tu vídeo</h1>
+        <h1 className="t-title">{t.video.failedTitle}</h1>
         <p className="t-body mt-4 text-[var(--color-label-2)]">
-          {project.error ?? "Error desconocido"}
+          {project.error ?? t.video.failedUnknown}
         </p>
         <p className="t-caption mt-2 text-[var(--color-label-3)]">
-          Si no llegó a generarse ninguna escena, tus créditos se han devuelto.
+          {t.video.failedRefund}
         </p>
         <Link
           href="/crear"
           className="interactive mt-9 inline-block rounded-full bg-white px-6 py-2.5 text-[15px] font-medium text-black"
         >
-          Intentarlo otra vez
+          {t.video.tryAgain}
         </Link>
       </div>
     );
   }
 
-  if (working) return <GenerationProgress project={project} />;
+  if (working) return <GenerationProgress project={project} t={t} />;
 
   return (
     <div className="mx-auto max-w-[1120px] px-6 py-14">
       <div className="grid gap-14 lg:grid-cols-[minmax(0,380px)_1fr] lg:items-start">
-        <VisualizationPlayer project={project} />
+        <VisualizationPlayer project={project} t={t} />
 
         <div className="space-y-8">
           <div>
             <p className="t-eyebrow text-[var(--color-label-3)]">
-              {PRODUCTS[project.tier].name} · {project.durationSec} s
+              {t.products[project.tier].name} · {project.durationSec} {t.common.seconds}
             </p>
             <h1 className="t-title mt-3 text-balance">{project.title}</h1>
             {/* Sin LLM el titulo sale de la intencion, y entonces repetirla sobra. */}
@@ -80,27 +81,25 @@ export function VideoStage({ initial }: { initial: Project }) {
                 className="interactive inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[14px] font-medium text-black hover:bg-white/90"
               >
                 <Icon name="download" size={16} />
-                Descargar MP4
+                {t.video.download}
               </a>
             ) : (
               <span className="t-sub rounded-full border border-[var(--color-hairline)] px-5 py-2.5 text-[var(--color-label-3)]">
-                Descarga MP4 no disponible en este entorno
+                {t.video.downloadUnavailable}
               </span>
             )}
             <Link
               href="/crear"
               className="interactive t-sub rounded-full border border-[var(--color-hairline)] px-5 py-2.5 text-[var(--color-label-1)]"
             >
-              Crear otro
+              {t.common.createAnother}
             </Link>
           </div>
 
           {/* El guion en texto: mucha gente lo imprime o lo lee sin el vídeo. */}
           <div className="card rounded-[var(--radius-lg)] p-7">
-            <h2 className="t-headline">Tu guion</h2>
-            <p className="t-sub mt-1 text-[var(--color-label-2)]">
-              Léelo en voz alta por la mañana aunque no pongas el vídeo.
-            </p>
+            <h2 className="t-headline">{t.video.scriptTitle}</h2>
+            <p className="t-sub mt-1 text-[var(--color-label-2)]">{t.video.scriptNote}</p>
             <ol className="mt-6 space-y-3.5">
               {project.affirmations.map((a, i) => (
                 <li key={i} className="t-body flex gap-3.5">
@@ -119,7 +118,7 @@ export function VideoStage({ initial }: { initial: Project }) {
           </div>
 
           <div>
-            <h2 className="t-headline mb-4">Escenas</h2>
+            <h2 className="t-headline mb-4">{t.video.scenesTitle}</h2>
             <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
               {project.scenes.map((s) =>
                 s.imageUrl ? (
@@ -134,25 +133,25 @@ export function VideoStage({ initial }: { initial: Project }) {
             </div>
           </div>
 
-          <CostPanel project={project} />
+          <CostPanel project={project} t={t} />
         </div>
       </div>
     </div>
   );
 }
 
-function GenerationProgress({ project }: { project: Project }) {
+function GenerationProgress({ project, t }: { project: Project; t: Dictionary }) {
   const done = project.steps.filter((s) => s.status === "done" || s.status === "skipped").length;
   const pct = Math.round((done / project.steps.length) * 100);
   const preview = project.scenes.filter((s) => s.imageUrl);
 
   return (
     <div className="mx-auto max-w-xl px-6 py-24">
-      <h1 className="t-title text-balance">Estamos creando tu vídeo</h1>
+      <h1 className="t-title text-balance">{t.video.generatingTitle}</h1>
       <p className="t-body mt-3 text-[var(--color-label-2)]">
         {project.tier === "cinematic"
-          ? "El vídeo animado tarda unos minutos: cada escena se genera por separado."
-          : "Suele tardar menos de dos minutos."}
+          ? t.video.generatingAnimated
+          : t.video.generatingStills}
       </p>
 
       <div className="mt-10 h-[3px] w-full overflow-hidden rounded-full bg-white/12">
@@ -189,7 +188,7 @@ function GenerationProgress({ project }: { project: Project }) {
                     : "text-[var(--color-label-1)]"
                 }`}
               >
-                {step.label}
+                {t.video.steps[step.id]}
               </p>
               {step.error && (
                 <p className="t-caption mt-0.5 text-[var(--color-label-3)]">{step.error}</p>
@@ -201,7 +200,7 @@ function GenerationProgress({ project }: { project: Project }) {
 
       {preview.length > 0 && (
         <div className="mt-12">
-          <p className="t-sub mb-3 text-[var(--color-label-2)]">Primeras escenas</p>
+          <p className="t-sub mb-3 text-[var(--color-label-2)]">{t.video.firstScenes}</p>
           <div className="grid grid-cols-4 gap-2.5">
             {preview.map((s) => (
               <img
@@ -219,22 +218,29 @@ function GenerationProgress({ project }: { project: Project }) {
 }
 
 /** Transparencia de coste. En producción esto va detrás de un flag interno. */
-function CostPanel({ project }: { project: Project }) {
+function CostPanel({ project, t }: { project: Project; t: Dictionary }) {
   return (
     <details className="card rounded-[var(--radius-md)] p-5">
       <summary className="t-sub cursor-pointer text-[var(--color-label-2)]">
-        Detalle de producción
+        {t.video.detailsTitle}
       </summary>
       <dl className="t-sub mt-4 space-y-2.5 text-[var(--color-label-2)]">
         <Row
-          label="Pagado"
-          value={project.paidCents === 0 ? "gratis" : formatUsd(project.paidCents / 100)}
+          label={t.video.paid}
+          value={
+            project.paidCents === 0
+              ? t.video.freeLabel
+              : formatUsd(project.paidCents / 100)
+          }
         />
-        <Row label="Coste de proveedor" value={`${(project.costCents / 100).toFixed(3)} $`} />
-        <Row label="Escenas" value={`${project.scenes.length}`} />
         <Row
-          label="Voz"
-          value={project.voiceMode === "browser" ? "sintetizada en el navegador (demo)" : "pista generada"}
+          label={t.video.providerCost}
+          value={`$${(project.costCents / 100).toFixed(3)}`}
+        />
+        <Row label={t.video.sceneCount} value={`${project.scenes.length}`} />
+        <Row
+          label={t.video.voiceLabel}
+          value={project.voiceMode === "browser" ? t.video.voiceBrowser : t.video.voiceFile}
         />
       </dl>
     </details>
