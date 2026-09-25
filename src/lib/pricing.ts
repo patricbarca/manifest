@@ -45,7 +45,7 @@ export interface Product {
 
 export const PRODUCTS: Record<Tier, Product> = {
   vision: { id: "vision", priceUsd: 9 },
-  cinematic: { id: "cinematic", priceUsd: 39 },
+  cinematic: { id: "cinematic", priceUsd: 29 },
 };
 
 export function productFor(tier: Tier): Product {
@@ -91,7 +91,7 @@ export function grossMargin(tier: Tier, durationSec: 30 | 60, premium = false): 
  * EL MARKET
  *
  * Quien usa la plantilla de otro paga exactamente lo mismo que si empezara de
- * cero — $9 o $39 — y de ese pago se lleva un 30 % quien la creó.
+ * cero — $9 o $29 — y de ese pago se lleva un 30 % quien la creó.
  *
  * Sin tarifa de plantilla aparte. Dos cobros por una compra obligan a explicar
  * por qué son dos, y ninguna explicación mejora que no haya nada que explicar.

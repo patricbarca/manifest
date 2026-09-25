@@ -8,7 +8,7 @@ Ordenado por lo que bloquea. Lo de arriba no es opcional.
 |---|---|---|
 | 1 | **Auth real** (Supabase Auth / Clerk / NextAuth) | Ahora la identidad es una cookie anónima. Sustituye `src/lib/db/session.ts`. |
 | 2 | **Base de datos real** (Postgres) | El store JSON no aguanta dos procesos. Sustituye `src/lib/db/store.ts`. |
-| 3 | **Pagos** (Stripe) | Cobro por vídeo (9 $ / 39 $), webhooks y reparto del 30 % del market vía Stripe Connect. Hasta entonces `PAYMENTS_ENABLED=false` deja generar sin cobrar. |
+| 3 | **Pagos** (Stripe) | Cobro por vídeo (9 $ / 29 $), webhooks y reparto del 30 % del market vía Stripe Connect. Hasta entonces `PAYMENTS_ENABLED=false` deja generar sin cobrar. |
 | 4 | ~~**Almacenamiento privado**~~ | ✅ Hecho. Los ficheros salieron de `/public` a `DATA_DIR`, y `/media/[...path]` comprueba de quién es cada uno. Queda moverlo a un bucket cuando toque Vercel. |
 | 5 | **Borrado real** | Botón de borrar cuenta que borre de verdad fotos, escenas y vídeos. Obligación legal, no cortesía. |
 

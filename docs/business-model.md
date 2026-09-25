@@ -36,9 +36,9 @@ para compartir.
 | Duración | 30 s o 60 s, mismo precio | 30 s o 60 s, mismo precio |
 | Tiempo de generación | 1–2 min | 4–10 min |
 | Coste de producción (60 s) | ~0,58 $ | ~6,50 $ |
-| **Precio** | **9 $** | **39 $** |
-| Margen bruto (60 s) | ~94 % | ~83 % |
-| Margen bruto (30 s) | ~96 % | ~91 % |
+| **Precio** | **9 $** | **29 $** |
+| Margen bruto (60 s) | ~94 % | ~78 % |
+| Margen bruto (30 s) | ~96 % | ~89 % |
 
 **Recomendación: que el producto por defecto sea Imágenes, no Animado.**
 
@@ -117,11 +117,40 @@ Todo en dólares. Dos precios y ninguna otra cifra que aprenderse.
 |---|---|---:|---:|---:|
 | Imágenes | 30 s | 9 $ | 0,32 $ | **~96 %** |
 | Imágenes | 60 s | 9 $ | 0,58 $ | **~94 %** |
-| Animado | 30 s | 39 $ | 3,32 $ | **~91 %** |
-| Animado | 60 s | 39 $ | 6,50 $ | **~83 %** |
+| Animado | 30 s | 29 $ | 3,32 $ | **~89 %** |
+| Animado | 60 s | 29 $ | 6,50 $ | **~78 %** |
 
 Desglose de un Animado de 60 s: 10 imágenes (0,40 $) + 60 s de animación a
 0,10 $/s (6,00 $) + voz (0,04 $) + guion (0,01 $) + infraestructura (0,05 $).
+
+### De dónde sale el 29
+
+No sale del coste. El coste solo fija el **suelo**: 6,50 $ producir un animado
+de 60 s. Todo lo que esté por encima es posicionamiento.
+
+Sale del comparable más cercano que existe: los generadores de headshots por
+IA. Mismo gesto —subes un selfie, la IA te devuelve imágenes tuyas, pago único,
+compra por impulso— y un rango verificado de **24–99 $, con el grueso entre 29
+y 39 y el punto dulce en 29** ([HeadshotsByAI](https://headshotsbyai.com/blog/how-much-do-ai-headshots-cost),
+[HeadshotPhoto](https://www.headshotphoto.io/blogs/ai-headshot-generator-pricing)).
+
+La primera versión de este documento decía 39 $. El argumento era el ancla:
+9 al lado de 39 hace que 9 parezca barato. Cierto, pero había un problema de
+orden — **cobrar premium antes de haber validado que la calidad es premium**.
+Con 29 el ancla sigue siendo 3×, el margen sigue por encima del 78 %, y en
+esta fase lo que mata no es dejar dinero encima de la mesa, es que nadie
+compre.
+
+Es una hipótesis, no una respuesta. Se confirma vendiendo.
+
+### El límite que impone 29
+
+A 29 $, los modelos de vídeo premium dejan de tener sentido: a 0,224 $/s, un
+animado de 60 s cuesta 13,94 $ y el margen cae al **52 %**.
+
+O sea que el precio decide el modelo, no al revés. Si las pruebas de calidad
+dicen que hace falta el modelo caro, hay que subir el precio o acortar el
+vídeo — no tragarse el margen en silencio.
 
 ### Por qué precio plano y no por duración
 
@@ -163,7 +192,7 @@ Cuando alguien termina un vídeo que le gusta, puede publicarlo. Otra persona lo
 ve en el market, le pone su cara, y recibe su propia versión: las mismas
 escenas, el mismo guion, con ella dentro.
 
-**Paga exactamente lo mismo que si empezara de cero** — 9 $ o 39 $. De ese
+**Paga exactamente lo mismo que si empezara de cero** — 9 $ o 29 $. De ese
 pago, el **30 %** va a quien lo creó.
 
 Sin tarifa de plantilla aparte. Dos cobros por una compra obligan a explicar por
@@ -172,7 +201,7 @@ qué son dos, y ninguna explicación mejora que no haya nada que explicar.
 | | |
 |---|---|
 | Imágenes | comprador paga 9 $ · creador recibe 2,70 $ |
-| Animado | comprador paga 39 $ · creador recibe 11,70 $ |
+| Animado | comprador paga 29 $ · creador recibe 8,70 $ |
 
 ### Qué se publica exactamente
 

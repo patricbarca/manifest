@@ -32,7 +32,7 @@ VOICE_PROVIDER=elevenlabs
 
 ## Qué hay dentro
 
-- **Dos productos y dos precios.** *Imágenes* (9 $) y *Animado* (39 $). Sin
+- **Dos productos y dos precios.** *Imágenes* (9 $) y *Animado* (29 $). Sin
   suscripción, sin créditos. El primero es gratis. El porqué de cada número
   está en [`docs/business-model.md`](docs/business-model.md).
 - **Un reproductor que es el producto.** Cada afirmación aparece grande, la voz
