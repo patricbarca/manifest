@@ -83,18 +83,22 @@ Reglas aplicadas en los seis:
 - **Luz de relleno frontal explícita** en la escena 5, para pelear el contraluz.
 - **"face clearly visible"** en la 3 y la 5, donde el brief original la esconde.
 - Sin primeros planos. Sin giros de cabeza. Es donde el modelo se inventa rasgos.
+- **"framed from the waist up"** en los seis: "medium-wide" salió plano entero
+  con la cara al ~7% (revisión v2, tras la escena 1).
+- **Sin negaciones** ("without a tie", "not in shadow", "not obscured"): la
+  escena 1 salió con corbata. Se describe lo que sí debe haber (revisión v2).
 
-1. Medium-wide shot of <<<SUBJECT>>> walking through glass doors into a bright modern office lobby at sunrise, wearing a well-fitted charcoal suit without a tie. Warm golden light across the polished floor. Confident relaxed stride, face turned toward camera and clearly visible, natural expression. Photorealistic, cinematic, shallow depth of field.
+1. Medium shot of <<<SUBJECT>>>, framed from the waist up, walking through glass doors into a bright modern office lobby at sunrise, wearing a well-fitted charcoal suit over an open-collar white shirt. Warm golden light across the polished floor. Confident relaxed stride, face turned toward camera and clearly visible, natural expression. Photorealistic, cinematic, shallow depth of field.
 
-2. Medium shot of <<<SUBJECT>>> standing and presenting to an attentive boardroom, warm daylight through floor-to-ceiling windows behind him, wearing a navy suit. Gesturing naturally while speaking, three-quarter angle, face clearly lit and visible. Seated colleagues softly out of focus. Photorealistic, cinematic.
+2. Medium shot of <<<SUBJECT>>>, framed from the waist up, standing and presenting to an attentive boardroom, warm daylight through floor-to-ceiling windows behind him, wearing a navy suit. Gesturing naturally while speaking, three-quarter angle, face clearly lit and visible. Seated colleagues softly out of focus. Photorealistic, cinematic.
 
-3. Medium shot of <<<SUBJECT>>> signing a contract at a clean minimal desk, calm and focused, wearing a light blue dress shirt with rolled sleeves. Soft window light from the left. Head tilted slightly down but face remains clearly visible and well lit, not obscured. Photorealistic.
+3. Medium shot of <<<SUBJECT>>>, framed from the waist up, signing a contract at a clean minimal desk, calm and focused, wearing a light blue dress shirt with rolled sleeves. Soft window light from the left. Head tilted slightly down but face remains clearly visible and well lit. Photorealistic.
 
-4. Medium shot of <<<SUBJECT>>> being congratulated by two colleagues in a bright office, genuine smiles, candid moment. He is the clear focal point, centered and sharp; colleagues slightly behind and softly out of focus. Charcoal blazer over a white shirt, natural daylight. Photorealistic.
+4. Medium shot of <<<SUBJECT>>>, framed from the waist up, being congratulated by two colleagues in a bright office, genuine smiles, candid moment. He is the clear focal point, centered and sharp; colleagues slightly behind and softly out of focus. Charcoal blazer over a white shirt, natural daylight. Photorealistic.
 
-5. Wide-medium shot of <<<SUBJECT>>> stepping onto a stage to speak, audience in silhouette in the foreground, warm spotlight on him from the front. Dark suit. His face is fully lit by the front key light, not in shadow, clearly visible. Photorealistic, cinematic.
+5. Medium shot of <<<SUBJECT>>>, framed from the waist up, stepping onto a stage to speak, audience in silhouette at the bottom edge of the frame, warm spotlight on him from the front. Dark suit. His face is fully lit by the front key light and clearly visible. Photorealistic, cinematic.
 
-6. Medium shot of <<<SUBJECT>>> celebrating a product launch with a small team, confetti in the air, natural joy, laughing. He is centered and in focus, wearing a charcoal blazer. Warm indoor light. Photorealistic, cinematic.
+6. Medium shot of <<<SUBJECT>>>, framed from the waist up, celebrating a product launch with a small team, confetti in the air, natural joy, laughing. He is centered and in focus, wearing a charcoal blazer. Warm indoor light. Photorealistic, cinematic.
 
 ## Parámetros
 
@@ -141,6 +145,30 @@ actual no fuerza ninguna proporción.
   Mismo principio que la descripción del sujeto; hay que quitar la negación.
 - Barba más corta y recortada que en las fotos 1-3 (¿influencia de la 4?).
 - Moño no visible de frente; esperable.
+
+### Kling — ronda v2 (prompts revisados), 6 escenas
+
+- Coste: **12 créditos** (659 → 647), 2 por imagen, confirmado. Las 6 en
+  paralelo, ~60 s en total.
+- Total gastado en fijas hasta ahora: 14 créditos.
+
+Lectura técnica (la identidad la juzga el usuario, no esto):
+
+| # | Encuadre / cara | Notas |
+|---|---|---|
+| 1 | Plano entero otra vez, cara ~7% | "walking" gana a "waist up". Ya sin corbata. |
+| 2 | Cintura, cara ~12% | Moño bajo visible. |
+| 3 | Cintura, cara ~12% | Cabeza inclinada pero cara legible; moño visible. |
+| 4 | Medio, cara ~15% | Dos compañeras detrás, sin mezcla de rasgos aparente. |
+| 5 | Plano entero, cara ~5% | Mete **corbata negra** sin pedirla. Cara iluminada. |
+| 6 | Cintura, cara ~12% | El confeti no tapa la cara. |
+
+- **Barba**: en las seis sale más corta y recortada que en las fotos 1-3.
+  Es consistente entre escenas, así que parece venir del sujeto, no del azar.
+- **"waist up" no basta** cuando la acción implica cuerpo entero (caminar,
+  subir a un escenario). Para 1 y 5 haría falta cambiar la acción, no el
+  encuadre.
+- **Juicio del usuario**: _pendiente_.
 
 
 ## Cómo retomar esto en una sesión nueva
