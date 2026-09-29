@@ -14,10 +14,29 @@ Juez: el propio usuario sobre su propia cara. Nadie la conoce mejor.
 
 ## Input
 
-- 3 fotos de referencia: frontal, tres cuartos, casi perfil.
-- Misma sesión, misma ropa, mismo peinado → riesgo de que el sujeto
-  absorba "camiseta blanca" como parte de la identidad. Los prompts
-  especifican vestuario para contrarrestarlo.
+4 fotos de referencia, **recortadas a cabeza y hombros**. El recorte es la
+defensa real contra que el sujeto absorba la ropa: si la camiseta no está en
+el encuadre, no hay casi señal que absorber. No se puede controlar qué mira
+el codificador de sujetos de Kling por dentro; sí se puede controlar qué
+entra en la foto.
+
+| # | Ángulo | Qué aporta |
+|---|---|---|
+| 1 | Frontal (portada) | rasgos, ojos claros, sonrisa |
+| 2 | Tres cuartos | estructura 3D |
+| 3 | Casi perfil | nariz, mandíbula |
+| 4 | Perfil trasero | **el moño y el degradado de los lados** |
+
+La cuarta se añadió tras revisar las tres primeras: en ninguna aparecía el
+moño. Todas mostraban el pelo tirante hacia atrás, de lo que el modelo no
+puede distinguir pelo largo recogido de pelo corto engominado. La cuarta
+además revela un degradado corto en los lados que ninguna de las otras
+dejaba ver.
+
+**Conflicto conocido:** la cuarta es de otra sesión y la barba se ve más
+corta que en las tres primeras. Se asume a propósito — los usuarios reales
+subirán fotos de épocas distintas, así que el input es más representativo
+así. También lleva un AirPod puesto; va anotado por si aparece en la salida.
 
 ## Escenas
 
