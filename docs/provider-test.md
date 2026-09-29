@@ -122,7 +122,26 @@ actual no fuerza ninguna proporción.
 
 ## Resultados
 
-_Pendiente._
+### Kling — sesión 2026-09-29
+
+- **Element**: `322695164303729` (`Patric`). Creado con los 4 recortes. Crearlo
+  no consumió créditos.
+- **Recortes**: la camiseta se quitó casi entera; queda el fondo (silla con
+  logo en 2 y 3). La 4 conserva el AirPod.
+- **Desviación del protocolo**: `kling-image-v3_0_omni` exige `image_1` aunque
+  se use `elements`. Se pasó el recorte frontal (mismo que la portada).
+- **Coste real de una fija** (`2k`, `9:16`, 1 imagen): **2 créditos**
+  (661 → 659). Las seis fijas: ~12 créditos.
+- Tiempo: ~60 s por imagen.
+
+**Escena 1 (fácil)** — primera lectura, pendiente del juicio del usuario:
+- La cara ocupa ~7% del alto, por debajo del 15-25% fijado. A ese tamaño no
+  se puede juzgar identidad: el encuadre "medium-wide" salió plano entero.
+- Lleva **corbata** pese a "without a tie": negar algo en el prompt lo mete.
+  Mismo principio que la descripción del sujeto; hay que quitar la negación.
+- Barba más corta y recortada que en las fotos 1-3 (¿influencia de la 4?).
+- Moño no visible de frente; esperable.
+
 
 ## Cómo retomar esto en una sesión nueva
 
