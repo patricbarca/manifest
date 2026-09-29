@@ -123,3 +123,31 @@ actual no fuerza ninguna proporción.
 ## Resultados
 
 _Pendiente._
+
+## Cómo retomar esto en una sesión nueva
+
+Esta prueba se quedó parada porque el entorno cloud estaba en **Trusted**, que
+solo permite la lista de dominios por defecto. `kling.ai` no está en ella.
+
+Los conectores MCP **no** pasan por esa lista — van por los servidores de
+Anthropic — así que las herramientas de Kling respondían (créditos, elements)
+mientras que subir un fichero al host fallaba con 403 en el CONNECT. Esa
+asimetría es esperada, no un fallo.
+
+**Arreglo:** Edit cloud environment → Network access → **Custom**, y en
+Allowed domains:
+
+```
+kling.ai
+*.kling.ai
+*.klingai.com
+```
+
+Se aplica solo a sesiones nuevas.
+
+**Para arrancar:** adjunta los 4 recortes de referencia y di "retoma
+docs/provider-test.md". Los recortes no se versionan aquí a propósito: son
+datos biométricos y este repositorio es público.
+
+Primer paso al retomar: `element_create`, luego **una sola imagen**, y parar
+a reportar el coste real antes de generar las cinco restantes.
