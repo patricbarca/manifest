@@ -38,6 +38,28 @@ corta que en las tres primeras. Se asume a propósito — los usuarios reales
 subirán fotos de épocas distintas, así que el input es más representativo
 así. También lleva un AirPod puesto; va anotado por si aparece en la salida.
 
+## Definición del sujeto (Element)
+
+Aspecto de referencia confirmado por el usuario: **el de las fotos 1-3**
+(barba poblada). La cuarta es anterior y entra únicamente por el pelo.
+
+- `name`: `Patric`
+- `tags`: `["Characters"]`
+- `resource.cover`: recorte frontal
+- `resource.secondary`: recortes tres cuartos, perfil, perfil trasero
+- `description`:
+
+> Adult man in his early thirties. Light green-hazel eyes, thick dark
+> eyebrows, straight nose. Full dark beard and moustache covering the jaw
+> and chin. Long dark hair worn pulled back and tied in a top knot, with
+> short faded sides. Warm olive complexion.
+
+**La descripción no menciona ropa a propósito.** Nombrarla, aunque fuese
+para negarla, es meterla en el condicionamiento.
+
+**Riesgo anotado:** la cuarta referencia lleva un AirPod. Si aparece un
+auricular blanco en las escenas de oficina, el origen es ése.
+
 ## Escenas
 
 Área `carrera` de `src/lib/script-engine.ts`, elegidas para cubrir el rango de
