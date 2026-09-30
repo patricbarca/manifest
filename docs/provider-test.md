@@ -234,7 +234,15 @@ Resultado:
   two centimetres, natural and slightly uneven, following the jawline and
   chin". Mismo prompt y plantilla. La barba baja a una longitud parecida a la
   real; el moño alto y la escena se mantienen.
-- Conclusión: la receta del market puede llevar una imagen de composición y
+- **Juicio del usuario: "no me parezco".** En cambio sí se reconoció en las
+  escenas generadas solo con texto (v2, v3). Lectura probable: con la plantilla
+  como `image_1`, la cara de la persona de la plantilla se filtra (forma de la
+  cara, sonrisa, ojos) y el sujeto solo aporta barba y moño.
+- Conclusión (revisada): una imagen de plantilla con otra persona dentro
+  **diluye la identidad**. La receta del market debería ser texto (prompt,
+  encuadre, estilo), o, si lleva imagen, una sin cara que pueda filtrarse.
+  Queda por probar lo segundo. Lo que sigue abajo era la conclusión previa:
+- Conclusión previa: la receta del market puede llevar una imagen de composición y
   regenerarse con el sujeto de cada usuario. Coincide con lo que ya dice
   `Template` en `src/lib/types.ts`: se regenera con la cara del comprador,
   nunca se pega una cara encima.
