@@ -81,15 +81,20 @@ export async function runPipeline(projectId: string): Promise<void> {
   try {
     // ── 1. Guion ────────────────────────────────────────────────────────────
     await setStep(projectId, "script", { status: "running", startedAt: Date.now() });
-    const scriptOut = await providers.script.write({
-      area: start.area,
-      intention: start.intention,
-      durationSec: start.durationSec,
-      tier: start.tier,
-      tone: start.tone,
-      seed: start.id,
-      locale: start.locale,
-    });
+    // Si el usuario aprobó un guion en la revisión, ése es el guion: no se
+    // vuelve a pedir otro al LLM, que podría salir distinto.
+    const scriptOut = start.script
+      ? { result: start.script, costCents: start.scriptCostCents ?? 0 }
+      : await providers.script.write({
+          area: start.area,
+          intention: start.intention,
+          durationSec: start.durationSec,
+          tier: start.tier,
+          tone: start.tone,
+          seed: start.id,
+          locale: start.locale,
+          details: start.details,
+        });
     const script = scriptOut.result;
     const timeline = layoutTimeline(script.affirmations, start.durationSec);
     const scenes = buildScenes(

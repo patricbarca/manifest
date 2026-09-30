@@ -3,7 +3,16 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { LIFE_AREAS, VISUAL_STYLES } from "@/lib/types";
-import type { LifeArea, Template, Tier, VisualStyle, VoiceTone } from "@/lib/types";
+import type {
+  ClarifyAnswer,
+  ClarifyQuestion,
+  LifeArea,
+  ScriptDraft,
+  Template,
+  Tier,
+  VisualStyle,
+  VoiceTone,
+} from "@/lib/types";
 import { PRODUCTS, formatUsd, priceUsd } from "@/lib/pricing";
 import { fill, type Dictionary, type Locale } from "@/lib/i18n";
 import { Icon } from "./Icon";
@@ -11,12 +20,23 @@ import { Icon } from "./Icon";
 /**
  * El asistente de creación.
  *
- * Cuatro pasos y ninguno opcional salvo la foto. El orden importa: primero se
- * pregunta qué quiere la persona y solo después se le pide la cara, porque
- * pedir un selfie en la pantalla uno es donde se cae la gente.
+ * El orden importa: primero se pregunta qué quiere la persona y solo después
+ * se le pide la cara, porque pedir un selfie en la pantalla uno es donde se
+ * cae la gente.
+ *
+ * Dos pasos existen para no inventar: los detalles (el LLM pregunta lo que la
+ * intención no dice, como a qué se dedica la empresa que nombras) y la
+ * revisión (ves las escenas antes de pagar y puedes corregirlas).
  */
 
 const TONES: VoiceTone[] = ["calma", "firme", "cercana"];
+
+const STEP = { area: 0, intention: 1, details: 2, photo: 3, format: 4, review: 5 } as const;
+
+/** Correcciones que se arrastran de una reescritura a la siguiente. */
+const MAX_CORRECTIONS = 3;
+
+type Preview = { key: string; previewId: string; script: ScriptDraft };
 
 type Props = {
   initialArea?: LifeArea;
@@ -44,14 +64,130 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
 
+  // Detalles: las preguntas se piden una vez por intención y se rehacen solo
+  // si el usuario vuelve atrás y la cambia.
+  const [questions, setQuestions] = useState<ClarifyQuestion[]>();
+  const [questionsKey, setQuestionsKey] = useState<string>();
+  const [tailored, setTailored] = useState(false);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
+
+  // Revisión.
+  const [preview, setPreview] = useState<Preview>();
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  const [fix, setFix] = useState("");
+  const [corrections, setCorrections] = useState<string[]>([]);
+
   const price = priceUsd(tier);
   const isFree = freeLeft > 0;
 
   const canContinue = useMemo(() => {
-    if (step === 0) return true;
-    if (step === 1) return intention.trim().length >= 8;
+    if (step === STEP.area) return true;
+    if (step === STEP.intention) return intention.trim().length >= 8;
+    if (step === STEP.details) return !loadingQuestions;
     return true; // la foto es opcional, y el formato siempre es válido
-  }, [step, intention]);
+  }, [step, intention, loadingQuestions]);
+
+  const details: ClarifyAnswer[] = useMemo(
+    () => [
+      ...(questions ?? [])
+        .map((q, i) => ({ question: q.question, answer: (answers[i] ?? "").trim() }))
+        .filter((d) => d.answer),
+      ...corrections.map((answer) => ({ question: t.create.reviewFixQuestion, answer })),
+    ],
+    [questions, answers, corrections, t],
+  );
+
+  // Todo lo que cambia el guion. Si difiere del de la revisión, esa revisión
+  // ya no vale y se escribe otra.
+  const scriptKey = JSON.stringify({
+    area,
+    intention: intention.trim(),
+    details,
+    tier,
+    tone,
+    durationSec,
+    locale,
+  });
+
+  async function loadQuestions() {
+    const key = JSON.stringify({ area, intention: intention.trim() });
+    if (key === questionsKey) return;
+    setLoadingQuestions(true);
+    setError(undefined);
+    try {
+      const res = await fetch("/api/clarify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ area, intention: intention.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? t.errors.createFailed);
+      setQuestions(data.questions);
+      setTailored(data.tailored);
+      setAnswers([]);
+      setQuestionsKey(key);
+    } catch (err) {
+      setError((err as Error).message);
+      setStep(STEP.intention);
+    } finally {
+      setLoadingQuestions(false);
+    }
+  }
+
+  async function loadPreview(extraCorrections = corrections) {
+    setLoadingPreview(true);
+    setError(undefined);
+    const payloadDetails = [
+      ...details.filter((d) => d.question !== t.create.reviewFixQuestion),
+      ...extraCorrections.map((answer) => ({ question: t.create.reviewFixQuestion, answer })),
+    ];
+    const key = JSON.stringify({
+      area,
+      intention: intention.trim(),
+      details: payloadDetails,
+      tier,
+      tone,
+      durationSec,
+      locale,
+    });
+    try {
+      const res = await fetch("/api/script-preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          area,
+          intention: intention.trim(),
+          details: payloadDetails,
+          tier,
+          tone,
+          durationSec,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? t.errors.previewFailed);
+      setPreview({ key, previewId: data.previewId, script: data.script });
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoadingPreview(false);
+    }
+  }
+
+  function next() {
+    const target = step + 1;
+    setStep(target);
+    if (target === STEP.details) void loadQuestions();
+    if (target === STEP.review && preview?.key !== scriptKey) void loadPreview();
+  }
+
+  function regenerate() {
+    const text = fix.trim();
+    const updated = text ? [...corrections, text].slice(-MAX_CORRECTIONS) : corrections;
+    setCorrections(updated);
+    setFix("");
+    void loadPreview(updated);
+  }
 
   async function upload(file: File) {
     setUploading(true);
@@ -87,6 +223,9 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
           durationSec,
           selfieUrl,
           templateSlug: template?.slug,
+          details,
+          // Solo si la revisión sigue siendo de lo que se va a generar.
+          previewId: preview?.key === scriptKey ? preview.previewId : undefined,
         }),
       });
       const data = await res.json();
@@ -112,7 +251,7 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
       )}
 
       {/* ── Paso 0: área ───────────────────────────────────────────────── */}
-      {step === 0 && (
+      {step === STEP.area && (
         <Section
           title={t.create.areaTitle}
           hint={t.create.areaHint}
@@ -140,7 +279,7 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
       )}
 
       {/* ── Paso 1: intención ──────────────────────────────────────────── */}
-      {step === 1 && (
+      {step === STEP.intention && (
         <Section
           title={t.create.intentionTitle}
           hint={t.create.intentionHint}
@@ -172,8 +311,62 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
         </Section>
       )}
 
-      {/* ── Paso 2: foto ───────────────────────────────────────────────── */}
-      {step === 2 && (
+      {/* ── Paso 2: detalles ───────────────────────────────────────────── */}
+      {step === STEP.details && (
+        <Section title={t.create.detailsTitle} hint={t.create.detailsHint}>
+          {loadingQuestions || !questions ? (
+            <p className="t-sub text-[var(--color-label-2)]">{t.create.detailsLoading}</p>
+          ) : (
+            <div className="space-y-7">
+              {!tailored && (
+                <p className="t-caption text-[var(--color-label-3)]">{t.create.detailsGeneric}</p>
+              )}
+              {questions.map((q, i) => (
+                <div key={q.question}>
+                  <p className="t-sub mb-3 font-medium text-[var(--color-label-1)]">
+                    {q.question}
+                  </p>
+                  <input
+                    value={answers[i] ?? ""}
+                    onChange={(e) =>
+                      setAnswers((prev) => {
+                        const copy = [...prev];
+                        copy[i] = e.target.value;
+                        return copy;
+                      })
+                    }
+                    maxLength={300}
+                    placeholder={t.create.detailsPlaceholder}
+                    className="t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none transition-colors duration-200 placeholder:text-[var(--color-label-4)] focus:border-[var(--color-hairline-strong)]"
+                  />
+                  {q.suggestions.length > 0 && (
+                    <div className="mt-2.5 flex flex-wrap gap-2">
+                      {q.suggestions.map((s) => (
+                        <button
+                          key={s}
+                          onClick={() =>
+                            setAnswers((prev) => {
+                              const copy = [...prev];
+                              copy[i] = s;
+                              return copy;
+                            })
+                          }
+                          className="interactive t-caption rounded-full border border-[var(--color-hairline)] px-3.5 py-1.5 text-[var(--color-label-2)] hover:text-[var(--color-label-1)]"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </Section>
+      )}
+
+      {/* ── Paso 3: foto ───────────────────────────────────────────────── */}
+      {step === STEP.photo && (
         <Section
           title={t.create.photoTitle}
           hint={t.create.photoHint}
@@ -220,8 +413,8 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
         </Section>
       )}
 
-      {/* ── Paso 3: formato ────────────────────────────────────────────── */}
-      {step === 3 && (
+      {/* ── Paso 4: formato ────────────────────────────────────────────── */}
+      {step === STEP.format && (
         <Section title={t.create.formatTitle} hint={t.create.formatHint}>
           <Field label={t.create.videoType}>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -315,6 +508,59 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
         </Section>
       )}
 
+      {/* ── Paso 5: revisión ───────────────────────────────────────────── */}
+      {step === STEP.review && (
+        <Section title={t.create.reviewTitle} hint={t.create.reviewHint}>
+          {loadingPreview || !preview ? (
+            <p className="t-sub text-[var(--color-label-2)]">
+              {loadingPreview ? t.create.reviewLoading : ""}
+            </p>
+          ) : (
+            <>
+              <p className="t-headline">{preview.script.title}</p>
+              <ol className="mt-5 space-y-3">
+                {preview.script.affirmations.map((line, i) => (
+                  <li key={i} className="card rounded-[var(--radius-md)] p-4">
+                    <p className="t-caption text-[var(--color-label-3)]">
+                      {fill(t.create.reviewScene, { n: i + 1 })}
+                    </p>
+                    {/* Sin LLM no hay descripción en el idioma del usuario, y el
+                        brief en inglés no le sirve para revisar: queda la frase. */}
+                    {preview.script.sceneCaptions?.[i] && (
+                      <p className="t-body mt-1.5 text-[var(--color-label-1)]">
+                        {preview.script.sceneCaptions[i]}
+                      </p>
+                    )}
+                    <p className="t-sub mt-2 italic text-[var(--color-label-2)]">«{line}»</p>
+                  </li>
+                ))}
+              </ol>
+            </>
+          )}
+
+          <div className="mt-8">
+            <p className="t-sub mb-3 font-medium text-[var(--color-label-2)]">
+              {t.create.reviewFixLabel}
+            </p>
+            <textarea
+              value={fix}
+              onChange={(e) => setFix(e.target.value)}
+              rows={2}
+              maxLength={300}
+              placeholder={t.create.reviewFixPlaceholder}
+              className="t-body w-full resize-none rounded-[var(--radius-md)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] p-4 outline-none transition-colors duration-200 placeholder:text-[var(--color-label-4)] focus:border-[var(--color-hairline-strong)]"
+            />
+            <button
+              onClick={regenerate}
+              disabled={loadingPreview}
+              className="interactive t-sub mt-3 rounded-full border border-[var(--color-hairline-strong)] px-5 py-2 text-[var(--color-label-1)] disabled:opacity-30"
+            >
+              {t.create.reviewRegenerate}
+            </button>
+          </div>
+        </Section>
+      )}
+
       {error && (
         <p className="t-sub mt-6 rounded-[var(--radius-ctl)] border border-red-500/25 bg-red-500/[0.08] p-4 text-red-300">
           {error}
@@ -332,9 +578,9 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
           {t.common.back}
         </button>
 
-        {step < 3 ? (
+        {step < STEP.review ? (
           <button
-            onClick={() => setStep((s) => s + 1)}
+            onClick={next}
             disabled={!canContinue}
             className="interactive inline-flex items-center gap-1.5 rounded-full bg-white px-6 py-2.5 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30"
           >
@@ -344,7 +590,7 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
         ) : (
           <button
             onClick={submit}
-            disabled={submitting}
+            disabled={submitting || loadingPreview}
             className="interactive rounded-full bg-white px-6 py-2.5 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30"
           >
             {submitting ? t.create.submitting : t.create.submit}
@@ -371,7 +617,9 @@ function Steps({ current, labels }: { current: number; labels: string[] }) {
           >
             {i < current ? <Icon name="check" size={12} /> : i + 1}
           </span>
-          <span className={i <= current ? "text-[var(--color-label-1)]" : "text-[var(--color-label-3)]"}>
+          <span
+            className={`hidden sm:inline ${i <= current ? "text-[var(--color-label-1)]" : "text-[var(--color-label-3)]"}`}
+          >
             {label}
           </span>
           {i < labels.length - 1 && (

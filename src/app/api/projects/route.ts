@@ -3,7 +3,8 @@ import { z } from "zod";
 import { db } from "@/lib/db/store";
 import { currentUser, chargeForVideo } from "@/lib/db/session";
 import { estimateCostCents, priceUsd } from "@/lib/pricing";
-import { checkIntention } from "@/lib/safety";
+import { checkDetails, checkIntention } from "@/lib/safety";
+import { Area, Details, Intention } from "@/lib/api-schemas";
 import { initialSteps, runPipeline } from "@/lib/pipeline";
 import { templateBySlug } from "@/lib/templates";
 import { getDictionary } from "@/lib/i18n/server";
@@ -13,14 +14,17 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 const CreateProject = z.object({
-  area: z.enum(["carrera", "abundancia", "salud", "amor", "confianza", "libertad"]),
-  intention: z.string().min(1).max(600),
+  area: Area,
+  intention: Intention,
+  details: Details,
   tier: z.enum(["vision", "cinematic"]),
   style: z.enum(["cinematic", "editorial", "golden", "minimal", "dream"]),
   tone: z.enum(["calma", "firme", "cercana"]),
   durationSec: z.union([z.literal(30), z.literal(60)]),
   selfieUrl: z.string().startsWith("/media/uploads/").optional(),
   templateSlug: z.string().optional(),
+  /** Guion aprobado en la revisión. */
+  previewId: z.string().startsWith("sp_").optional(),
 });
 
 export async function GET() {
@@ -44,9 +48,28 @@ export async function POST(request: Request) {
   // El filtro devuelve una clave, no un mensaje: el texto sale del
   // diccionario en el idioma en el que está leyendo el usuario.
   const verdict = checkIntention(input.intention);
-  if (!verdict.ok) {
-    return NextResponse.json({ error: t.safety[verdict.key!] }, { status: 422 });
+  const detailsVerdict = checkDetails(input.details);
+  const blocked = !verdict.ok ? verdict : !detailsVerdict.ok ? detailsVerdict : undefined;
+  if (blocked) {
+    return NextResponse.json({ error: t.safety[blocked.key!] }, { status: 422 });
   }
+
+  // El guion aprobado solo vale si es de este usuario y se escribió para
+  // exactamente lo que se va a generar. Si el usuario cambió algo después
+  // de revisarlo, se descarta y el pipeline escribe uno nuevo.
+  const preview = input.previewId ? await db.getPreview(input.previewId) : undefined;
+  const approved =
+    preview &&
+    preview.ownerId === user.id &&
+    preview.area === input.area &&
+    preview.intention === input.intention &&
+    JSON.stringify(preview.details) === JSON.stringify(input.details) &&
+    preview.tier === input.tier &&
+    preview.tone === input.tone &&
+    preview.durationSec === input.durationSec &&
+    preview.locale === locale
+      ? preview
+      : undefined;
 
   const priceCents = priceUsd(input.tier) * 100;
   const charge = await chargeForVideo(user.id, priceCents);
@@ -64,6 +87,7 @@ export async function POST(request: Request) {
     title: template?.title[locale] ?? input.intention.slice(0, 60),
     area: input.area,
     intention: input.intention,
+    details: input.details,
     tier: input.tier,
     style: input.style,
     tone: input.tone,
@@ -72,6 +96,8 @@ export async function POST(request: Request) {
     selfieUrl: input.selfieUrl,
     status: "queued",
     steps: initialSteps(input.tier),
+    script: approved?.script,
+    scriptCostCents: approved?.costCents,
     affirmations: [],
     scenes: [],
     voiceMode: "browser",

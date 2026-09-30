@@ -124,7 +124,7 @@ export const es: Dictionary = {
     by: "de",
   },
   create: {
-    steps: ["Área", "Intención", "Foto", "Formato"],
+    steps: ["Área", "Intención", "Detalles", "Foto", "Formato", "Revisión"],
     fromTemplate:
       "Partiendo de {title} de {author}. El guion y las escenas vienen dados; tú pones tu cara y tu intención.",
     areaTitle: "¿Qué parte de tu vida quieres ver distinta?",
@@ -183,6 +183,26 @@ export const es: Dictionary = {
     firstVideo: "Tu primer vídeo",
     price: "Precio",
     watermarkNote: " · lleva marca de agua",
+    detailsTitle: "Unos detalles para que seas tú de verdad",
+    detailsHint:
+      "Lo que dejes en blanco lo describimos de forma general. Lo que contestes sale tal cual lo digas.",
+    detailsLoading: "Leyendo tu intención…",
+    detailsGeneric: "Son preguntas generales. Contesta las que encajen.",
+    detailsPlaceholder: "Tu respuesta (opcional)",
+    clarifyFallback: [
+      "¿Dónde pasa? Una ciudad, un sitio, un tipo de lugar.",
+      "¿Quién está contigo, si hay alguien?",
+      "¿Hay alguna empresa, proyecto u objeto que tenga que salir? Cuéntanos qué es.",
+    ],
+    reviewTitle: "Esto es lo que vamos a generar",
+    reviewHint:
+      "Revisa cada escena antes de crear. Si algo no cuadra, dínoslo y la reescribimos: todavía no has pagado nada.",
+    reviewLoading: "Escribiendo tus escenas…",
+    reviewFixLabel: "¿Algo que corregir?",
+    reviewFixPlaceholder: "Ej.: Settlia es una app de gastos compartidos, no una empresa de energía.",
+    reviewFixQuestion: "Corrección tras ver las escenas",
+    reviewRegenerate: "Reescribir escenas",
+    reviewScene: "Escena {n}",
     submit: "Crear mi vídeo",
     submitting: "Creando…",
   },
@@ -296,6 +316,8 @@ export const es: Dictionary = {
     invalidPath: "Ruta no válida",
     createFailed: "No se pudo crear el vídeo",
     uploadFailed: "No se pudo subir la foto",
+    previewFailed: "No se pudieron escribir las escenas. Inténtalo otra vez.",
+    tooManyPreviews: "Has reescrito las escenas muchas veces esta hora. Espera un poco y vuelve a probar.",
     noFreeLeft: "Ya has usado tu vídeo gratis. Los pagos todavía no están activos.",
   },
 };

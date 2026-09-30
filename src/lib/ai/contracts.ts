@@ -1,4 +1,11 @@
-import type { LifeArea, ScriptDraft, Tier, VoiceTone } from "../types";
+import type {
+  ClarifyAnswer,
+  ClarifyQuestion,
+  LifeArea,
+  ScriptDraft,
+  Tier,
+  VoiceTone,
+} from "../types";
 import type { Locale } from "../i18n/locale";
 
 /**
@@ -21,7 +28,18 @@ export interface ScriptProvider {
     tone: VoiceTone;
     seed: string;
     locale: Locale;
+    details?: ClarifyAnswer[];
   }): Promise<Billed<ScriptDraft>>;
+}
+
+export interface ClarifyProvider {
+  name: string;
+  /** Una lista vacía significa "no hay nada que preguntar" o "no hay LLM". */
+  ask(input: {
+    area: LifeArea;
+    intention: string;
+    locale: Locale;
+  }): Promise<Billed<ClarifyQuestion[]>>;
 }
 
 export interface ImageProvider {

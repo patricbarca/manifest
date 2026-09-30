@@ -1,6 +1,6 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { Project, User } from "../types";
+import type { Project, ScriptPreview, User } from "../types";
 import { dbDir } from "../paths";
 
 /**
@@ -71,6 +71,29 @@ export const db = {
       all[id] = { ...patch(current), updatedAt: Date.now() };
       await writeCollection("projects", all);
       return all[id];
+    });
+  },
+
+  async getPreview(id: string): Promise<ScriptPreview | undefined> {
+    return (await readCollection<ScriptPreview>("previews"))[id];
+  },
+
+  /** Guiones propuestos por un usuario desde `since`. Sirve para limitar abusos. */
+  async countPreviews(ownerId: string, since: number): Promise<number> {
+    const all = await readCollection<ScriptPreview>("previews");
+    return Object.values(all).filter((p) => p.ownerId === ownerId && p.createdAt >= since)
+      .length;
+  },
+
+  /** Guarda un guion propuesto y, de paso, tira los de más de un día. */
+  async putPreview(preview: ScriptPreview): Promise<ScriptPreview> {
+    return serialize(async () => {
+      const all = await readCollection<ScriptPreview>("previews");
+      const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+      for (const [id, p] of Object.entries(all)) if (p.createdAt < cutoff) delete all[id];
+      all[preview.id] = preview;
+      await writeCollection("previews", all);
+      return preview;
     });
   },
 

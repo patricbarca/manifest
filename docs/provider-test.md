@@ -205,6 +205,30 @@ Coste: 12 créditos (647 → 635). Total en fijas: 26.
   una sin auricular.
 - El texto en imagen funciona a veces ("ManifestAI" bien, "Settlia" mal). En
   producto convendría poner logos en postproducción y no fiarse del modelo.
+- Error de contexto, no del modelo: Settlia es una app de gastos compartidos,
+  no una empresa de plantas solares. Se asumió sin preguntar. De ahí salió el
+  paso de preguntas del asistente.
+
+### Kling — prueba de plantilla reutilizable (4 créditos, 635 → 631)
+
+Pregunta: ¿el market puede guardar una escena hecha y cambiar solo a la persona?
+
+1. `text_to_image`: escena genérica con una persona anónima (fundador en una
+   cena enseñando una app de gastos compartidos a sus amigos). Sin rótulos.
+2. `image_to_image` con esa escena como `image_1` y el sujeto `Patric`:
+   "Recreate 图片1 with <<<id>>> as the man… Keep the scene, pose, clothing,
+   lighting and framing".
+
+Resultado:
+- La escena se conserva casi píxel a píxel: mesa, amigos, móvil, luz.
+- La persona cambia entera, no solo la cara: sale el moño alto. Es mejor que un
+  cambio de cara, que dejaría el pelo y el cuerpo de la plantilla.
+- La barba sale **demasiado** larga y poblada: "full, untrimmed" se pasó.
+  Hay que suavizar a "full, medium-length beard".
+- Conclusión: la receta del market puede llevar una imagen de composición y
+  regenerarse con el sujeto de cada usuario. Coincide con lo que ya dice
+  `Template` en `src/lib/types.ts`: se regenera con la cara del comprador,
+  nunca se pega una cara encima.
 
 
 ## Cómo retomar esto en una sesión nueva

@@ -125,7 +125,7 @@ export const en = {
     by: "by",
   },
   create: {
-    steps: ["Area", "Intention", "Photo", "Format"],
+    steps: ["Area", "Intention", "Details", "Photo", "Format", "Review"],
     fromTemplate:
       "Starting from {title} by {author}. The script and scenes come ready; you bring your face and your intention.",
     areaTitle: "Which part of your life do you want to see differently?",
@@ -184,6 +184,26 @@ export const en = {
     firstVideo: "Your first video",
     price: "Price",
     watermarkNote: " · carries a watermark",
+    detailsTitle: "A few details so it's really you",
+    detailsHint:
+      "Anything you leave blank, we'll describe in general terms. Anything you answer shows up just as you said it.",
+    detailsLoading: "Reading your intention…",
+    detailsGeneric: "These are general questions. Answer the ones that fit.",
+    detailsPlaceholder: "Your answer (optional)",
+    clarifyFallback: [
+      "Where does it happen? A city, a place, a kind of space.",
+      "Who is with you, if anyone?",
+      "Is there a company, project or object that has to appear? Tell us what it is.",
+    ],
+    reviewTitle: "This is what we'll generate",
+    reviewHint:
+      "Check each scene before creating. If something's off, tell us and we'll rewrite it — you haven't paid anything yet.",
+    reviewLoading: "Writing your scenes…",
+    reviewFixLabel: "Anything to fix?",
+    reviewFixPlaceholder: "E.g. Settlia is a shared-expenses app, not an energy company.",
+    reviewFixQuestion: "Correction after seeing the scenes",
+    reviewRegenerate: "Rewrite scenes",
+    reviewScene: "Scene {n}",
     submit: "Create my video",
     submitting: "Creating…",
   },
@@ -297,6 +317,8 @@ export const en = {
     invalidPath: "Invalid path",
     createFailed: "Couldn't create the video",
     uploadFailed: "Couldn't upload the photo",
+    previewFailed: "Couldn't write the scenes. Try again.",
+    tooManyPreviews: "You've rewritten the scenes many times this hour. Wait a bit and try again.",
     noFreeLeft:
       "You've used your free video. Payments aren't active yet.",
   },

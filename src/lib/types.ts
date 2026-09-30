@@ -93,6 +93,47 @@ export interface ScriptDraft {
   closing: string;
   /** Descripcion visual de cada escena, en ingles, sin el estilo aplicado. */
   sceneBriefs: string[];
+  /**
+   * La misma escena contada en una frase en el idioma del usuario, para que
+   * la revise antes de pagar. Solo la escribe el LLM; el banco no la tiene.
+   */
+  sceneCaptions?: string[];
+}
+
+/**
+ * Pregunta de aclaración. El LLM las genera a partir de la intención para
+ * no inventarse lo que no sabe: a qué se dedica una empresa que el usuario
+ * nombra, qué coche, con quién. Las sugerencias son atajos, no un límite.
+ */
+export interface ClarifyQuestion {
+  question: string;
+  suggestions: string[];
+}
+
+/** Lo que el usuario contestó. Se guarda la pregunta con la respuesta. */
+export interface ClarifyAnswer {
+  question: string;
+  answer: string;
+}
+
+/**
+ * Guion propuesto y aún no pagado. Se guarda en servidor para que el
+ * proyecto se cree con el guion que el usuario aprobó, y no con uno que
+ * el cliente pudiera mandar reescrito.
+ */
+export interface ScriptPreview {
+  id: string;
+  ownerId: string;
+  createdAt: number;
+  area: LifeArea;
+  intention: string;
+  details: ClarifyAnswer[];
+  tier: Tier;
+  tone: VoiceTone;
+  durationSec: 30 | 60;
+  locale: Locale;
+  script: ScriptDraft;
+  costCents: number;
 }
 
 export interface Project {
@@ -104,6 +145,8 @@ export interface Project {
   area: LifeArea;
   /** Lo que el usuario escribio: su intencion en sus palabras. */
   intention: string;
+  /** Respuestas a las preguntas de aclaración, si las hubo. */
+  details?: ClarifyAnswer[];
   tier: Tier;
   style: VisualStyle;
   tone: VoiceTone;
@@ -118,7 +161,13 @@ export interface Project {
   selfieUrl?: string;
   status: ProjectStatus;
   steps: PipelineStep[];
+  /**
+   * Si llega relleno al crear el proyecto, es el guion que el usuario
+   * aprobó en la revisión y el pipeline no vuelve a escribirlo.
+   */
   script?: ScriptDraft;
+  /** Lo que costó el guion aprobado, que se escribió antes de crear el proyecto. */
+  scriptCostCents?: number;
   affirmations: Affirmation[];
   scenes: Scene[];
   /**
