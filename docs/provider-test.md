@@ -209,7 +209,11 @@ Coste: 12 créditos (647 → 635). Total en fijas: 26.
   no una empresa de plantas solares. Se asumió sin preguntar. De ahí salió el
   paso de preguntas del asistente.
 
-### Kling — prueba de plantilla reutilizable (4 créditos, 635 → 631)
+### Kling — prueba de plantilla reutilizable (4 créditos según Kling)
+
+Kling informó 2 créditos por llamada, pero el saldo pasó de 635 a **571**
+(−64). Hay 60 créditos sin explicar: o hubo otro uso de la cuenta en ese
+intervalo, o alguna llamada cobró más de lo que dijo. **Sin verificar.**
 
 Pregunta: ¿el market puede guardar una escena hecha y cambiar solo a la persona?
 
