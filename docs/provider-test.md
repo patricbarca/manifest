@@ -245,7 +245,10 @@ Resultado:
 - Detalle del usuario: no se parecen "ni ojos ni nariz ni boca ni rostro en
   general". Es la cara de la plantilla, no la suya.
 - **Control** (2 créditos, 569 → 567): la misma escena de la cena solo con
-  texto y el sujeto, método de v2/v3. Pendiente del juicio del usuario. Nota: la
+  texto y el sujeto, método de v2/v3. **Usuario: "sí, mi cara se parece más
+  ahora".** Confirmado: la plantilla con persona era la que rompía la
+  identidad. Decisión: las plantillas del market guardan la escena en texto
+  (como ya hace `Template.sceneBriefs`), sin imagen con otra cara. Nota: la
   pantalla del móvil dice "Spit Bill": el modelo vuelve a escribir mal un texto
   que nadie pidió literal.
 - Conclusión previa: la receta del market puede llevar una imagen de composición y
