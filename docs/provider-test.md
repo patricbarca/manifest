@@ -168,7 +168,43 @@ Lectura técnica (la identidad la juzga el usuario, no esto):
 - **"waist up" no basta** cuando la acción implica cuerpo entero (caminar,
   subir a un escenario). Para 1 y 5 haría falta cambiar la acción, no el
   encuadre.
-- **Juicio del usuario**: _pendiente_.
+- **Juicio del usuario**: se reconoce ("sí, está bueno"), pero los rasgos
+  (peinado, barba, piel) no se ven tan reales como él.
+
+### Kling — ronda v3: sujeto revisado + escenas de visualización
+
+Cambios respecto a v2:
+- Descripción del sujeto (`element_update`, mismas 4 fotos):
+
+> Adult man in his early thirties. Light green-hazel eyes, thick dark
+> eyebrows, straight nose. Full, untrimmed dark beard and moustache covering
+> the jaw and chin. Long dark hair pulled tightly back and tied in a high top
+> knot on the crown of the head, with short faded sides. Slightly high
+> temples. Natural skin texture with light freckles. Warm olive complexion.
+
+- En los prompts, "cinematic" pasa a "Natural, unretouched, documentary-style
+  photo, realistic skin texture".
+- Escenas nuevas pedidas por el usuario: Ferrari rojo, liderando Settlia (IA
+  para plantas solares), programando, liderando ManifestAI, ático de lujo.
+- A/B: la escena del Ferrari se repitió pasando además las 4 fotos como
+  `image_1..4`.
+
+Coste: 12 créditos (647 → 635). Total en fijas: 26.
+
+| Escena | Lectura |
+|---|---|
+| Ferrari (solo sujeto) | Sale un coupé, no descapotable. El moño no se ve. |
+| Settlia | El rótulo dice **"Settilia"**: falta de ortografía. Hay que repetirla. |
+| Programando | Moño alto visible: la mejor en pelo. |
+| ManifestAI | Rótulo bien escrito. El pelo parece suelto por detrás. |
+| Ático | Correcta. |
+| Ferrari + 4 refs | Descapotable, moño visible, barba más natural. **Copia el AirPod** de la foto 4. |
+
+- Pasar las fotos como `image_n` ayuda al pelo, pero arrastra objetos de las
+  referencias. Confirma el riesgo anotado: la foto 4 hay que sustituirla por
+  una sin auricular.
+- El texto en imagen funciona a veces ("ManifestAI" bien, "Settlia" mal). En
+  producto convendría poner logos en postproducción y no fiarse del modelo.
 
 
 ## Cómo retomar esto en una sesión nueva
