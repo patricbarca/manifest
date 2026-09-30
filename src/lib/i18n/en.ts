@@ -44,7 +44,7 @@ export const en = {
       {
         n: "02",
         title: "Say what you're building",
-        body: "In your own words. «I want to run my own studio in Lisbon» works better than «success».",
+        body: "In your own words. «I run my own studio in Lisbon» works better than «success». Tell it as if it already happened.",
       },
       {
         n: "03",

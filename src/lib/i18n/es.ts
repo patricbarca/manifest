@@ -43,7 +43,7 @@ export const es: Dictionary = {
       {
         n: "02",
         title: "Cuenta qué estás construyendo",
-        body: "En tus palabras. «Quiero dirigir mi propio estudio en Lisboa» funciona mejor que «éxito».",
+        body: "En tus palabras. «Dirijo mi propio estudio en Lisboa» funciona mejor que «éxito». Cuéntalo como si ya hubiera pasado.",
       },
       {
         n: "03",

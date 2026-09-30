@@ -16,7 +16,9 @@ import type { Locale } from "./i18n/locale";
  *  - few-shot que se le pasa al LLM para fijar el tono
  *
  * Reglas del guion: primera persona, presente, afirmativo (sin "no"), corto
- * para que entre en un respiro, y concreto antes que grandilocuente.
+ * para que entre en un respiro, y concreto antes que grandilocuente. Se
+ * escribe desde el final, como si ya hubiera ocurrido (Neville Goddard,
+ * Joe Dispenza): nada de "atraigo", "quiero" ni "está en camino".
  *
  * Las ESCENAS no se traducen: van a un modelo de imagen, que responde mejor
  * en inglés. Las AFIRMACIONES sí, porque el usuario las dice en voz alta y en
@@ -121,7 +123,7 @@ const AFFIRMATIONS: Record<Locale, Record<LifeArea, string[]>> = {
       "Doy y recibo amor con las manos abiertas.",
       "Soy suficiente tal y como soy.",
       "Digo lo que siento sin miedo.",
-      "Atraigo a quien me trata bien.",
+      "Estoy con alguien que me trata bien.",
       "Elijo relaciones que me suman.",
       "Pongo límites y sigo siendo querido.",
       "Confío en lo que se está formando.",
@@ -183,7 +185,7 @@ const AFFIRMATIONS: Record<Locale, Record<LifeArea, string[]>> = {
       "I give and receive love openly.",
       "I am enough exactly as I am.",
       "I say what I feel without fear.",
-      "I attract people who treat me well.",
+      "I am with someone who treats me well.",
       "I choose relationships that add to me.",
       "I set limits and I'm still loved.",
       "I trust what's taking shape.",
@@ -214,13 +216,13 @@ const AFFIRMATIONS: Record<Locale, Record<LifeArea, string[]>> = {
 
 const OPENING: Record<Locale, { hook: string; closing: string; fallbackTitle: string }> = {
   es: {
-    hook: "Respira. Esto ya está en camino.",
-    closing: "Ya es tuyo. Solo tienes que sostenerlo.",
+    hook: "Respira. Siéntelo como algo que ya ha ocurrido.",
+    closing: "Gracias. Ya está hecho.",
     fallbackTitle: "Mi visualización",
   },
   en: {
-    hook: "Breathe. This is already on its way.",
-    closing: "It's yours. You just have to hold it.",
+    hook: "Breathe. Feel it as something that has already happened.",
+    closing: "Thank you. It is done.",
     fallbackTitle: "My visualization",
   },
 };

@@ -22,15 +22,29 @@ const SYSTEM = (locale: Lang) =>
 Escribes las afirmaciones en ${LANGUAGE_NAME[locale]}, SIEMPRE, aunque el
 usuario te escriba su intención en otro idioma.
 
+Método (Neville Goddard y Joe Dispenza):
+- Vivir desde el final: todo ocurre AHORA y ya está hecho. Nada de camino,
+  esfuerzo ni espera.
+- Sentir el deseo cumplido: cada frase y cada escena llevan la emoción de
+  haberlo conseguido (gratitud, alegría, calma, orgullo tranquilo).
+- La escena implica el cumplimiento: el momento justo después, como que
+  alguien te felicite, un apretón de manos o un abrazo, o usar ya lo logrado.
+
 Reglas de las afirmaciones:
-- Primera persona, tiempo presente, en positivo. Nunca uses "no", "dejaré de", "algún día".
+- Primera persona, tiempo presente, en positivo, como si ya hubiera ocurrido.
+- Nunca uses futuro ni deseo: "voy a", "quiero", "atraigo", "pronto", "algún día",
+  "dejaré de", "no".
 - Máximo 9 palabras. Tienen que caber en una respiración porque el usuario las repite en voz alta.
 - Concretas antes que grandilocuentes. "Firmo el contrato con calma" > "El universo me da todo".
 - Nada de promesas médicas, financieras ni garantías de resultados.
 
+hook: una invitación breve a respirar y sentirlo como ya ocurrido.
+closing: gratitud, como algo ya hecho ("Gracias. Ya está hecho.").
+
 Reglas de las escenas (sceneBriefs):
 - En INGLÉS, porque van a un modelo de imagen.
-- Describen a la persona viviendo el resultado, no el esfuerzo.
+- La persona ya vive el resultado: el momento de disfrutarlo, no el esfuerzo.
+- Muestran la emoción en la cara: gratitud, alegría serena.
 - Concretas y visuales: lugar, luz, acción, hora del día. Sin texto ni logos en la imagen.
 - Una escena por afirmación, en el mismo orden.
 
@@ -85,9 +99,9 @@ function parseDraft(raw: string, expected: number): ScriptDraft {
     : undefined;
   return {
     title: parsed.title ?? "Mi visualización",
-    hook: parsed.hook ?? "Respira. Esto ya está en camino.",
+    hook: parsed.hook ?? "Respira. Siéntelo como algo que ya ha ocurrido.",
     affirmations,
-    closing: parsed.closing ?? "Ya es tuyo.",
+    closing: parsed.closing ?? "Gracias. Ya está hecho.",
     sceneBriefs,
     // Solo sirven si hay una por escena; si no, la revisión enseña las afirmaciones.
     sceneCaptions: sceneCaptions?.length === sceneBriefs.length ? sceneCaptions : undefined,
