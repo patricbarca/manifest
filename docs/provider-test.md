@@ -229,6 +229,11 @@ Resultado:
   cambio de cara, que dejaría el pelo y el cuerpo de la plantilla.
 - La barba sale **demasiado** larga y poblada: "full, untrimmed" se pasó.
   Hay que suavizar a "full, medium-length beard".
+- **Repetición con la barba ajustada** (2 créditos, 571 → 569, esta vez cuadra):
+  descripción cambiada a "Full dark beard and moustache of medium length, about
+  two centimetres, natural and slightly uneven, following the jawline and
+  chin". Mismo prompt y plantilla. La barba baja a una longitud parecida a la
+  real; el moño alto y la escena se mantienen.
 - Conclusión: la receta del market puede llevar una imagen de composición y
   regenerarse con el sujeto de cada usuario. Coincide con lo que ya dice
   `Template` en `src/lib/types.ts`: se regenera con la cara del comprador,
