@@ -242,6 +242,12 @@ Resultado:
   **diluye la identidad**. La receta del market debería ser texto (prompt,
   encuadre, estilo), o, si lleva imagen, una sin cara que pueda filtrarse.
   Queda por probar lo segundo. Lo que sigue abajo era la conclusión previa:
+- Detalle del usuario: no se parecen "ni ojos ni nariz ni boca ni rostro en
+  general". Es la cara de la plantilla, no la suya.
+- **Control** (2 créditos, 569 → 567): la misma escena de la cena solo con
+  texto y el sujeto, método de v2/v3. Pendiente del juicio del usuario. Nota: la
+  pantalla del móvil dice "Spit Bill": el modelo vuelve a escribir mal un texto
+  que nadie pidió literal.
 - Conclusión previa: la receta del market puede llevar una imagen de composición y
   regenerarse con el sujeto de cada usuario. Coincide con lo que ya dice
   `Template` en `src/lib/types.ts`: se regenera con la cara del comprador,
