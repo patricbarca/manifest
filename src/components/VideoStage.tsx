@@ -100,7 +100,36 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
           <div className="card rounded-[var(--radius-lg)] p-7">
             <h2 className="t-headline">{t.video.scriptTitle}</h2>
             <p className="t-sub mt-1 text-[var(--color-label-2)]">{t.video.scriptNote}</p>
-            <ol className="mt-6 space-y-3.5">
+
+            {/* Gratitud y petición van antes de las frases: primero se agradece
+                lo que ya es y luego se pide dándolo por recibido. */}
+            {!!project.script?.gratitude?.length && (
+              <>
+                <p className="t-sub mt-6 font-medium text-[var(--color-label-2)]">
+                  {t.video.gratitudeTitle}
+                </p>
+                <ul className="mt-2.5 space-y-2">
+                  {project.script.gratitude.map((line, i) => (
+                    <li key={i} className="t-body">
+                      {line}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {project.script?.request && (
+              <>
+                <p className="t-sub mt-6 font-medium text-[var(--color-label-2)]">
+                  {t.video.requestTitle}
+                </p>
+                <p className="t-body mt-2.5">{project.script.request}</p>
+              </>
+            )}
+
+            <p className="t-sub mt-6 font-medium text-[var(--color-label-2)]">
+              {t.video.affirmationsTitle}
+            </p>
+            <ol className="mt-3 space-y-3.5">
               {project.affirmations.map((a, i) => (
                 <li key={i} className="t-body flex gap-3.5">
                   <span className="t-caption mt-[5px] w-4 shrink-0 text-right tabular-nums text-[var(--color-label-3)]">

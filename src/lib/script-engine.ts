@@ -214,14 +214,29 @@ const AFFIRMATIONS: Record<Locale, Record<LifeArea, string[]>> = {
   },
 };
 
-const OPENING: Record<Locale, { hook: string; closing: string; fallbackTitle: string }> = {
+const OPENING: Record<
+  Locale,
+  { hook: string; gratitude: string[]; request: string; closing: string; fallbackTitle: string }
+> = {
   es: {
     hook: "Respira. Siéntelo como algo que ya ha ocurrido.",
+    gratitude: [
+      "Gracias por mi salud y por este momento.",
+      "Gracias por la gente que me quiere.",
+      "Gracias por todo lo que ya he construido.",
+    ],
+    request: "Gracias, universo, porque esto ya es mío.",
     closing: "Gracias. Ya está hecho.",
     fallbackTitle: "Mi visualización",
   },
   en: {
     hook: "Breathe. Feel it as something that has already happened.",
+    gratitude: [
+      "Thank you for my health and for this moment.",
+      "Thank you for the people who love me.",
+      "Thank you for everything I have already built.",
+    ],
+    request: "Thank you, universe, because this is already mine.",
     closing: "Thank you. It is done.",
     fallbackTitle: "My visualization",
   },
@@ -281,6 +296,8 @@ export function draftScript(input: {
   return {
     title: shortTitle(input.intention, input.locale),
     hook: OPENING[input.locale].hook,
+    gratitude: OPENING[input.locale].gratitude,
+    request: OPENING[input.locale].request,
     affirmations,
     closing: OPENING[input.locale].closing,
     sceneBriefs: briefs,
@@ -307,6 +324,11 @@ export function layoutTimeline(
   }));
 }
 
+/** Escena en primera persona: el brief empieza por "POV:". */
+export function isPovBrief(brief: string): boolean {
+  return /^pov:\s*/i.test(brief);
+}
+
 /** Compone el prompt final de imagen: identidad + escena + estilo + encuadre. */
 export function buildScenePrompt(
   brief: string,
@@ -314,11 +336,16 @@ export function buildScenePrompt(
   hasSelfie: boolean,
 ): string {
   const styleDef = VISUAL_STYLES.find((s) => s.id === style) ?? VISUAL_STYLES[0];
-  const identity = hasSelfie
-    ? "the person from the reference photo, same face and identity, natural likeness"
-    : "a person seen from behind or at a distance, face not visible";
+  // Escena subjetiva: se ve desde los ojos de la persona, así que no hay
+  // cara que conservar. El pipeline tampoco le pasa el selfie: un modelo de
+  // edición lo usaría como base y metería la cara.
+  const identity = isPovBrief(brief)
+    ? "first-person point of view through the person's own eyes, only their hands visible"
+    : hasSelfie
+      ? "the person from the reference photo, same face and identity, natural likeness"
+      : "a person seen from behind or at a distance, face not visible";
   return [
-    `${identity}, ${brief}`,
+    `${identity}, ${brief.replace(/^pov:\s*/i, "")}`,
     styleDef.prompt,
     "vertical 9:16 composition, high detail, no text, no watermark, no logos",
   ].join(", ");
@@ -339,6 +366,7 @@ export function buildScenes(
   return briefs.map((brief, i) => ({
     id: `sc_${i + 1}`,
     prompt: buildScenePrompt(brief, style, hasSelfie),
+    pov: isPovBrief(brief) || undefined,
     startSec: +(i * slot).toFixed(2),
     endSec: +((i + 1) * slot).toFixed(2),
     affirmationIndex: i,

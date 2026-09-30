@@ -125,7 +125,7 @@ export async function runPipeline(projectId: string): Promise<void> {
     await mapWithLimit(scenes, 3, async (scene) => {
       const out = await providers.image.generate({
         prompt: scene.prompt,
-        referencePath,
+        referencePath: scene.pov ? undefined : referencePath,
         projectId,
         sceneId: scene.id,
       });

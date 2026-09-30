@@ -76,6 +76,8 @@ export interface Scene {
   id: string;
   /** Prompt enviado al modelo de imagen, ya con el estilo y la identidad. */
   prompt: string;
+  /** Vista en primera persona: sin cara, y se genera sin el selfie. */
+  pov?: boolean;
   imageUrl?: string;
   /** Solo en tier `cinematic`. */
   videoUrl?: string;
@@ -89,9 +91,20 @@ export interface ScriptDraft {
   title: string;
   /** Frase de apertura, no se repite en voz alta. */
   hook: string;
+  /**
+   * Gratitud por lo que la persona ya tiene, antes de pedir. Solo la escribe
+   * el LLM; sin él se usan las del banco.
+   */
+  gratitude?: string[];
+  /** La petición, formulada como ya recibida ("Gracias porque…"). */
+  request?: string;
   affirmations: string[];
   closing: string;
-  /** Descripcion visual de cada escena, en ingles, sin el estilo aplicado. */
+  /**
+   * Descripcion visual de cada escena, en ingles, sin el estilo aplicado.
+   * Las que empiezan por "POV:" se ven desde los ojos de la persona y no
+   * llevan su cara.
+   */
   sceneBriefs: string[];
   /**
    * La misma escena contada en una frase en el idioma del usuario, para que

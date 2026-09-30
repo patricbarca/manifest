@@ -22,13 +22,20 @@ const SYSTEM = (locale: Lang) =>
 Escribes las afirmaciones en ${LANGUAGE_NAME[locale]}, SIEMPRE, aunque el
 usuario te escriba su intención en otro idioma.
 
-Método (Neville Goddard y Joe Dispenza):
+Método (Neville Goddard, Joe Dispenza y lecturas populares de Jacobo Grinberg):
 - Vivir desde el final: todo ocurre AHORA y ya está hecho. Nada de camino,
   esfuerzo ni espera.
 - Sentir el deseo cumplido: cada frase y cada escena llevan la emoción de
   haberlo conseguido (gratitud, alegría, calma, orgullo tranquilo).
 - La escena implica el cumplimiento: el momento justo después, como que
   alguien te felicite, un apretón de manos o un abrazo, o usar ya lo logrado.
+- Primero se agradece lo que ya es, después se pide como quien ya lo tiene
+  (agradeciendo al universo), y no se pide el cómo, solo el final.
+
+gratitude: 3 frases cortas de gratitud por lo que la persona YA tiene hoy
+(salud, gente, lo que ya construyó). Si el usuario dio detalles, úsalos.
+request: una sola frase que pide el resultado dándolo por recibido, empezando
+por "Gracias" (por ejemplo "Gracias, universo, porque ya dirijo mi estudio.").
 
 Reglas de las afirmaciones:
 - Primera persona, tiempo presente, en positivo, como si ya hubiera ocurrido.
@@ -47,6 +54,9 @@ Reglas de las escenas (sceneBriefs):
 - Muestran la emoción en la cara: gratitud, alegría serena.
 - Concretas y visuales: lugar, luz, acción, hora del día. Sin texto ni logos en la imagen.
 - Una escena por afirmación, en el mismo orden.
+- Una de cada tres escenas, más o menos, es en primera persona: se ve desde
+  los ojos de la persona, solo sus manos, sin su cara. Esas empiezan por "POV:"
+  ("POV: hands on the steering wheel of a red convertible, coastal road").
 
 Reglas de los detalles del usuario:
 - Si el usuario contestó preguntas, sus respuestas mandan: úsalas tal cual.
@@ -60,7 +70,7 @@ sceneCaptions: una frase corta en ${LANGUAGE_NAME[locale]} por escena que
 cuenta qué se ve, para que el usuario la revise antes de generar.
 
 Devuelve SOLO JSON válido con esta forma:
-{"title":string,"hook":string,"affirmations":string[],"closing":string,"sceneBriefs":string[],"sceneCaptions":string[]}`;
+{"title":string,"hook":string,"gratitude":string[],"request":string,"affirmations":string[],"closing":string,"sceneBriefs":string[],"sceneCaptions":string[]}`;
 
 const CLARIFY_SYSTEM = (locale: Lang) =>
   `Preparas una visualización en vídeo de una persona logrando lo que quiere.
@@ -100,6 +110,10 @@ function parseDraft(raw: string, expected: number): ScriptDraft {
   return {
     title: parsed.title ?? "Mi visualización",
     hook: parsed.hook ?? "Respira. Siéntelo como algo que ya ha ocurrido.",
+    gratitude: Array.isArray(parsed.gratitude)
+      ? parsed.gratitude.filter((g): g is string => typeof g === "string").slice(0, 5)
+      : undefined,
+    request: typeof parsed.request === "string" ? parsed.request : undefined,
     affirmations,
     closing: parsed.closing ?? "Gracias. Ya está hecho.",
     sceneBriefs,
