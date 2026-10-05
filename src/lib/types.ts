@@ -140,6 +140,7 @@ export interface ScriptPreview {
   createdAt: number;
   area: LifeArea;
   intention: string;
+  desires?: string[];
   details: ClarifyAnswer[];
   tier: Tier;
   tone: VoiceTone;
@@ -158,6 +159,8 @@ export interface Project {
   area: LifeArea;
   /** Lo que el usuario escribio: su intencion en sus palabras. */
   intention: string;
+  /** Sus deseos, uno por casilla. Cada uno da una imagen y una frase. */
+  desires?: string[];
   /** Respuestas a las preguntas de aclaración, si las hubo. */
   details?: ClarifyAnswer[];
   tier: Tier;

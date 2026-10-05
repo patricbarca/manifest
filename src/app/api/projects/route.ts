@@ -3,8 +3,9 @@ import { z } from "zod";
 import { db } from "@/lib/db/store";
 import { currentUser, chargeForVideo } from "@/lib/db/session";
 import { estimateCostCents, priceUsd } from "@/lib/pricing";
-import { checkDetails, checkIntention } from "@/lib/safety";
-import { Area, Details, Intention } from "@/lib/api-schemas";
+import { checkDesires, checkDetails } from "@/lib/safety";
+import { Area, Desires, Details, intentionFrom } from "@/lib/api-schemas";
+import { inferArea } from "@/lib/script-engine";
 import { initialSteps, runPipeline } from "@/lib/pipeline";
 import { templateBySlug } from "@/lib/templates";
 import { getDictionary } from "@/lib/i18n/server";
@@ -14,8 +15,8 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 const CreateProject = z.object({
-  area: Area,
-  intention: Intention,
+  area: Area.optional(),
+  desires: Desires,
   details: Details,
   tier: z.enum(["vision", "cinematic"]),
   style: z.enum(["cinematic", "editorial", "golden", "minimal", "dream"]),
@@ -43,11 +44,12 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  const input = parsed.data;
+  const intention = intentionFrom(parsed.data.desires);
+  const input = { ...parsed.data, intention, area: parsed.data.area ?? inferArea(intention) };
 
   // El filtro devuelve una clave, no un mensaje: el texto sale del
   // diccionario en el idioma en el que está leyendo el usuario.
-  const verdict = checkIntention(input.intention);
+  const verdict = checkDesires(input.desires);
   const detailsVerdict = checkDetails(input.details);
   const blocked = !verdict.ok ? verdict : !detailsVerdict.ok ? detailsVerdict : undefined;
   if (blocked) {
@@ -87,6 +89,7 @@ export async function POST(request: Request) {
     title: template?.title[locale] ?? input.intention.slice(0, 60),
     area: input.area,
     intention: input.intention,
+    desires: input.desires,
     details: input.details,
     tier: input.tier,
     style: input.style,

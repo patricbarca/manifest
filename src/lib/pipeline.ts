@@ -94,6 +94,7 @@ export async function runPipeline(projectId: string): Promise<void> {
           seed: start.id,
           locale: start.locale,
           details: start.details,
+          desires: start.desires,
         });
     const script = scriptOut.result;
     const timeline = layoutTimeline(script.affirmations, start.durationSec);

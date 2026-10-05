@@ -125,7 +125,7 @@ export const en = {
     by: "by",
   },
   create: {
-    steps: ["Area", "Intention", "Details", "Photo", "Format", "Review"],
+    steps: ["Desires", "Details", "Photo", "Format", "Review"],
     fromTemplate:
       "Starting from {title} by {author}. The script and scenes come ready; you bring your face and your intention.",
     areaTitle: "Which part of your life do you want to see differently?",
@@ -184,6 +184,29 @@ export const en = {
     firstVideo: "Your first video",
     price: "Price",
     watermarkNote: " · carries a watermark",
+    desiresTitle: "What do you want to manifest?",
+    desiresHint:
+      "Up to 6 things, one per box. Each one becomes an image of you living it and a line to repeat. The more specific, the better.",
+    desirePlaceholders: [
+      "E.g. Living in a house by the sea",
+      "E.g. My business has clients who seek me out",
+      "E.g. Running my first marathon",
+      "E.g. Travelling to Japan with my partner",
+      "E.g. Giving a talk to a full room",
+      "E.g. Waking up feeling at peace",
+    ],
+    addDesire: "+ Add another desire",
+    removeDesire: "Remove this desire",
+    desiresCount: "{n} of {max}",
+    desireExamples: [
+      "Driving my dream car",
+      "Signing the contract for my house",
+      "Launching my own company",
+      "Travelling the world",
+      "A calm, loving relationship",
+      "Feeling strong and full of energy",
+    ],
+    detailsNone: "All clear. You can continue.",
     detailsTitle: "A few details so it's really you",
     detailsHint:
       "Anything you leave blank, we'll describe in general terms. Anything you answer shows up just as you said it.",

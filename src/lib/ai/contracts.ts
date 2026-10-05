@@ -29,6 +29,8 @@ export interface ScriptProvider {
     seed: string;
     locale: Locale;
     details?: ClarifyAnswer[];
+    /** Si llega, manda: una escena y una frase por deseo, en su orden. */
+    desires?: string[];
   }): Promise<Billed<ScriptDraft>>;
 }
 
@@ -39,6 +41,7 @@ export interface ClarifyProvider {
     area: LifeArea;
     intention: string;
     locale: Locale;
+    desires?: string[];
   }): Promise<Billed<ClarifyQuestion[]>>;
 }
 

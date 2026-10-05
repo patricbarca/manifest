@@ -274,6 +274,38 @@ function shortTitle(intention: string, locale: Locale): string {
   return (lastSpace > 20 ? cut.slice(0, lastSpace) : cut).replace(/[,;:]$/, "") + "…";
 }
 
+function asLine(text: string): string {
+  const t = text.trim().replace(/\s+/g, " ");
+  const capital = t.charAt(0).toUpperCase() + t.slice(1);
+  return /[.!?…]$/.test(capital) ? capital : capital + ".";
+}
+
+/**
+ * Área de vida a partir de lo que escribió la persona. Ya no se le pregunta:
+ * sirve para el banco de respaldo y para ordenar el market, no para el guion.
+ */
+const AREA_HINTS: [LifeArea, RegExp][] = [
+  ["abundancia", /dinero|money|mill[oó]n|millonari|rico|rich|abundan|ingres|income|ahorr|saving|invers|invest|financ|casa propia|my own house/i],
+  ["salud", /salud|health|corr[eo]|run|gimnas|gym|peso|weight|energ|dorm|sleep|fuerte|strong|\bfit/i],
+  ["amor", /amor|love|pareja|partner|relaci[oó]n|relationship|famil|boda|wedding|novi[oa]/i],
+  ["confianza", /confian|confiden|autoestima|self-esteem|en p[uú]blico|public speaking|miedo|fear|segur[oa] de m[ií]/i],
+  ["libertad", /viaj|travel|libertad|freedom|remot|n[oó]mada|nomad|otro pa[ií]s|abroad|playa|beach/i],
+  ["carrera", /trabaj|work|empresa|company|negocio|business|client|ascens|promot|app\b|software|startup|lider|lead/i],
+];
+
+export function inferArea(text: string): LifeArea {
+  let best: LifeArea = "carrera";
+  let bestScore = 0;
+  for (const [area, re] of AREA_HINTS) {
+    const score = (text.match(new RegExp(re.source, "gi")) ?? []).length;
+    if (score > bestScore) {
+      best = area;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
 export function draftScript(input: {
   area: LifeArea;
   intention: string;
@@ -281,12 +313,15 @@ export function draftScript(input: {
   tier: Tier;
   seed: string;
   locale: Locale;
+  desires?: string[];
 }): ScriptDraft {
-  const n = sceneCount(input.tier, input.durationSec);
-  const affirmations = seededShuffle(
-    AFFIRMATIONS[input.locale][input.area],
-    input.seed,
-  ).slice(0, n);
+  const desires = input.desires?.filter((d) => d.trim());
+  const n = desires?.length || sceneCount(input.tier, input.durationSec);
+  // Con deseos, la frase es el deseo en sus palabras: sin LLM no hay quien lo
+  // pase a presente, pero es mejor que una frase genérica del banco.
+  const affirmations = desires?.length
+    ? desires.map(asLine)
+    : seededShuffle(AFFIRMATIONS[input.locale][input.area], input.seed).slice(0, n);
   const briefs = seededShuffle(SCENES[input.area], input.seed + "s").slice(0, n);
 
   // La intención del usuario solo da título aquí. NO se inyecta en los briefs:

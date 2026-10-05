@@ -124,7 +124,7 @@ export const es: Dictionary = {
     by: "de",
   },
   create: {
-    steps: ["Área", "Intención", "Detalles", "Foto", "Formato", "Revisión"],
+    steps: ["Deseos", "Detalles", "Foto", "Formato", "Revisión"],
     fromTemplate:
       "Partiendo de {title} de {author}. El guion y las escenas vienen dados; tú pones tu cara y tu intención.",
     areaTitle: "¿Qué parte de tu vida quieres ver distinta?",
@@ -183,6 +183,29 @@ export const es: Dictionary = {
     firstVideo: "Tu primer vídeo",
     price: "Precio",
     watermarkNote: " · lleva marca de agua",
+    desiresTitle: "¿Qué quieres manifestar?",
+    desiresHint:
+      "Hasta 6 cosas, una por casilla. Cada una será una imagen tuya viviéndola y una frase para repetir. Cuanto más concreta, mejor.",
+    desirePlaceholders: [
+      "Ej.: Vivir en una casa frente al mar",
+      "Ej.: Que mi negocio tenga clientes que me buscan",
+      "Ej.: Correr mi primer maratón",
+      "Ej.: Viajar a Japón con mi pareja",
+      "Ej.: Dar una charla ante un auditorio lleno",
+      "Ej.: Sentirme en paz al despertar",
+    ],
+    addDesire: "+ Añadir otro deseo",
+    removeDesire: "Quitar este deseo",
+    desiresCount: "{n} de {max}",
+    desireExamples: [
+      "Conducir el coche de mis sueños",
+      "Firmar el contrato de mi casa",
+      "Lanzar mi propia empresa",
+      "Viajar por el mundo",
+      "Una relación tranquila y bonita",
+      "Sentirme fuerte y con energía",
+    ],
+    detailsNone: "Todo claro. Puedes seguir.",
     detailsTitle: "Unos detalles para que seas tú de verdad",
     detailsHint:
       "Lo que dejes en blanco lo describimos de forma general. Lo que contestes sale tal cual lo digas.",

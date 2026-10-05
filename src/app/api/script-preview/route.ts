@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { providers } from "@/lib/ai";
-import { Area, Details, Intention } from "@/lib/api-schemas";
+import { Area, Desires, Details, intentionFrom } from "@/lib/api-schemas";
+import { inferArea } from "@/lib/script-engine";
 import { currentUser } from "@/lib/db/session";
 import { db } from "@/lib/db/store";
 import { getDictionary } from "@/lib/i18n/server";
-import { checkDetails, checkIntention } from "@/lib/safety";
+import { checkDesires, checkDetails } from "@/lib/safety";
 import type { ScriptPreview } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -18,8 +19,8 @@ export const maxDuration = 60;
 const PREVIEWS_PER_HOUR = 12;
 
 const Body = z.object({
-  area: Area,
-  intention: Intention,
+  area: Area.optional(),
+  desires: Desires,
   details: Details,
   tier: z.enum(["vision", "cinematic"]),
   tone: z.enum(["calma", "firme", "cercana"]),
@@ -38,9 +39,19 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: t.errors.incomplete }, { status: 400 });
   }
-  const input = parsed.data;
+  const { desires, details, tier, tone, durationSec } = parsed.data;
+  const intention = intentionFrom(desires);
+  const input = {
+    area: parsed.data.area ?? inferArea(intention),
+    intention,
+    desires,
+    details,
+    tier,
+    tone,
+    durationSec,
+  };
 
-  const verdict = checkIntention(input.intention);
+  const verdict = checkDesires(input.desires);
   const detailsVerdict = checkDetails(input.details);
   const blocked = !verdict.ok ? verdict : !detailsVerdict.ok ? detailsVerdict : undefined;
   if (blocked) {

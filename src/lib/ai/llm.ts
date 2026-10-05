@@ -58,6 +58,11 @@ Reglas de las escenas (sceneBriefs):
   los ojos de la persona, solo sus manos, sin su cara. Esas empiezan por "POV:"
   ("POV: hands on the steering wheel of a red convertible, coastal road").
 
+Si llega una lista de deseos:
+- Exactamente una afirmación y una escena por deseo, en el mismo orden.
+- Cada escena muestra ESE deseo ya cumplido, tal como lo escribió. No mezcles
+  deseos en una escena ni añadas cosas que no pidió.
+
 Reglas de los detalles del usuario:
 - Si el usuario contestó preguntas, sus respuestas mandan: úsalas tal cual.
 - Nunca inventes a qué se dedica una empresa, un producto o una persona que
@@ -77,7 +82,8 @@ const CLARIFY_SYSTEM = (locale: Lang) =>
 Antes de escribir las escenas necesitas los detalles concretos que la
 intención no dice y que cambian lo que se ve en pantalla.
 
-Haz entre 2 y 5 preguntas en ${LANGUAGE_NAME[locale]}, cortas y directas.
+Haz como máximo 3 preguntas en total en ${LANGUAGE_NAME[locale]}, cortas y
+directas, aunque haya varios deseos. Si todo está claro, devuelve una lista vacía.
 - Pregunta por lo que se ve: qué es cada empresa, app o proyecto que nombra;
   lugares; personas que están con él o ella; objetos concretos (qué coche, de
   qué color); cómo viste.
@@ -130,7 +136,7 @@ function parseQuestions(raw: string): ClarifyQuestion[] {
       (q): q is ClarifyQuestion =>
         typeof q === "object" && q !== null && typeof (q as ClarifyQuestion).question === "string",
     )
-    .slice(0, 5)
+    .slice(0, 3)
     .map((q) => ({
       question: q.question.slice(0, 200),
       suggestions: (Array.isArray(q.suggestions) ? q.suggestions : [])
@@ -149,15 +155,23 @@ function detailsBlock(details: ClarifyAnswer[] | undefined): string {
   );
 }
 
+function desiresBlock(desires: string[] | undefined): string {
+  if (!desires?.length) return "";
+  return "\nDeseos, uno por escena y en este orden:\n" + desires.map((d, i) => `${i + 1}. "${d}"`).join("\n");
+}
+
 function userPrompt(input: {
   area: string;
   intention: string;
   tone: string;
   count: number;
   details?: ClarifyAnswer[];
+  desires?: string[];
 }): string {
-  return `Área de vida: ${input.area}
-Intención del usuario, en sus palabras: "${input.intention}"${detailsBlock(input.details)}
+  const intention = input.desires?.length
+    ? desiresBlock(input.desires)
+    : `\nIntención del usuario, en sus palabras: "${input.intention}"`;
+  return `Área de vida: ${input.area}${intention}${detailsBlock(input.details)}
 Tono de la voz: ${input.tone}
 Necesito exactamente ${input.count} afirmaciones, ${input.count} sceneBriefs y ${input.count} sceneCaptions.`;
 }
@@ -218,7 +232,7 @@ function scriptProvider(name: keyof typeof TRANSPORTS): ScriptProvider {
   return {
     name,
     async write(input) {
-      const count = sceneCount(input.tier, input.durationSec);
+      const count = input.desires?.length || sceneCount(input.tier, input.durationSec);
       const text = await TRANSPORTS[name](
         SYSTEM(input.locale),
         userPrompt({ ...input, count }),
@@ -239,7 +253,9 @@ function clarifyProvider(name: keyof typeof TRANSPORTS): ClarifyProvider {
     async ask(input) {
       const text = await TRANSPORTS[name](
         CLARIFY_SYSTEM(input.locale),
-        `Área de vida: ${input.area}\nIntención del usuario, en sus palabras: "${input.intention}"`,
+        input.desires?.length
+          ? `Área de vida: ${input.area}${desiresBlock(input.desires)}`
+          : `Área de vida: ${input.area}\nIntención del usuario, en sus palabras: "${input.intention}"`,
         800,
       );
       return {

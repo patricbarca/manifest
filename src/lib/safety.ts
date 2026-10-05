@@ -48,6 +48,20 @@ export function checkIntention(text: string): SafetyVerdict {
 }
 
 /**
+ * Los deseos se filtran uno a uno. Cada casilla puede ser corta ("mi casa"),
+ * pero entre todas tienen que decir algo.
+ */
+export function checkDesires(desires: string[]): SafetyVerdict {
+  const total = desires.join(" ").trim();
+  if (total.length < 8) return { ok: false, key: "tooShort" };
+  for (const desire of desires) {
+    const verdict = checkBlocked(desire);
+    if (!verdict.ok) return verdict;
+  }
+  return { ok: true };
+}
+
+/**
  * Las respuestas a las preguntas de aclaración entran en el guion igual que
  * la intención, así que pasan el mismo filtro. Sin mínimo de longitud: "rojo"
  * es una respuesta válida.

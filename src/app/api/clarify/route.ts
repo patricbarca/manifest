@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { providers } from "@/lib/ai";
-import { Area, Intention } from "@/lib/api-schemas";
+import { Area, Desires, intentionFrom } from "@/lib/api-schemas";
+import { inferArea } from "@/lib/script-engine";
 import { getDictionary } from "@/lib/i18n/server";
-import { checkIntention } from "@/lib/safety";
+import { checkDesires } from "@/lib/safety";
 import type { ClarifyQuestion } from "@/lib/types";
 
 export const runtime = "nodejs";
 
-const Body = z.object({ area: Area, intention: Intention });
+const Body = z.object({ desires: Desires, area: Area.optional() });
 
 /**
  * Preguntas antes de escribir el guion.
@@ -23,17 +24,22 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: t.errors.incomplete }, { status: 400 });
   }
-  const { area, intention } = parsed.data;
+  const { desires } = parsed.data;
+  const intention = intentionFrom(desires);
+  const area = parsed.data.area ?? inferArea(intention);
 
-  const verdict = checkIntention(intention);
+  const verdict = checkDesires(desires);
   if (!verdict.ok) {
     return NextResponse.json({ error: t.safety[verdict.key!] }, { status: 422 });
   }
 
-  const out = await providers.clarify.ask({ area, intention, locale });
-  const questions: ClarifyQuestion[] = out.result.length
+  const out = await providers.clarify.ask({ area, intention, locale, desires });
+  // Sin LLM (o si falló) van las preguntas genéricas. Si el LLM respondió con
+  // una lista vacía es que lo tiene todo claro, y no se pregunta nada.
+  const tailored = out.provider !== "mock" && out.provider !== "fallback";
+  const questions: ClarifyQuestion[] = tailored
     ? out.result
     : t.create.clarifyFallback.map((question) => ({ question, suggestions: [] }));
 
-  return NextResponse.json({ questions, tailored: out.result.length > 0 });
+  return NextResponse.json({ questions, tailored, area });
 }
