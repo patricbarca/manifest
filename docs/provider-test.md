@@ -83,18 +83,22 @@ Reglas aplicadas en los seis:
 - **Luz de relleno frontal explícita** en la escena 5, para pelear el contraluz.
 - **"face clearly visible"** en la 3 y la 5, donde el brief original la esconde.
 - Sin primeros planos. Sin giros de cabeza. Es donde el modelo se inventa rasgos.
+- **"framed from the waist up"** en los seis: "medium-wide" salió plano entero
+  con la cara al ~7% (revisión v2, tras la escena 1).
+- **Sin negaciones** ("without a tie", "not in shadow", "not obscured"): la
+  escena 1 salió con corbata. Se describe lo que sí debe haber (revisión v2).
 
-1. Medium-wide shot of <<<SUBJECT>>> walking through glass doors into a bright modern office lobby at sunrise, wearing a well-fitted charcoal suit without a tie. Warm golden light across the polished floor. Confident relaxed stride, face turned toward camera and clearly visible, natural expression. Photorealistic, cinematic, shallow depth of field.
+1. Medium shot of <<<SUBJECT>>>, framed from the waist up, walking through glass doors into a bright modern office lobby at sunrise, wearing a well-fitted charcoal suit over an open-collar white shirt. Warm golden light across the polished floor. Confident relaxed stride, face turned toward camera and clearly visible, natural expression. Photorealistic, cinematic, shallow depth of field.
 
-2. Medium shot of <<<SUBJECT>>> standing and presenting to an attentive boardroom, warm daylight through floor-to-ceiling windows behind him, wearing a navy suit. Gesturing naturally while speaking, three-quarter angle, face clearly lit and visible. Seated colleagues softly out of focus. Photorealistic, cinematic.
+2. Medium shot of <<<SUBJECT>>>, framed from the waist up, standing and presenting to an attentive boardroom, warm daylight through floor-to-ceiling windows behind him, wearing a navy suit. Gesturing naturally while speaking, three-quarter angle, face clearly lit and visible. Seated colleagues softly out of focus. Photorealistic, cinematic.
 
-3. Medium shot of <<<SUBJECT>>> signing a contract at a clean minimal desk, calm and focused, wearing a light blue dress shirt with rolled sleeves. Soft window light from the left. Head tilted slightly down but face remains clearly visible and well lit, not obscured. Photorealistic.
+3. Medium shot of <<<SUBJECT>>>, framed from the waist up, signing a contract at a clean minimal desk, calm and focused, wearing a light blue dress shirt with rolled sleeves. Soft window light from the left. Head tilted slightly down but face remains clearly visible and well lit. Photorealistic.
 
-4. Medium shot of <<<SUBJECT>>> being congratulated by two colleagues in a bright office, genuine smiles, candid moment. He is the clear focal point, centered and sharp; colleagues slightly behind and softly out of focus. Charcoal blazer over a white shirt, natural daylight. Photorealistic.
+4. Medium shot of <<<SUBJECT>>>, framed from the waist up, being congratulated by two colleagues in a bright office, genuine smiles, candid moment. He is the clear focal point, centered and sharp; colleagues slightly behind and softly out of focus. Charcoal blazer over a white shirt, natural daylight. Photorealistic.
 
-5. Wide-medium shot of <<<SUBJECT>>> stepping onto a stage to speak, audience in silhouette in the foreground, warm spotlight on him from the front. Dark suit. His face is fully lit by the front key light, not in shadow, clearly visible. Photorealistic, cinematic.
+5. Medium shot of <<<SUBJECT>>>, framed from the waist up, stepping onto a stage to speak, audience in silhouette at the bottom edge of the frame, warm spotlight on him from the front. Dark suit. His face is fully lit by the front key light and clearly visible. Photorealistic, cinematic.
 
-6. Medium shot of <<<SUBJECT>>> celebrating a product launch with a small team, confetti in the air, natural joy, laughing. He is centered and in focus, wearing a charcoal blazer. Warm indoor light. Photorealistic, cinematic.
+6. Medium shot of <<<SUBJECT>>>, framed from the waist up, celebrating a product launch with a small team, confetti in the air, natural joy, laughing. He is centered and in focus, wearing a charcoal blazer. Warm indoor light. Photorealistic, cinematic.
 
 ## Parámetros
 
@@ -122,7 +126,136 @@ actual no fuerza ninguna proporción.
 
 ## Resultados
 
-_Pendiente._
+### Kling — sesión 2026-09-29
+
+- **Element**: `322695164303729` (`Patric`). Creado con los 4 recortes. Crearlo
+  no consumió créditos.
+- **Recortes**: la camiseta se quitó casi entera; queda el fondo (silla con
+  logo en 2 y 3). La 4 conserva el AirPod.
+- **Desviación del protocolo**: `kling-image-v3_0_omni` exige `image_1` aunque
+  se use `elements`. Se pasó el recorte frontal (mismo que la portada).
+- **Coste real de una fija** (`2k`, `9:16`, 1 imagen): **2 créditos**
+  (661 → 659). Las seis fijas: ~12 créditos.
+- Tiempo: ~60 s por imagen.
+
+**Escena 1 (fácil)** — primera lectura, pendiente del juicio del usuario:
+- La cara ocupa ~7% del alto, por debajo del 15-25% fijado. A ese tamaño no
+  se puede juzgar identidad: el encuadre "medium-wide" salió plano entero.
+- Lleva **corbata** pese a "without a tie": negar algo en el prompt lo mete.
+  Mismo principio que la descripción del sujeto; hay que quitar la negación.
+- Barba más corta y recortada que en las fotos 1-3 (¿influencia de la 4?).
+- Moño no visible de frente; esperable.
+
+### Kling — ronda v2 (prompts revisados), 6 escenas
+
+- Coste: **12 créditos** (659 → 647), 2 por imagen, confirmado. Las 6 en
+  paralelo, ~60 s en total.
+- Total gastado en fijas hasta ahora: 14 créditos.
+
+Lectura técnica (la identidad la juzga el usuario, no esto):
+
+| # | Encuadre / cara | Notas |
+|---|---|---|
+| 1 | Plano entero otra vez, cara ~7% | "walking" gana a "waist up". Ya sin corbata. |
+| 2 | Cintura, cara ~12% | Moño bajo visible. |
+| 3 | Cintura, cara ~12% | Cabeza inclinada pero cara legible; moño visible. |
+| 4 | Medio, cara ~15% | Dos compañeras detrás, sin mezcla de rasgos aparente. |
+| 5 | Plano entero, cara ~5% | Mete **corbata negra** sin pedirla. Cara iluminada. |
+| 6 | Cintura, cara ~12% | El confeti no tapa la cara. |
+
+- **Barba**: en las seis sale más corta y recortada que en las fotos 1-3.
+  Es consistente entre escenas, así que parece venir del sujeto, no del azar.
+- **"waist up" no basta** cuando la acción implica cuerpo entero (caminar,
+  subir a un escenario). Para 1 y 5 haría falta cambiar la acción, no el
+  encuadre.
+- **Juicio del usuario**: se reconoce ("sí, está bueno"), pero los rasgos
+  (peinado, barba, piel) no se ven tan reales como él.
+
+### Kling — ronda v3: sujeto revisado + escenas de visualización
+
+Cambios respecto a v2:
+- Descripción del sujeto (`element_update`, mismas 4 fotos):
+
+> Adult man in his early thirties. Light green-hazel eyes, thick dark
+> eyebrows, straight nose. Full, untrimmed dark beard and moustache covering
+> the jaw and chin. Long dark hair pulled tightly back and tied in a high top
+> knot on the crown of the head, with short faded sides. Slightly high
+> temples. Natural skin texture with light freckles. Warm olive complexion.
+
+- En los prompts, "cinematic" pasa a "Natural, unretouched, documentary-style
+  photo, realistic skin texture".
+- Escenas nuevas pedidas por el usuario: Ferrari rojo, liderando Settlia (IA
+  para plantas solares), programando, liderando ManifestAI, ático de lujo.
+- A/B: la escena del Ferrari se repitió pasando además las 4 fotos como
+  `image_1..4`.
+
+Coste: 12 créditos (647 → 635). Total en fijas: 26.
+
+| Escena | Lectura |
+|---|---|
+| Ferrari (solo sujeto) | Sale un coupé, no descapotable. El moño no se ve. |
+| Settlia | El rótulo dice **"Settilia"**: falta de ortografía. Hay que repetirla. |
+| Programando | Moño alto visible: la mejor en pelo. |
+| ManifestAI | Rótulo bien escrito. El pelo parece suelto por detrás. |
+| Ático | Correcta. |
+| Ferrari + 4 refs | Descapotable, moño visible, barba más natural. **Copia el AirPod** de la foto 4. |
+
+- Pasar las fotos como `image_n` ayuda al pelo, pero arrastra objetos de las
+  referencias. Confirma el riesgo anotado: la foto 4 hay que sustituirla por
+  una sin auricular.
+- El texto en imagen funciona a veces ("ManifestAI" bien, "Settlia" mal). En
+  producto convendría poner logos en postproducción y no fiarse del modelo.
+- Error de contexto, no del modelo: Settlia es una app de gastos compartidos,
+  no una empresa de plantas solares. Se asumió sin preguntar. De ahí salió el
+  paso de preguntas del asistente.
+
+### Kling — prueba de plantilla reutilizable (4 créditos según Kling)
+
+Kling informó 2 créditos por llamada, pero el saldo pasó de 635 a **571**
+(−64). Hay 60 créditos sin explicar: o hubo otro uso de la cuenta en ese
+intervalo, o alguna llamada cobró más de lo que dijo. **Sin verificar.**
+
+Pregunta: ¿el market puede guardar una escena hecha y cambiar solo a la persona?
+
+1. `text_to_image`: escena genérica con una persona anónima (fundador en una
+   cena enseñando una app de gastos compartidos a sus amigos). Sin rótulos.
+2. `image_to_image` con esa escena como `image_1` y el sujeto `Patric`:
+   "Recreate 图片1 with <<<id>>> as the man… Keep the scene, pose, clothing,
+   lighting and framing".
+
+Resultado:
+- La escena se conserva casi píxel a píxel: mesa, amigos, móvil, luz.
+- La persona cambia entera, no solo la cara: sale el moño alto. Es mejor que un
+  cambio de cara, que dejaría el pelo y el cuerpo de la plantilla.
+- La barba sale **demasiado** larga y poblada: "full, untrimmed" se pasó.
+  Hay que suavizar a "full, medium-length beard".
+- **Repetición con la barba ajustada** (2 créditos, 571 → 569, esta vez cuadra):
+  descripción cambiada a "Full dark beard and moustache of medium length, about
+  two centimetres, natural and slightly uneven, following the jawline and
+  chin". Mismo prompt y plantilla. La barba baja a una longitud parecida a la
+  real; el moño alto y la escena se mantienen.
+- **Juicio del usuario: "no me parezco".** En cambio sí se reconoció en las
+  escenas generadas solo con texto (v2, v3). Lectura probable: con la plantilla
+  como `image_1`, la cara de la persona de la plantilla se filtra (forma de la
+  cara, sonrisa, ojos) y el sujeto solo aporta barba y moño.
+- Conclusión (revisada): una imagen de plantilla con otra persona dentro
+  **diluye la identidad**. La receta del market debería ser texto (prompt,
+  encuadre, estilo), o, si lleva imagen, una sin cara que pueda filtrarse.
+  Queda por probar lo segundo. Lo que sigue abajo era la conclusión previa:
+- Detalle del usuario: no se parecen "ni ojos ni nariz ni boca ni rostro en
+  general". Es la cara de la plantilla, no la suya.
+- **Control** (2 créditos, 569 → 567): la misma escena de la cena solo con
+  texto y el sujeto, método de v2/v3. **Usuario: "sí, mi cara se parece más
+  ahora".** Confirmado: la plantilla con persona era la que rompía la
+  identidad. Decisión: las plantillas del market guardan la escena en texto
+  (como ya hace `Template.sceneBriefs`), sin imagen con otra cara. Nota: la
+  pantalla del móvil dice "Spit Bill": el modelo vuelve a escribir mal un texto
+  que nadie pidió literal.
+- Conclusión previa: la receta del market puede llevar una imagen de composición y
+  regenerarse con el sujeto de cada usuario. Coincide con lo que ya dice
+  `Template` en `src/lib/types.ts`: se regenera con la cara del comprador,
+  nunca se pega una cara encima.
+
 
 ## Cómo retomar esto en una sesión nueva
 

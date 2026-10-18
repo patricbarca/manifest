@@ -1,4 +1,5 @@
 import type {
+  ClarifyProvider,
   ImageProvider,
   ScriptProvider,
   VideoProvider,
@@ -8,7 +9,15 @@ import { mockImage, mockScript, mockVideo, mockVoice } from "./mock";
 import { falImage, falVideo } from "./fal";
 import { klingVideo } from "./kling";
 import { elevenVoice } from "./elevenlabs";
-import { anthropicScript, openaiScript, withFallback } from "./llm";
+import {
+  anthropicClarify,
+  anthropicScript,
+  clarifyWithFallback,
+  noClarify,
+  openaiClarify,
+  openaiScript,
+  withFallback,
+} from "./llm";
 
 /**
  * Registro de proveedores.
@@ -25,6 +34,13 @@ const SCRIPT: Record<string, ScriptProvider> = {
   mock: mockScript,
   anthropic: withFallback(anthropicScript),
   openai: withFallback(openaiScript),
+};
+
+/** Las preguntas usan el mismo LLM que el guion: se eligen con SCRIPT_PROVIDER. */
+const CLARIFY: Record<string, ClarifyProvider> = {
+  mock: noClarify,
+  anthropic: clarifyWithFallback(anthropicClarify),
+  openai: clarifyWithFallback(openaiClarify),
 };
 
 const IMAGE: Record<string, ImageProvider> = {
@@ -57,6 +73,9 @@ export const providers = {
   get script(): ScriptProvider {
     return pick(SCRIPT, process.env.SCRIPT_PROVIDER, "script");
   },
+  get clarify(): ClarifyProvider {
+    return pick(CLARIFY, process.env.SCRIPT_PROVIDER, "script");
+  },
   get image(): ImageProvider {
     return pick(IMAGE, process.env.IMAGE_PROVIDER, "image");
   },
@@ -78,4 +97,4 @@ export function isDemoMode(): boolean {
   );
 }
 
-export type { ImageProvider, ScriptProvider, VideoProvider, VoiceProvider };
+export type { ClarifyProvider, ImageProvider, ScriptProvider, VideoProvider, VoiceProvider };

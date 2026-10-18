@@ -44,8 +44,39 @@ export function checkIntention(text: string): SafetyVerdict {
   const trimmed = text.trim();
   if (trimmed.length < 8) return { ok: false, key: "tooShort" };
   if (trimmed.length > 600) return { ok: false, key: "tooLong" };
+  return checkBlocked(trimmed);
+}
+
+/**
+ * Los deseos se filtran uno a uno. Cada casilla puede ser corta ("mi casa"),
+ * pero entre todas tienen que decir algo.
+ */
+export function checkDesires(desires: string[]): SafetyVerdict {
+  const total = desires.join(" ").trim();
+  if (total.length < 8) return { ok: false, key: "tooShort" };
+  for (const desire of desires) {
+    const verdict = checkBlocked(desire);
+    if (!verdict.ok) return verdict;
+  }
+  return { ok: true };
+}
+
+/**
+ * Las respuestas a las preguntas de aclaración entran en el guion igual que
+ * la intención, así que pasan el mismo filtro. Sin mínimo de longitud: "rojo"
+ * es una respuesta válida.
+ */
+export function checkDetails(answers: { answer: string }[]): SafetyVerdict {
+  for (const { answer } of answers) {
+    const verdict = checkBlocked(answer);
+    if (!verdict.ok) return verdict;
+  }
+  return { ok: true };
+}
+
+function checkBlocked(text: string): SafetyVerdict {
   for (const { re, key } of BLOCKED_PATTERNS) {
-    if (re.test(trimmed)) return { ok: false, key };
+    if (re.test(text)) return { ok: false, key };
   }
   return { ok: true };
 }

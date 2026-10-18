@@ -16,7 +16,9 @@ import type { Locale } from "./i18n/locale";
  *  - few-shot que se le pasa al LLM para fijar el tono
  *
  * Reglas del guion: primera persona, presente, afirmativo (sin "no"), corto
- * para que entre en un respiro, y concreto antes que grandilocuente.
+ * para que entre en un respiro, y concreto antes que grandilocuente. Se
+ * escribe desde el final, como si ya hubiera ocurrido (Neville Goddard,
+ * Joe Dispenza): nada de "atraigo", "quiero" ni "está en camino".
  *
  * Las ESCENAS no se traducen: van a un modelo de imagen, que responde mejor
  * en inglés. Las AFIRMACIONES sí, porque el usuario las dice en voz alta y en
@@ -121,7 +123,7 @@ const AFFIRMATIONS: Record<Locale, Record<LifeArea, string[]>> = {
       "Doy y recibo amor con las manos abiertas.",
       "Soy suficiente tal y como soy.",
       "Digo lo que siento sin miedo.",
-      "Atraigo a quien me trata bien.",
+      "Estoy con alguien que me trata bien.",
       "Elijo relaciones que me suman.",
       "Pongo límites y sigo siendo querido.",
       "Confío en lo que se está formando.",
@@ -183,7 +185,7 @@ const AFFIRMATIONS: Record<Locale, Record<LifeArea, string[]>> = {
       "I give and receive love openly.",
       "I am enough exactly as I am.",
       "I say what I feel without fear.",
-      "I attract people who treat me well.",
+      "I am with someone who treats me well.",
       "I choose relationships that add to me.",
       "I set limits and I'm still loved.",
       "I trust what's taking shape.",
@@ -212,15 +214,30 @@ const AFFIRMATIONS: Record<Locale, Record<LifeArea, string[]>> = {
   },
 };
 
-const OPENING: Record<Locale, { hook: string; closing: string; fallbackTitle: string }> = {
+const OPENING: Record<
+  Locale,
+  { hook: string; gratitude: string[]; request: string; closing: string; fallbackTitle: string }
+> = {
   es: {
-    hook: "Respira. Esto ya está en camino.",
-    closing: "Ya es tuyo. Solo tienes que sostenerlo.",
+    hook: "Respira. Siéntelo como algo que ya ha ocurrido.",
+    gratitude: [
+      "Gracias por mi salud y por este momento.",
+      "Gracias por la gente que me quiere.",
+      "Gracias por todo lo que ya he construido.",
+    ],
+    request: "Gracias, universo, porque esto ya es mío.",
+    closing: "Gracias. Ya está hecho.",
     fallbackTitle: "Mi visualización",
   },
   en: {
-    hook: "Breathe. This is already on its way.",
-    closing: "It's yours. You just have to hold it.",
+    hook: "Breathe. Feel it as something that has already happened.",
+    gratitude: [
+      "Thank you for my health and for this moment.",
+      "Thank you for the people who love me.",
+      "Thank you for everything I have already built.",
+    ],
+    request: "Thank you, universe, because this is already mine.",
+    closing: "Thank you. It is done.",
     fallbackTitle: "My visualization",
   },
 };
@@ -257,6 +274,38 @@ function shortTitle(intention: string, locale: Locale): string {
   return (lastSpace > 20 ? cut.slice(0, lastSpace) : cut).replace(/[,;:]$/, "") + "…";
 }
 
+function asLine(text: string): string {
+  const t = text.trim().replace(/\s+/g, " ");
+  const capital = t.charAt(0).toUpperCase() + t.slice(1);
+  return /[.!?…]$/.test(capital) ? capital : capital + ".";
+}
+
+/**
+ * Área de vida a partir de lo que escribió la persona. Ya no se le pregunta:
+ * sirve para el banco de respaldo y para ordenar el market, no para el guion.
+ */
+const AREA_HINTS: [LifeArea, RegExp][] = [
+  ["abundancia", /dinero|money|mill[oó]n|millonari|rico|rich|abundan|ingres|income|ahorr|saving|invers|invest|financ|casa propia|my own house/i],
+  ["salud", /salud|health|corr[eo]|run|gimnas|gym|peso|weight|energ|dorm|sleep|fuerte|strong|\bfit/i],
+  ["amor", /amor|love|pareja|partner|relaci[oó]n|relationship|famil|boda|wedding|novi[oa]/i],
+  ["confianza", /confian|confiden|autoestima|self-esteem|en p[uú]blico|public speaking|miedo|fear|segur[oa] de m[ií]/i],
+  ["libertad", /viaj|travel|libertad|freedom|remot|n[oó]mada|nomad|otro pa[ií]s|abroad|playa|beach/i],
+  ["carrera", /trabaj|work|empresa|company|negocio|business|client|ascens|promot|app\b|software|startup|lider|lead/i],
+];
+
+export function inferArea(text: string): LifeArea {
+  let best: LifeArea = "carrera";
+  let bestScore = 0;
+  for (const [area, re] of AREA_HINTS) {
+    const score = (text.match(new RegExp(re.source, "gi")) ?? []).length;
+    if (score > bestScore) {
+      best = area;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
 export function draftScript(input: {
   area: LifeArea;
   intention: string;
@@ -264,12 +313,15 @@ export function draftScript(input: {
   tier: Tier;
   seed: string;
   locale: Locale;
+  desires?: string[];
 }): ScriptDraft {
-  const n = sceneCount(input.tier, input.durationSec);
-  const affirmations = seededShuffle(
-    AFFIRMATIONS[input.locale][input.area],
-    input.seed,
-  ).slice(0, n);
+  const desires = input.desires?.filter((d) => d.trim());
+  const n = desires?.length || sceneCount(input.tier, input.durationSec);
+  // Con deseos, la frase es el deseo en sus palabras: sin LLM no hay quien lo
+  // pase a presente, pero es mejor que una frase genérica del banco.
+  const affirmations = desires?.length
+    ? desires.map(asLine)
+    : seededShuffle(AFFIRMATIONS[input.locale][input.area], input.seed).slice(0, n);
   const briefs = seededShuffle(SCENES[input.area], input.seed + "s").slice(0, n);
 
   // La intención del usuario solo da título aquí. NO se inyecta en los briefs:
@@ -279,6 +331,8 @@ export function draftScript(input: {
   return {
     title: shortTitle(input.intention, input.locale),
     hook: OPENING[input.locale].hook,
+    gratitude: OPENING[input.locale].gratitude,
+    request: OPENING[input.locale].request,
     affirmations,
     closing: OPENING[input.locale].closing,
     sceneBriefs: briefs,
@@ -305,6 +359,11 @@ export function layoutTimeline(
   }));
 }
 
+/** Escena en primera persona: el brief empieza por "POV:". */
+export function isPovBrief(brief: string): boolean {
+  return /^pov:\s*/i.test(brief);
+}
+
 /** Compone el prompt final de imagen: identidad + escena + estilo + encuadre. */
 export function buildScenePrompt(
   brief: string,
@@ -312,11 +371,16 @@ export function buildScenePrompt(
   hasSelfie: boolean,
 ): string {
   const styleDef = VISUAL_STYLES.find((s) => s.id === style) ?? VISUAL_STYLES[0];
-  const identity = hasSelfie
-    ? "the person from the reference photo, same face and identity, natural likeness"
-    : "a person seen from behind or at a distance, face not visible";
+  // Escena subjetiva: se ve desde los ojos de la persona, así que no hay
+  // cara que conservar. El pipeline tampoco le pasa el selfie: un modelo de
+  // edición lo usaría como base y metería la cara.
+  const identity = isPovBrief(brief)
+    ? "first-person point of view through the person's own eyes, only their hands visible"
+    : hasSelfie
+      ? "the person from the reference photo, same face and identity, natural likeness"
+      : "a person seen from behind or at a distance, face not visible";
   return [
-    `${identity}, ${brief}`,
+    `${identity}, ${brief.replace(/^pov:\s*/i, "")}`,
     styleDef.prompt,
     "vertical 9:16 composition, high detail, no text, no watermark, no logos",
   ].join(", ");
@@ -337,6 +401,7 @@ export function buildScenes(
   return briefs.map((brief, i) => ({
     id: `sc_${i + 1}`,
     prompt: buildScenePrompt(brief, style, hasSelfie),
+    pov: isPovBrief(brief) || undefined,
     startSec: +(i * slot).toFixed(2),
     endSec: +((i + 1) * slot).toFixed(2),
     affirmationIndex: i,
