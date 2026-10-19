@@ -281,7 +281,7 @@ export function VisualizationPlayer({ project, t }: Props) {
 
         {project.watermark && (
           <span className="t-eyebrow absolute right-4 top-4 rounded-full bg-black/35 px-2.5 py-1.5 text-white/70 backdrop-blur-md">
-            Manifest
+            ManifestLifeAI
           </span>
         )}
 

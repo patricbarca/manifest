@@ -59,7 +59,18 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
   return (
     <div className="mx-auto max-w-[1120px] px-6 py-14">
       <div className="grid gap-14 lg:grid-cols-[minmax(0,380px)_1fr] lg:items-start">
-        <VisualizationPlayer project={project} t={t} />
+        {/* Con el montaje nuevo el MP4 es el producto: voz, música y frases ya
+            van dentro. El reproductor web queda para los vídeos antiguos. */}
+        {project.voiceLines && project.exportUrl ? (
+          <video
+            src={project.exportUrl}
+            controls
+            playsInline
+            className="aspect-[9/16] w-full rounded-[var(--radius-lg)] bg-black"
+          />
+        ) : (
+          <VisualizationPlayer project={project} t={t} />
+        )}
 
         <div className="space-y-8">
           <div>

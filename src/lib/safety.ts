@@ -27,8 +27,11 @@ const BLOCKED_PATTERNS: { re: RegExp; key: SafetyKey }[] = [
     re: /\b(rentabilidad garantizada|guaranteed returns?|ganar \d+ ?% |make \d+ ?% |inversión segura|safe investment|cripto garantizad|guaranteed crypto)/i,
     key: "finance",
   },
+  // Se bloquea que el protagonista sea un menor. Los hijos imaginados en una
+  // escena familiar sí se permiten: se generan de cero (nunca se sube la foto
+  // de un niño) y salen vestidos, en escenas cotidianas.
   {
-    re: /\b(niño|niña|menor de edad|mi hijo|mi hija|my son|my daughter|my kid|child|underage|de \d ?años|\d+ years old)\b/i,
+    re: /\b(menor de edad|underage|soy (un )?(niño|niña)|i am a (child|kid)|tengo 1[0-7] años|i am 1[0-7])\b/i,
     key: "minors",
   },
   { re: /\b(desnud|nude|naked|sexual|erótic|erotic|porn)/i, key: "sexual" },

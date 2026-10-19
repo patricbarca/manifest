@@ -6,10 +6,12 @@ import type {
   VoiceProvider,
 } from "./contracts";
 import { mockImage, mockScript, mockVideo, mockVoice } from "./mock";
-import { falImage, falVideo } from "./fal";
+import { falImage, falVideo, falVoice } from "./fal";
 import { klingVideo } from "./kling";
 import { elevenVoice } from "./elevenlabs";
 import {
+  falClarify,
+  falScript,
   anthropicClarify,
   anthropicScript,
   clarifyWithFallback,
@@ -34,6 +36,7 @@ const SCRIPT: Record<string, ScriptProvider> = {
   mock: mockScript,
   anthropic: withFallback(anthropicScript),
   openai: withFallback(openaiScript),
+  fal: withFallback(falScript),
 };
 
 /** Las preguntas usan el mismo LLM que el guion: se eligen con SCRIPT_PROVIDER. */
@@ -41,6 +44,7 @@ const CLARIFY: Record<string, ClarifyProvider> = {
   mock: noClarify,
   anthropic: clarifyWithFallback(anthropicClarify),
   openai: clarifyWithFallback(openaiClarify),
+  fal: clarifyWithFallback(falClarify),
 };
 
 const IMAGE: Record<string, ImageProvider> = {
@@ -57,6 +61,7 @@ const VIDEO: Record<string, VideoProvider> = {
 const VOICE: Record<string, VoiceProvider> = {
   mock: mockVoice,
   elevenlabs: elevenVoice,
+  fal: falVoice,
 };
 
 function pick<T>(table: Record<string, T>, envValue: string | undefined, stage: Stage): T {

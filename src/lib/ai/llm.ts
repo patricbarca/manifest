@@ -3,6 +3,7 @@ import type { ClarifyAnswer, ClarifyQuestion, ScriptDraft } from "../types";
 import { draftScript } from "../script-engine";
 import { sceneCount } from "../pricing";
 import { PROVIDER_COST } from "../pricing";
+import { falText } from "./fal";
 
 /**
  * Guion con LLM.
@@ -49,14 +50,24 @@ hook: una invitación breve a respirar y sentirlo como ya ocurrido.
 closing: gratitud, como algo ya hecho ("Gracias. Ya está hecho.").
 
 Reglas de las escenas (sceneBriefs):
-- En INGLÉS, porque van a un modelo de imagen.
+- En INGLÉS, porque van a un modelo de imagen que recibe fotos de la persona.
 - La persona ya vive el resultado: el momento de disfrutarlo, no el esfuerzo.
-- Muestran la emoción en la cara: gratitud, alegría serena.
-- Concretas y visuales: lugar, luz, acción, hora del día. Sin texto ni logos en la imagen.
+- La persona sale grande en el encuadre, con la cara bien visible y una
+  sonrisa natural: gratitud, alegría serena.
+- Concretas y visuales: lugar, luz, acción, hora del día.
+- Describe solo lo que SÍ aparece. Nunca escribas negaciones ("no", "without",
+  "never"): el modelo de imagen las ignora y pinta justo eso.
+- Nada de texto escrito en la escena: ni carteles, ni pantallas con letras, ni
+  logos, ni rótulos en coches. Una pantalla muestra gráficos o fotos.
+- Si aparecen niños: edad concreta, rasgos de niño y sonrisa con la boca
+  cerrada. Los adultos sí pueden sonreír enseñando los dientes.
+- Pareja, hijos u otras personas se describen de forma genérica (solo tenemos
+  fotos del usuario): edad aproximada, pelo, ropa.
+- Si el usuario menciona un país o ciudad, respeta los detalles locales (por
+  ejemplo, en Australia o Reino Unido el volante va a la derecha).
 - Una escena por afirmación, en el mismo orden.
-- Una de cada tres escenas, más o menos, es en primera persona: se ve desde
-  los ojos de la persona, solo sus manos, sin su cara. Esas empiezan por "POV:"
-  ("POV: hands on the steering wheel of a red convertible, coastal road").
+- En tercera persona. Solo usa una escena en primera persona si el deseo lo
+  pide de forma natural; esas empiezan por "POV:" y muestran solo las manos.
 
 Si llega una lista de deseos:
 - Exactamente una afirmación y una escena por deseo, en el mismo orden.
@@ -223,9 +234,10 @@ async function openaiText(system: string, user: string): Promise<string> {
 
 type Transport = (system: string, user: string, maxTokens: number) => Promise<string>;
 
-const TRANSPORTS: Record<"anthropic" | "openai", Transport> = {
+const TRANSPORTS: Record<"anthropic" | "openai" | "fal", Transport> = {
   anthropic: anthropicText,
   openai: (system, user) => openaiText(system, user),
+  fal: falText,
 };
 
 function scriptProvider(name: keyof typeof TRANSPORTS): ScriptProvider {
@@ -271,6 +283,8 @@ export const anthropicScript = scriptProvider("anthropic");
 export const openaiScript = scriptProvider("openai");
 export const anthropicClarify = clarifyProvider("anthropic");
 export const openaiClarify = clarifyProvider("openai");
+export const falScript = scriptProvider("fal");
+export const falClarify = clarifyProvider("fal");
 
 /**
  * Sin LLM no hay preguntas a medida. La lista vacía hace que la UI use las

@@ -12,7 +12,7 @@ export const en = {
   },
   footer: {
     disclaimer:
-      "Manifest is a visualization and focus tool. It does not replace medical treatment or financial advice, and it does not guarantee results.",
+      "ManifestLifeAI is a visualization and focus tool. It does not replace medical treatment or financial advice, and it does not guarantee results.",
   },
   common: {
     back: "Back",
@@ -170,7 +170,10 @@ export const en = {
     ideasLabel: "Or start from one of these:",
     photoTitle: "Your face in the scenes",
     photoHint:
-      "A front-facing selfie, natural light, no sunglasses. It also works without a photo: scenes are generated with no visible face.",
+      "Up to 4 photos of you: one from the front, one from three-quarters, one in profile. Natural light, no sunglasses. The more angles, the more it looks like you.",
+    addPhoto: "Add photo",
+    removePhoto: "Remove",
+    photoCount: "{n} of 4 photos",
     noPhoto: "No photo",
     uploading: "Uploading…",
     photoPrivacy:
@@ -180,6 +183,15 @@ export const en = {
     videoType: "What kind of video",
     duration: "Duration",
     visualStyle: "Visual style",
+    palette: "Background colour",
+    palettes: {
+      dusk: "Dusk",
+      ocean: "Ocean",
+      sage: "Sage",
+      rose: "Rose",
+      lavender: "Lavender",
+      gold: "Gold",
+    },
     voice: "Voice",
     firstVideo: "Your first video",
     price: "Price",
@@ -322,7 +334,7 @@ export const en = {
     dream: "Dreamlike",
   },
   consent:
-    "I confirm this photo is of me, that I am over 18, and I authorize its use to generate my video.",
+    "I confirm these photos are of me, that I am over 18, and I authorize their use to generate my video.",
   safety: {
     tooShort: "Tell us a little more: at least one full sentence.",
     tooLong: "Too long. Sum it up in a few sentences.",
@@ -348,6 +360,7 @@ export const en = {
     tooManyPreviews: "You've rewritten the scenes many times this hour. Wait a bit and try again.",
     noFreeLeft:
       "You've used your free video. Payments aren't active yet.",
+    betaOnly: "ManifestLifeAI is in private beta. You need an invite link to create videos.",
   },
 };
 

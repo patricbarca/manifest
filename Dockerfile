@@ -23,18 +23,20 @@ RUN npm run build
 FROM node:22-alpine AS runner
 WORKDIR /app
 
-# ffmpeg es lo que monta el MP4 descargable. Sin él la app funciona igual
-# (el vídeo se ve en el reproductor web) pero la descarga queda deshabilitada.
+# ffmpeg y Python montan el vídeo final (render/build_glass.py): fondo
+# animado, paneles de vidrio, voz y música. numpy/pillow/scipy vienen de los
+# paquetes de Alpine, ya compilados, así que no hace falta pip ni compilador.
 # su-exec baja privilegios en el entrypoint, después de arreglar el dueño del
 # volumen. Es el equivalente ligero de gosu en Alpine.
-RUN apk add --no-cache ffmpeg su-exec
+RUN apk add --no-cache ffmpeg su-exec python3 py3-numpy py3-pillow py3-scipy
 
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     PORT=3000 \
     HOSTNAME=0.0.0.0 \
     DATA_DIR=/data \
-    FFMPEG_PATH=/usr/bin/ffmpeg
+    FFMPEG_PATH=/usr/bin/ffmpeg \
+    PYTHON_PATH=/usr/bin/python3
 
 # Usuario sin privilegios: si alguien escapa del proceso, no es root.
 # El contenedor arranca como root solo para ajustar el dueño del volumen y
@@ -45,6 +47,8 @@ RUN addgroup -g 1001 -S nodejs && adduser -S -u 1001 -G nodejs nextjs
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+# El montador del vídeo (Python) y sus fuentes.
+COPY --from=builder --chown=nextjs:nodejs /app/render ./render
 
 # Punto de montaje del volumen. Aquí viven la base de datos JSON, los selfies
 # y las escenas: todo lo que tiene que sobrevivir a un despliegue.

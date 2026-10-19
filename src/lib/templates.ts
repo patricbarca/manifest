@@ -20,7 +20,7 @@ import type { Template } from "./types";
  * ── Estas son de la casa ──
  *
  * Son la semilla: el catálogo del día uno, para que nadie entre a un mercado
- * vacío. Van firmadas por Manifest porque las escribimos nosotros. `uses`
+ * vacío. Van firmadas por ManifestLifeAI porque las escribimos nosotros. `uses`
  * empieza en cero y solo sube cuando alguien las usa de verdad — no hay ni un
  * número inventado en este fichero, y no debe haberlo nunca.
  */
@@ -31,7 +31,7 @@ export const TEMPLATES: Template[] = [
   {
     slug: "salir-al-escenario",
     title: { es: "Salir al escenario", en: "Walking on stage" },
-    author: "Manifest",
+    author: "ManifestLifeAI",
     area: "confianza",
     style: "cinematic",
     tone: "firme",
@@ -78,7 +78,7 @@ export const TEMPLATES: Template[] = [
   {
     slug: "la-conversacion-de-sueldo",
     title: { es: "La conversación de sueldo", en: "The salary conversation" },
-    author: "Manifest",
+    author: "ManifestLifeAI",
     area: "carrera",
     style: "editorial",
     tone: "firme",
@@ -125,7 +125,7 @@ export const TEMPLATES: Template[] = [
   {
     slug: "primer-dia",
     title: { es: "El primer día", en: "The first day" },
-    author: "Manifest",
+    author: "ManifestLifeAI",
     area: "carrera",
     style: "editorial",
     tone: "cercana",
@@ -172,7 +172,7 @@ export const TEMPLATES: Template[] = [
   {
     slug: "noventa-dias-de-constancia",
     title: { es: "Noventa días de constancia", en: "Ninety days of showing up" },
-    author: "Manifest",
+    author: "ManifestLifeAI",
     area: "salud",
     style: "cinematic",
     tone: "firme",
@@ -225,7 +225,7 @@ export const TEMPLATES: Template[] = [
   {
     slug: "el-mes-que-no-llego-justo",
     title: { es: "El mes que no llegó justo", en: "The month that wasn't tight" },
-    author: "Manifest",
+    author: "ManifestLifeAI",
     area: "abundancia",
     style: "golden",
     tone: "calma",
@@ -278,7 +278,7 @@ export const TEMPLATES: Template[] = [
   {
     slug: "amor-tranquilo",
     title: { es: "Amor tranquilo", en: "A calm love" },
-    author: "Manifest",
+    author: "ManifestLifeAI",
     area: "amor",
     style: "dream",
     tone: "calma",
@@ -331,7 +331,7 @@ export const TEMPLATES: Template[] = [
   {
     slug: "fundadora-en-lisboa",
     title: { es: "Mi propio estudio", en: "My own studio" },
-    author: "Manifest",
+    author: "ManifestLifeAI",
     area: "carrera",
     style: "editorial",
     tone: "cercana",
@@ -384,7 +384,7 @@ export const TEMPLATES: Template[] = [
   {
     slug: "un-ano-sin-oficina",
     title: { es: "Un año sin oficina", en: "A year without an office" },
-    author: "Manifest",
+    author: "ManifestLifeAI",
     area: "libertad",
     style: "minimal",
     tone: "cercana",

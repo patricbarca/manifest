@@ -24,11 +24,18 @@ Para usar modelos de verdad, copia `.env.example` a `.env.local` y cambia los
 proveedores:
 
 ```bash
-SCRIPT_PROVIDER=anthropic   # o openai, o mock
-IMAGE_PROVIDER=fal
-VIDEO_PROVIDER=fal          # o kling
-VOICE_PROVIDER=elevenlabs
+# Todo con una sola clave de fal: guion, imágenes, voz y animación.
+FAL_KEY=...
+SCRIPT_PROVIDER=fal         # o anthropic, openai, mock
+IMAGE_PROVIDER=fal          # Seedream 4.5 con hasta 4 fotos del usuario
+VIDEO_PROVIDER=fal          # MiniMax H3 Max (plan Animado)
+VOICE_PROVIDER=fal          # ElevenLabs v4, voz "Sarah", una pista por frase
+ACCESS_CODE=...             # beta privada: solo se crea con /api/access?code=...
 ```
+
+Con `VOICE_PROVIDER=fal` y Python en el contenedor, el vídeo final lo monta
+`render/build_glass.py` (fondo animado de vidrio, respiración guiada, cierre
+"repite conmigo"). El usuario elige el color del fondo entre seis paletas.
 
 ## Qué hay dentro
 
