@@ -71,7 +71,7 @@ export const en = {
     durationBoth: "≈ 2 min",
     soundOn: "Turn sound on",
     examplesTitle: "This is what you get",
-    examplesLede: "Two full videos, exactly as each person receives them: guided breathing, one scene per desire and a «repeat after me» close.",
+    examplesLede: "A fragment of two real videos: the scene for each desire and the close. The full video also includes an opening thought, guided breathing and the «repeat after me».",
     examples: {
       woman: "Her own creative studio, a home by the sea and travelling in Japan.",
       man: "Finishing a marathon, celebrating with his team and coming home to his family.",

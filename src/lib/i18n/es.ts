@@ -70,7 +70,7 @@ export const es: Dictionary = {
     durationBoth: "≈ 2 min",
     soundOn: "Activar sonido",
     examplesTitle: "Así se ve",
-    examplesLede: "Dos vídeos completos, tal como los recibe cada persona: respiración guiada, una escena por deseo y el cierre «repite conmigo».",
+    examplesLede: "Un fragmento de dos vídeos reales: las escenas de cada deseo y el cierre. El vídeo completo incluye además una frase de inspiración, la respiración guiada y el «repite conmigo».",
     examples: {
       woman: "Su estudio creativo, una casa frente al mar y viajar por Japón.",
       man: "Terminar una maratón, celebrar con su equipo y llegar a casa con su familia.",

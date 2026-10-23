@@ -2,6 +2,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Project, ScriptPreview, User } from "../types";
 import { dbDir } from "../paths";
+import { supabaseDb, supabaseConfigured } from "./supabase-store";
 
 /**
  * Persistencia del MVP: un JSON por coleccion en .data/.
@@ -38,7 +39,7 @@ function serialize<T>(fn: () => Promise<T>): Promise<T> {
   return next;
 }
 
-export const db = {
+const jsonDb = {
   async getProject(id: string): Promise<Project | undefined> {
     return (await readCollection<Project>("projects"))[id];
   },
@@ -122,3 +123,11 @@ export const db = {
     });
   },
 };
+
+export type Store = typeof jsonDb;
+
+/**
+ * Con Supabase configurado (NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SECRET_KEY)
+ * todo va a Postgres; sin él, a los JSON locales (desarrollo).
+ */
+export const db: Store = supabaseConfigured() ? supabaseDb : jsonDb;
