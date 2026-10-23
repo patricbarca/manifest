@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
+import { HeroVideo } from "@/components/HeroVideo";
 import { TEMPLATES } from "@/lib/templates";
 import { PRODUCTS, estimateCostCents, formatUsd } from "@/lib/pricing";
 import { LIFE_AREAS } from "@/lib/types";
@@ -52,27 +53,36 @@ export default async function HomePage() {
         </div>
 
         {/* El reproductor, centrado y grande: es el producto. */}
-        <div className="relative mx-auto mt-14 w-full max-w-[272px]">
+        <div className="relative mx-auto mt-14 w-full max-w-[300px]">
           <div className="absolute -inset-16 -z-10 rounded-full bg-white/[0.045] blur-3xl" />
           <div className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-hairline)] bg-black shadow-[0_40px_80px_-20px_rgba(0,0,0,0.9)]">
-            <div className="relative aspect-[9/16] w-full">
-              <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_15%,#2b3350_0%,#161a28_45%,#08090d_100%)]" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/20" />
-              <div className="absolute inset-x-0 bottom-0 p-6">
-                <p className="text-[1.6rem] font-semibold leading-[1.15] tracking-[-0.03em]">
-                  {t.home.previewLine}
-                </p>
-                <p className="t-sub pulse-soft mt-3 flex items-center gap-2 text-white">
-                  <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                  {t.home.previewCue}
-                </p>
-                <div className="mt-5 h-[3px] w-full overflow-hidden rounded-full bg-white/15">
-                  <div className="h-full w-2/5 rounded-full bg-white" />
-                </div>
-              </div>
-            </div>
+            <HeroVideo src="/videos/promo-en.mp4" poster="/videos/promo-en.jpg" soundLabel={t.home.soundOn} />
           </div>
         </div>
+      </section>
+
+      {/* ── Ejemplos reales ──────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-[1120px] px-6 py-20">
+        <div className="mx-auto max-w-xl text-center">
+          <h2 className="t-title">{t.home.examplesTitle}</h2>
+          <p className="t-body mt-3 text-[var(--color-label-2)]">{t.home.examplesLede}</p>
+        </div>
+        <div className="mx-auto mt-12 grid max-w-2xl gap-6 sm:grid-cols-2">
+          {(["woman", "man"] as const).map((who) => (
+            <figure key={who} className="card overflow-hidden rounded-[var(--radius-lg)]">
+              <video
+                src={`/videos/demo-${who}-en.mp4`}
+                poster={`/videos/demo-${who}-en.jpg`}
+                controls
+                playsInline
+                preload="none"
+                className="aspect-[9/16] w-full bg-black object-cover"
+              />
+              <figcaption className="t-sub p-5 text-[var(--color-label-2)]">{t.home.examples[who]}</figcaption>
+            </figure>
+          ))}
+        </div>
+        <p className="t-caption mt-6 text-center text-[var(--color-label-3)]">{t.home.examplesNote}</p>
       </section>
 
       {/* ── Cómo funciona ────────────────────────────────────────────────── */}
@@ -165,6 +175,22 @@ export default async function HomePage() {
                 </p>
               </div>
             </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Preguntas ────────────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-2xl px-6 py-20">
+        <h2 className="t-title text-center">{t.home.faqTitle}</h2>
+        <div className="mt-10 divide-y divide-[var(--color-hairline)] border-y border-[var(--color-hairline)]">
+          {t.home.faq.map((item) => (
+            <details key={item.q} className="group py-5">
+              <summary className="t-headline flex cursor-pointer list-none items-center justify-between gap-4">
+                {item.q}
+                <span className="text-[var(--color-label-3)] transition-transform group-open:rotate-45">+</span>
+              </summary>
+              <p className="t-sub mt-3 text-pretty text-[var(--color-label-2)]">{item.a}</p>
+            </details>
           ))}
         </div>
       </section>

@@ -3,7 +3,7 @@ import { access, mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Project } from "../types";
 import { DATA_DIR, localPathForMediaUrl, mediaPath, mediaUrl } from "../paths";
-import { EXPERIENCE, pickQuote } from "../experience";
+import { EXPERIENCE, quoteText } from "../experience";
 
 /**
  * Montaje del vídeo final con render/build_glass.py.
@@ -100,7 +100,7 @@ export async function renderGlass(
       closeLine: x.closeLine,
       seal: x.seal,
       tomorrow: x.tomorrow,
-      quote: pickQuote(project.locale, project.id),
+      quote: quoteText(project.locale, project.quoteId, project.id),
       affirmations,
     },
     scenes: project.scenes.map((s) => ({

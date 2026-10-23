@@ -61,8 +61,12 @@ Reglas de las escenas (sceneBriefs):
   logos, ni rótulos en coches. Una pantalla muestra gráficos o fotos.
 - Si aparecen niños: edad concreta, rasgos de niño y sonrisa con la boca
   cerrada. Los adultos sí pueden sonreír enseñando los dientes.
-- Pareja, hijos u otras personas se describen de forma genérica (solo tenemos
-  fotos del usuario): edad aproximada, pelo, ropa.
+- Si llega una lista de personas con foto y un deseo nombra a alguna (por su
+  nombre o su relación), esa escena la incluye. En el sceneBrief NO escribas su
+  nombre: escribe "[[Nombre]]" exactamente así, entre dobles corchetes, donde
+  aparece ("[[Javi]] hugs her by the river"). El sistema lo sustituye por sus fotos.
+- Cualquier otra persona (sin foto) se describe de forma genérica: edad
+  aproximada, pelo, ropa.
 - Si el usuario menciona un país o ciudad, respeta los detalles locales (por
   ejemplo, en Australia o Reino Unido el volante va a la derecha).
 - Una escena por afirmación, en el mismo orden.
@@ -171,6 +175,14 @@ function desiresBlock(desires: string[] | undefined): string {
   return "\nDeseos, uno por escena y en este orden:\n" + desires.map((d, i) => `${i + 1}. "${d}"`).join("\n");
 }
 
+function peopleBlock(people: { name: string; relation?: string }[] | undefined): string {
+  if (!people?.length) return "";
+  return (
+    "\nPersonas que el usuario añadió con foto (salen en las escenas donde las nombra):\n" +
+    people.map((p) => `- ${p.name}${p.relation ? ` (${p.relation})` : ""}`).join("\n")
+  );
+}
+
 function userPrompt(input: {
   area: string;
   intention: string;
@@ -178,11 +190,12 @@ function userPrompt(input: {
   count: number;
   details?: ClarifyAnswer[];
   desires?: string[];
+  people?: { name: string; relation?: string }[];
 }): string {
   const intention = input.desires?.length
     ? desiresBlock(input.desires)
     : `\nIntención del usuario, en sus palabras: "${input.intention}"`;
-  return `Área de vida: ${input.area}${intention}${detailsBlock(input.details)}
+  return `Área de vida: ${input.area}${intention}${peopleBlock(input.people)}${detailsBlock(input.details)}
 Tono de la voz: ${input.tone}
 Necesito exactamente ${input.count} afirmaciones, ${input.count} sceneBriefs y ${input.count} sceneCaptions.`;
 }

@@ -1,11 +1,14 @@
 import { providers } from "./ai";
 import { db } from "./db/store";
-import { buildScenes, layoutTimeline, narrationText } from "./script-engine";
+import { applyCast, buildScenes, layoutTimeline, narrationText, sceneCast } from "./script-engine";
 import { assembleMp4 } from "./render/assemble";
 import { canRenderGlass, mediaDuration, renderGlass } from "./render/glass";
 import { sceneLength, voiceLines } from "./experience";
 import { localPathForMediaUrl } from "./paths";
-import type { PipelineStep, Project, StepId } from "./types";
+import { rm } from "node:fs/promises";
+import { dropIntermediates, sweepStorage } from "./cleanup";
+import { nextQuoteId } from "./quotes";
+import type { Person, PipelineStep, Project, Scene, StepId } from "./types";
 
 /**
  * El pipeline de generación.
@@ -69,11 +72,66 @@ function photoAbsolutePaths(project: Project): string[] {
   return urls.map((u) => localPathForMediaUrl(u)).filter((p): p is string => !!p);
 }
 
+/** Seedream acepta como mucho 10 imágenes de referencia por escena. */
+const MAX_REFS = 10;
+
+/**
+ * Fotos de referencia de una escena y en qué "Figuras" cae cada persona.
+ *
+ * Primero van las fotos del usuario (Figuras 1..k), luego las de cada persona
+ * del reparto. Si no caben todas, cada persona lleva menos fotos.
+ */
+function castPlan(scene: Scene, photos: string[], people: Person[]) {
+  const own = scene.pov ? [] : photos;
+  const cast = (scene.cast ?? [])
+    .map((id) => people.find((p) => p.id === id))
+    .filter((p): p is Person => !!p);
+  const refs = [...own];
+  const ranges: { name: string; first: number; last: number }[] = [];
+  const per = cast.length ? Math.min(3, Math.floor((MAX_REFS - own.length) / cast.length)) : 0;
+  for (const person of cast) {
+    const paths = person.photoUrls
+      .map((u) => localPathForMediaUrl(u))
+      .filter((x): x is string => !!x)
+      .slice(0, per);
+    if (!paths.length) continue;
+    ranges.push({ name: person.name, first: refs.length + 1, last: refs.length + paths.length });
+    refs.push(...paths);
+  }
+  return { refs, ranges };
+}
+
+/** Las marcas [[Nombre]] del guion, legibles para el modelo de vídeo. */
+function plainBrief(brief: string): string {
+  return brief.replace(/^pov:\s*/i, "").replace(/\[\[\s*([^\]]+?)\s*\]\]/g, "a loved one");
+}
+
+/** Borra las fotos de las personas invitadas: no se guardan más de lo necesario. */
+async function deletePeoplePhotos(people: Person[]) {
+  for (const url of people.flatMap((p) => p.photoUrls)) {
+    const abs = localPathForMediaUrl(url);
+    if (abs) await rm(abs, { force: true }).catch(() => undefined);
+  }
+}
+
+/** Elige la siguiente frase sin repetir y la apunta en el usuario. */
+async function assignQuote(ownerId: string): Promise<string> {
+  const user = await db.getUser(ownerId);
+  const id = nextQuoteId(user?.usedQuotes ?? [], ownerId);
+  if (user) await db.putUser({ ...user, usedQuotes: [...(user.usedQuotes ?? []), id] });
+  return id;
+}
+
 export async function runPipeline(projectId: string): Promise<void> {
   const start = await db.getProject(projectId);
   if (!start) throw new Error("Proyecto no encontrado");
 
   await db.patchProject(projectId, (p) => ({ ...p, status: "generating", error: undefined }));
+  void sweepStorage();
+
+  // Frase de apertura que esta persona aún no ha visto.
+  const quoteId = start.quoteId ?? (await assignQuote(start.ownerId));
+  await db.patchProject(projectId, (p) => ({ ...p, quoteId }));
 
   let spentCents = 0;
   const charge = (cents: number) => {
@@ -98,17 +156,23 @@ export async function runPipeline(projectId: string): Promise<void> {
           locale: start.locale,
           details: start.details,
           desires: start.desires,
+          people: start.people?.map((p) => ({ name: p.name, relation: p.relation })),
         });
     const script = scriptOut.result;
     const timeline = layoutTimeline(script.affirmations, start.durationSec);
     const photos = photoAbsolutePaths(start);
+    const people = start.people ?? [];
     const scenes = buildScenes(
       script.sceneBriefs,
       start.style,
       photos.length > 0,
       start.durationSec,
       photos.length,
-    );
+    ).map((scene, i) => {
+      const ids = people.length ? sceneCast(script.sceneBriefs[i] ?? "", start.desires?.[i], people) : [];
+      const withCast: Scene = { ...scene, cast: ids.length ? ids : undefined };
+      return { ...withCast, prompt: applyCast(scene.prompt, castPlan(withCast, photos, people).ranges) };
+    });
 
     await db.patchProject(projectId, (p) => ({
       ...p,
@@ -128,9 +192,10 @@ export async function runPipeline(projectId: string): Promise<void> {
     let imageCents = 0;
 
     await mapWithLimit(scenes, 3, async (scene) => {
+      const { refs } = castPlan(scene, photos, people);
       const out = await providers.image.generate({
         prompt: scene.prompt,
-        referencePaths: scene.pov ? undefined : photos,
+        referencePaths: refs.length ? refs : undefined,
         projectId,
         sceneId: scene.id,
       });
@@ -157,9 +222,10 @@ export async function runPipeline(projectId: string): Promise<void> {
     let lineUrls: Record<string, string> | undefined;
     if (glass) {
       const out = await providers.voice.speakLines!({
-        lines: voiceLines(start.locale, start.id, script.affirmations),
+        lines: voiceLines(start.locale, start.id, script.affirmations, quoteId),
         projectId,
         locale: start.locale,
+        voice: start.voice,
       });
       lineUrls = out.result;
       await db.patchProject(projectId, (p) => ({ ...p, voiceLines: lineUrls, voiceMode: "file" }));
@@ -174,6 +240,7 @@ export async function runPipeline(projectId: string): Promise<void> {
         tone: start.tone,
         projectId,
         locale: start.locale,
+        voice: start.voice,
       });
       await db.patchProject(projectId, (p) => ({
         ...p,
@@ -204,7 +271,7 @@ export async function runPipeline(projectId: string): Promise<void> {
 
       await mapWithLimit(withImages, 2, async (scene) => {
         if (!scene.imageUrl) return;
-        const brief = (script.sceneBriefs[withImages.indexOf(scene)] ?? "").replace(/^pov:\s*/i, "");
+        const brief = plainBrief(script.sceneBriefs[withImages.indexOf(scene)] ?? "");
         const out = await providers.video.animate({
           imageUrl: scene.imageUrl,
           // Al vídeo no le sirve el prompt de la imagen: necesita movimiento.
@@ -246,6 +313,19 @@ export async function runPipeline(projectId: string): Promise<void> {
       status: "ready",
       costCents: +spentCents.toFixed(2),
     }));
+    // Las fotos de otras personas solo hacían falta para las escenas.
+    await deletePeoplePhotos(people);
+    // Con el vídeo montado, los clips sueltos sobran y ocupan mucho.
+    if (lineUrls) {
+      const done = await db.getProject(projectId);
+      if (done) {
+        await dropIntermediates(done);
+        await db.patchProject(projectId, (p) => ({
+          ...p,
+          scenes: p.scenes.map((sc) => ({ ...sc, videoUrl: undefined })),
+        }));
+      }
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await db.patchProject(projectId, (p) => ({

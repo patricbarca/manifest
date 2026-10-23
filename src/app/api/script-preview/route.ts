@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { hasAccess } from "@/lib/access";
 import { z } from "zod";
 import { providers } from "@/lib/ai";
-import { Area, Desires, Details, intentionFrom } from "@/lib/api-schemas";
+import { Area, Desires, Details, PeopleNames, intentionFrom } from "@/lib/api-schemas";
 import { inferArea } from "@/lib/script-engine";
 import { currentUser } from "@/lib/db/session";
 import { db } from "@/lib/db/store";
 import { getDictionary } from "@/lib/i18n/server";
-import { checkDesires, checkDetails } from "@/lib/safety";
+import { checkBlocked, checkDesires, checkDetails } from "@/lib/safety";
 import type { ScriptPreview } from "@/lib/types";
+import { LOCALES } from "@/lib/i18n/locale";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -26,6 +27,8 @@ const Body = z.object({
   tier: z.enum(["vision", "cinematic"]),
   tone: z.enum(["calma", "firme", "cercana"]),
   durationSec: z.union([z.literal(30), z.literal(60)]),
+  people: PeopleNames,
+  language: z.enum(LOCALES).optional(),
 });
 
 /**
@@ -39,12 +42,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: t.errors.betaOnly }, { status: 403 });
   }
   const user = await currentUser();
-  const { t, locale } = await getDictionary();
+  const { t, locale: uiLocale } = await getDictionary();
   const parsed = Body.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json({ error: t.errors.incomplete }, { status: 400 });
   }
   const { desires, details, tier, tone, durationSec } = parsed.data;
+  // El guion se escribe en el idioma del vídeo, que puede no ser el de la web.
+  const locale = parsed.data.language ?? uiLocale;
+  const people = parsed.data.people.map((p) => ({ name: p.name, relation: p.relation }));
   const intention = intentionFrom(desires);
   const input = {
     area: parsed.data.area ?? inferArea(intention),
@@ -54,11 +60,13 @@ export async function POST(request: Request) {
     tier,
     tone,
     durationSec,
+    people,
   };
 
   const verdict = checkDesires(input.desires);
   const detailsVerdict = checkDetails(input.details);
-  const blocked = !verdict.ok ? verdict : !detailsVerdict.ok ? detailsVerdict : undefined;
+  const peopleVerdict = people.map((p) => checkBlocked(`${p.name} ${p.relation ?? ""}`)).find((v) => !v.ok);
+  const blocked = !verdict.ok ? verdict : !detailsVerdict.ok ? detailsVerdict : peopleVerdict;
   if (blocked) {
     return NextResponse.json({ error: t.safety[blocked.key!] }, { status: 422 });
   }

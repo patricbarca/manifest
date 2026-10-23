@@ -59,6 +59,18 @@ export const db = {
     });
   },
 
+  async deleteProject(id: string): Promise<void> {
+    await serialize(async () => {
+      const all = await readCollection<Project>("projects");
+      delete all[id];
+      await writeCollection("projects", all);
+    });
+  },
+
+  async listAllProjects(): Promise<Project[]> {
+    return Object.values(await readCollection<Project>("projects"));
+  },
+
   /** Update con lectura fresca dentro de la cola: evita pisar el progreso. */
   async patchProject(
     id: string,

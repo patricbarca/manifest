@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import {
-  CREATOR_SHARE,
   PRODUCTS,
-  creatorPayoutUsd,
   estimateCostCents,
   formatUsd,
 } from "@/lib/pricing";
@@ -79,27 +77,6 @@ export default async function PreciosPage() {
       <p className="t-sub mx-auto mt-8 max-w-md text-center text-[var(--color-label-2)]">
         {t.pricing.freeNote}
       </p>
-
-      {/* ── El market ────────────────────────────────────────────────────── */}
-      <section className="mx-auto mt-28 max-w-3xl">
-        <h2 className="t-title text-center">{t.pricing.marketTitle}</h2>
-        <p className="t-body mx-auto mt-4 max-w-lg text-center text-pretty text-[var(--color-label-2)]">
-          {fill(t.pricing.marketLede, { share: Math.round(CREATOR_SHARE * 100) })}
-        </p>
-
-        <div className="card mt-10 rounded-[var(--radius-lg)] p-8">
-          <h3 className="t-headline">{t.pricing.publishTitle}</h3>
-          <p className="t-sub mt-2 leading-relaxed text-[var(--color-label-2)]">
-            {fill(t.pricing.publishBody, {
-              stills: formatUsd(creatorPayoutUsd("vision")),
-              animated: formatUsd(creatorPayoutUsd("cinematic")),
-            })}
-          </p>
-          <p className="t-caption mt-4 text-[var(--color-label-3)]">
-            {t.pricing.publishNote}
-          </p>
-        </div>
-      </section>
 
       {/* ── Transparencia de coste ───────────────────────────────────────── */}
       <section className="mx-auto mt-24 max-w-lg text-center">

@@ -31,6 +31,8 @@ export interface ScriptProvider {
     details?: ClarifyAnswer[];
     /** Si llega, manda: una escena y una frase por deseo, en su orden. */
     desires?: string[];
+    /** Personas con foto que el usuario añadió. */
+    people?: { name: string; relation?: string }[];
   }): Promise<Billed<ScriptDraft>>;
 }
 
@@ -76,6 +78,7 @@ export interface VoiceProvider {
     tone: VoiceTone;
     projectId: string;
     locale?: Locale;
+    voice?: string;
   }): Promise<Billed<{ url?: string; mode: "file" | "browser" }>>;
   /**
    * Una pista por frase (clave → texto). Es lo que usa el montaje nuevo, que
@@ -86,5 +89,6 @@ export interface VoiceProvider {
     lines: Record<string, string>;
     projectId: string;
     locale: Locale;
+    voice?: string;
   }): Promise<Billed<Record<string, string>>>;
 }

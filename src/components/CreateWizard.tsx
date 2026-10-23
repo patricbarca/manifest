@@ -43,7 +43,14 @@ const PALETTE_SWATCH: Record<Palette, string> = {
  */
 
 
-const STEP = { desires: 0, details: 1, photo: 2, format: 3, review: 4 } as const;
+import { DEFAULT_VOICE, VOICES, voiceSample } from "@/lib/voices";
+import type { Locale as VideoLocale } from "@/lib/i18n/locale";
+
+const STEP = { desires: 0, details: 1, photo: 2, people: 3, format: 4, review: 5 } as const;
+const MAX_PEOPLE = 4;
+const MAX_PERSON_PHOTOS = 3;
+
+type PersonDraft = { name: string; relation: string; photoUrls: string[] };
 
 /** Cuántas cosas se pueden manifestar en un vídeo: una imagen y una frase por cada una. */
 const MAX_DESIRES = 6;
@@ -73,7 +80,12 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
   const [desires, setDesires] = useState<string[]>([""]);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [palette, setPalette] = useState<Palette>("dusk");
+  const [videoLocale, setVideoLocale] = useState<VideoLocale>(locale as VideoLocale);
+  const [voice, setVoice] = useState<string>(DEFAULT_VOICE);
   const [consent, setConsent] = useState(false);
+  const [people, setPeople] = useState<PersonDraft[]>([]);
+  const [peopleConsent, setPeopleConsent] = useState(false);
+  const [uploadingPerson, setUploadingPerson] = useState<number>();
   const [uploading, setUploading] = useState(false);
   const [tier, setTier] = useState<Tier>(template?.tier ?? "vision");
   // Estilo, tono y duración ya no se preguntan: el vídeo nuevo tiene una
@@ -111,8 +123,36 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
       );
     }
     if (step === STEP.details) return !loadingQuestions;
+    if (step === STEP.people) {
+      // Las personas son opcionales, pero las que se añaden van completas.
+      return (
+        uploadingPerson === undefined &&
+        people.every((p) => p.name.trim() && p.photoUrls.length > 0) &&
+        (people.length === 0 || peopleConsent)
+      );
+    }
     return true; // la foto es opcional, y el formato siempre es válido
-  }, [step, desires, loadingQuestions]);
+  }, [step, desires, loadingQuestions, people, peopleConsent, uploadingPerson]);
+
+  const cleanPeople = useMemo(
+    () =>
+      people
+        .filter((p) => p.name.trim() && p.photoUrls.length > 0)
+        .map((p) => ({
+          name: p.name.trim(),
+          relation: p.relation.trim() || undefined,
+          photoUrls: p.photoUrls,
+        })),
+    [people],
+  );
+  const peopleNames = useMemo(
+    () => cleanPeople.map((p) => ({ name: p.name, relation: p.relation })),
+    [cleanPeople],
+  );
+
+  function setPerson(i: number, patch: Partial<PersonDraft>) {
+    setPeople((prev) => prev.map((p, k) => (k === i ? { ...p, ...patch } : p)));
+  }
 
   const cleanDesires = useMemo(() => desires.map((d) => d.trim()).filter(Boolean), [desires]);
 
@@ -149,6 +189,8 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
     tone,
     durationSec,
     locale,
+    videoLocale,
+    people: peopleNames,
   });
 
   async function loadQuestions() {
@@ -193,6 +235,8 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
       tone,
       durationSec,
       locale,
+      videoLocale,
+      people: peopleNames,
     });
     try {
       const res = await fetch("/api/script-preview", {
@@ -205,6 +249,8 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
           tier,
           tone,
           durationSec,
+          people: peopleNames,
+          language: videoLocale,
         }),
       });
       const data = await res.json();
@@ -232,22 +278,43 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
     void loadPreview(updated);
   }
 
-  async function upload(file: File) {
-    setUploading(true);
+  /** Sube una foto y devuelve su URL, o undefined si falló (el error ya se muestra). */
+  async function sendPhoto(file: File, agreed: boolean): Promise<string | undefined> {
     setError(undefined);
     const body = new FormData();
     body.append("selfie", file);
-    body.append("consent", String(consent));
+    body.append("consent", String(agreed));
     try {
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? t.errors.uploadFailed);
-      setPhotoUrls((prev) => [...prev, data.url].slice(0, 4));
+      return data.url as string;
     } catch (err) {
       setError((err as Error).message);
-    } finally {
-      setUploading(false);
+      return undefined;
     }
+  }
+
+  async function upload(file: File) {
+    setUploading(true);
+    const url = await sendPhoto(file, consent);
+    if (url) setPhotoUrls((prev) => [...prev, url].slice(0, 4));
+    setUploading(false);
+  }
+
+  async function uploadPersonPhotos(i: number, files: File[]) {
+    setUploadingPerson(i);
+    for (const file of files) {
+      const url = await sendPhoto(file, peopleConsent);
+      if (url) {
+        setPeople((prev) =>
+          prev.map((p, k) =>
+            k === i ? { ...p, photoUrls: [...p.photoUrls, url].slice(0, MAX_PERSON_PHOTOS) } : p,
+          ),
+        );
+      }
+    }
+    setUploadingPerson(undefined);
   }
 
   async function submit() {
@@ -266,6 +333,9 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
           durationSec,
           photoUrls,
           palette,
+          people: cleanPeople,
+          language: videoLocale,
+          voice,
           templateSlug: template?.slug,
           details,
           // Solo si la revisión sigue siendo de lo que se va a generar.
@@ -274,6 +344,11 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? t.errors.createFailed);
+      // Con pagos activos, la API devuelve la página de pago de Stripe.
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
       router.push(`/video/${data.project.id}`);
     } catch (err) {
       setError((err as Error).message);
@@ -474,6 +549,125 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
         </Section>
       )}
 
+      {/* ── Paso 3: personas ───────────────────────────────────────────── */}
+      {step === STEP.people && (
+        <Section title={t.create.peopleTitle} hint={t.create.peopleHint}>
+          <div className="space-y-5">
+            {people.length > 0 && (
+              <label className="t-sub flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
+                <input
+                  type="checkbox"
+                  checked={peopleConsent}
+                  onChange={(e) => setPeopleConsent(e.target.checked)}
+                  className="mt-[3px] h-4 w-4 accent-white"
+                />
+                <span>{t.create.peopleConsent}</span>
+              </label>
+            )}
+
+            {people.map((person, i) => (
+              <div
+                key={i}
+                className="space-y-3 rounded-[var(--radius-md)] border border-[var(--color-hairline-strong)] bg-[var(--color-surface-2)] p-4"
+              >
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="t-caption mb-1.5 block text-[var(--color-label-2)]">{t.create.personName}</span>
+                    <input
+                      value={person.name}
+                      maxLength={40}
+                      onChange={(e) => setPerson(i, { name: e.target.value.replace(/[[\]]/g, "") })}
+                      placeholder={t.create.personNamePlaceholder}
+                      className="t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none transition-colors duration-200 placeholder:text-[var(--color-label-4)] focus:border-[var(--color-hairline-strong)]"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="t-caption mb-1.5 block text-[var(--color-label-2)]">{t.create.personRelation}</span>
+                    <input
+                      value={person.relation}
+                      maxLength={40}
+                      onChange={(e) => setPerson(i, { relation: e.target.value })}
+                      placeholder={t.create.personRelationPlaceholder}
+                      className="t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none transition-colors duration-200 placeholder:text-[var(--color-label-4)] focus:border-[var(--color-hairline-strong)]"
+                    />
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  {Array.from({ length: MAX_PERSON_PHOTOS }, (_, k) => person.photoUrls[k]).map((url, k) => (
+                    <div
+                      key={k}
+                      className="relative aspect-[3/4] overflow-hidden rounded-[var(--radius-md)] border border-dashed border-[var(--color-hairline-strong)]"
+                    >
+                      {url ? (
+                        <>
+                          <img src={url} alt="" className="h-full w-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setPerson(i, { photoUrls: person.photoUrls.filter((u) => u !== url) })}
+                            className="t-caption absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-white backdrop-blur"
+                          >
+                            {t.create.removePhoto}
+                          </button>
+                        </>
+                      ) : (
+                        <span className="t-caption grid h-full place-items-center text-[var(--color-label-3)]">
+                          {k + 1}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <input
+                  type="file"
+                  multiple
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={!peopleConsent || uploadingPerson !== undefined || person.photoUrls.length >= MAX_PERSON_PHOTOS}
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files ?? []).slice(0, MAX_PERSON_PHOTOS - person.photoUrls.length);
+                    e.target.value = "";
+                    void uploadPersonPhotos(i, files);
+                  }}
+                  className="t-sub block w-full text-[var(--color-label-2)] file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-white file:px-5 file:py-2 file:text-[13px] file:font-medium file:text-black hover:file:bg-white/90 disabled:opacity-35"
+                />
+                <div className="flex items-center justify-between">
+                  <p className="t-caption text-[var(--color-label-3)]">
+                    {uploadingPerson === i
+                      ? t.create.uploading
+                      : fill(t.create.personPhotos, { n: person.photoUrls.length })}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setPeople((prev) => prev.filter((_, k) => k !== i))}
+                    className="t-caption text-[var(--color-label-2)] underline"
+                  >
+                    {t.create.removePerson}
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {people.length < MAX_PEOPLE && (
+              <button
+                type="button"
+                onClick={() => setPeople((prev) => [...prev, { name: "", relation: "", photoUrls: [] }])}
+                className="t-sub rounded-full border border-[var(--color-hairline-strong)] px-5 py-2"
+              >
+                {t.create.addPerson}
+              </button>
+            )}
+
+            {people.some((p) => !p.name.trim() || p.photoUrls.length === 0) && (
+              <p className="t-caption text-[var(--color-label-3)]">{t.create.peopleIncomplete}</p>
+            )}
+            {people.length > 0 && (
+              <p className="t-caption leading-relaxed text-[var(--color-label-3)]">{t.create.peoplePrivacy}</p>
+            )}
+          </div>
+        </Section>
+      )}
+
       {/* ── Paso 3: formato ────────────────────────────────────────────── */}
       {step === STEP.format && (
         <Section title={t.create.formatTitle} hint={t.create.formatHint}>
@@ -488,6 +682,51 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
                   sub={t.products[id].tagline}
                   price={formatUsd(PRODUCTS[id].priceUsd)}
                 />
+              ))}
+            </div>
+          </Field>
+
+          <Field label={t.create.videoLanguage}>
+            <div className="grid grid-cols-2 gap-3">
+              {(["es", "en"] as const).map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setVideoLocale(id)}
+                  className={`interactive t-sub rounded-[var(--radius-md)] border px-4 py-3 ${
+                    videoLocale === id ? "border-white ring-1 ring-white" : "border-[var(--color-hairline)]"
+                  }`}
+                >
+                  {t.create.languages[id]}
+                </button>
+              ))}
+            </div>
+          </Field>
+
+          <Field label={t.create.voiceLabel}>
+            <div className="grid gap-2">
+              {VOICES.map((v) => (
+                <div
+                  key={v.id}
+                  className={`flex items-center justify-between gap-3 rounded-[var(--radius-md)] border px-4 py-2.5 ${
+                    voice === v.id ? "border-white ring-1 ring-white" : "border-[var(--color-hairline)]"
+                  }`}
+                >
+                  <button type="button" onClick={() => setVoice(v.id)} className="t-sub flex-1 text-left">
+                    {v.label[locale as VideoLocale]}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={t.create.voiceListen}
+                    onClick={() => {
+                      setVoice(v.id);
+                      void new Audio(voiceSample(v.id, videoLocale)).play();
+                    }}
+                    className="t-caption rounded-full border border-[var(--color-hairline)] px-3 py-1 text-[var(--color-label-2)]"
+                  >
+                    ▶ {t.create.voiceListen}
+                  </button>
+                </div>
               ))}
             </div>
           </Field>
