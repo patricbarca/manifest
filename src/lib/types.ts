@@ -203,6 +203,8 @@ export interface Project {
   voice?: string;
   /** Sesión de Stripe Checkout con la que se pagó. */
   stripeSessionId?: string;
+  /** Frase de apertura elegida para este vídeo (id de lib/quotes). */
+  quoteId?: string;
   palette?: Palette;
   status: ProjectStatus;
   steps: PipelineStep[];
@@ -292,4 +294,6 @@ export interface User {
   createdAt: number;
   /** Vídeos gratis ya consumidos. El primero invita la casa. */
   freeVideosUsed: number;
+  /** Frases de apertura que ya le salieron, para no repetirlas. */
+  usedQuotes?: string[];
 }

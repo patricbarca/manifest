@@ -7,6 +7,7 @@ import { sceneLength, voiceLines } from "./experience";
 import { localPathForMediaUrl } from "./paths";
 import { rm } from "node:fs/promises";
 import { dropIntermediates, sweepStorage } from "./cleanup";
+import { nextQuoteId } from "./quotes";
 import type { Person, PipelineStep, Project, Scene, StepId } from "./types";
 
 /**
@@ -113,12 +114,24 @@ async function deletePeoplePhotos(people: Person[]) {
   }
 }
 
+/** Elige la siguiente frase sin repetir y la apunta en el usuario. */
+async function assignQuote(ownerId: string): Promise<string> {
+  const user = await db.getUser(ownerId);
+  const id = nextQuoteId(user?.usedQuotes ?? [], ownerId);
+  if (user) await db.putUser({ ...user, usedQuotes: [...(user.usedQuotes ?? []), id] });
+  return id;
+}
+
 export async function runPipeline(projectId: string): Promise<void> {
   const start = await db.getProject(projectId);
   if (!start) throw new Error("Proyecto no encontrado");
 
   await db.patchProject(projectId, (p) => ({ ...p, status: "generating", error: undefined }));
   void sweepStorage();
+
+  // Frase de apertura que esta persona aún no ha visto.
+  const quoteId = start.quoteId ?? (await assignQuote(start.ownerId));
+  await db.patchProject(projectId, (p) => ({ ...p, quoteId }));
 
   let spentCents = 0;
   const charge = (cents: number) => {
@@ -209,7 +222,7 @@ export async function runPipeline(projectId: string): Promise<void> {
     let lineUrls: Record<string, string> | undefined;
     if (glass) {
       const out = await providers.voice.speakLines!({
-        lines: voiceLines(start.locale, start.id, script.affirmations),
+        lines: voiceLines(start.locale, start.id, script.affirmations, quoteId),
         projectId,
         locale: start.locale,
         voice: start.voice,
