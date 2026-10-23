@@ -43,6 +43,9 @@ const PALETTE_SWATCH: Record<Palette, string> = {
  */
 
 
+import { DEFAULT_VOICE, VOICES, voiceSample } from "@/lib/voices";
+import type { Locale as VideoLocale } from "@/lib/i18n/locale";
+
 const STEP = { desires: 0, details: 1, photo: 2, people: 3, format: 4, review: 5 } as const;
 const MAX_PEOPLE = 4;
 const MAX_PERSON_PHOTOS = 3;
@@ -77,6 +80,8 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
   const [desires, setDesires] = useState<string[]>([""]);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [palette, setPalette] = useState<Palette>("dusk");
+  const [videoLocale, setVideoLocale] = useState<VideoLocale>(locale as VideoLocale);
+  const [voice, setVoice] = useState<string>(DEFAULT_VOICE);
   const [consent, setConsent] = useState(false);
   const [people, setPeople] = useState<PersonDraft[]>([]);
   const [peopleConsent, setPeopleConsent] = useState(false);
@@ -184,6 +189,7 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
     tone,
     durationSec,
     locale,
+    videoLocale,
     people: peopleNames,
   });
 
@@ -229,6 +235,8 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
       tone,
       durationSec,
       locale,
+      videoLocale,
+      people: peopleNames,
     });
     try {
       const res = await fetch("/api/script-preview", {
@@ -242,6 +250,7 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
           tone,
           durationSec,
           people: peopleNames,
+          language: videoLocale,
         }),
       });
       const data = await res.json();
@@ -325,6 +334,8 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
           photoUrls,
           palette,
           people: cleanPeople,
+          language: videoLocale,
+          voice,
           templateSlug: template?.slug,
           details,
           // Solo si la revisión sigue siendo de lo que se va a generar.
@@ -333,6 +344,11 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? t.errors.createFailed);
+      // Con pagos activos, la API devuelve la página de pago de Stripe.
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
       router.push(`/video/${data.project.id}`);
     } catch (err) {
       setError((err as Error).message);
@@ -666,6 +682,51 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
                   sub={t.products[id].tagline}
                   price={formatUsd(PRODUCTS[id].priceUsd)}
                 />
+              ))}
+            </div>
+          </Field>
+
+          <Field label={t.create.videoLanguage}>
+            <div className="grid grid-cols-2 gap-3">
+              {(["es", "en"] as const).map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setVideoLocale(id)}
+                  className={`interactive t-sub rounded-[var(--radius-md)] border px-4 py-3 ${
+                    videoLocale === id ? "border-white ring-1 ring-white" : "border-[var(--color-hairline)]"
+                  }`}
+                >
+                  {t.create.languages[id]}
+                </button>
+              ))}
+            </div>
+          </Field>
+
+          <Field label={t.create.voiceLabel}>
+            <div className="grid gap-2">
+              {VOICES.map((v) => (
+                <div
+                  key={v.id}
+                  className={`flex items-center justify-between gap-3 rounded-[var(--radius-md)] border px-4 py-2.5 ${
+                    voice === v.id ? "border-white ring-1 ring-white" : "border-[var(--color-hairline)]"
+                  }`}
+                >
+                  <button type="button" onClick={() => setVoice(v.id)} className="t-sub flex-1 text-left">
+                    {v.label[locale as VideoLocale]}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={t.create.voiceListen}
+                    onClick={() => {
+                      setVoice(v.id);
+                      void new Audio(voiceSample(v.id, videoLocale)).play();
+                    }}
+                    className="t-caption rounded-full border border-[var(--color-hairline)] px-3 py-1 text-[var(--color-label-2)]"
+                  >
+                    ▶ {t.create.voiceListen}
+                  </button>
+                </div>
               ))}
             </div>
           </Field>

@@ -18,9 +18,10 @@ import type { Dictionary } from "@/lib/i18n";
 export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) {
   const [project, setProject] = useState(initial);
   const working = project.status === "queued" || project.status === "generating";
+  const awaitingPayment = project.status === "draft";
 
   useEffect(() => {
-    if (!working) return;
+    if (!working && !awaitingPayment) return;
     const id = setInterval(async () => {
       try {
         const res = await fetch(`/api/projects/${project.id}`, { cache: "no-store" });
@@ -32,7 +33,16 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
       }
     }, 1500);
     return () => clearInterval(id);
-  }, [working, project.id]);
+  }, [working, awaitingPayment, project.id]);
+
+  if (awaitingPayment) {
+    return (
+      <div className="mx-auto max-w-lg px-6 py-28 text-center">
+        <h1 className="t-title">{t.video.awaitingPaymentTitle}</h1>
+        <p className="t-body pulse-soft mt-4 text-[var(--color-label-2)]">{t.video.awaitingPaymentBody}</p>
+      </div>
+    );
+  }
 
   if (project.status === "failed") {
     return (

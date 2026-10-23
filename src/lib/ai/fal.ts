@@ -123,12 +123,13 @@ export const falVideo: VideoProvider = {
 export async function falSpeech(
   text: string,
   locale: string,
+  voice?: string,
 ): Promise<{ audio: Buffer; costCents: number }> {
   const model = process.env.FAL_TTS_MODEL ?? "elevenlabs/tts/eleven-v4";
   const data = await run<{ audio?: { url?: string } }>(model, {
     // Las etiquetas entre corchetes marcan el tono en Eleven v4.
     text: `[softly, calm and warm] ${text}`,
-    voice: process.env.FAL_TTS_VOICE ?? "Sarah",
+    voice: voice ?? process.env.FAL_TTS_VOICE ?? "Sarah",
     stability: 0.6,
     language_code: locale,
   });
@@ -143,12 +144,12 @@ export async function falSpeech(
 
 export const falVoice: VoiceProvider = {
   name: "fal",
-  async speak({ text, projectId, locale }) {
-    const { audio, costCents } = await falSpeech(text, locale ?? "es");
+  async speak({ text, projectId, locale, voice }) {
+    const { audio, costCents } = await falSpeech(text, locale ?? "es", voice);
     const url = await persistBuffer(audio, projectId, "voz.mp3");
     return { result: { url, mode: "file" as const }, costCents, provider: "fal:elevenlabs" };
   },
-  async speakLines({ lines, projectId, locale }) {
+  async speakLines({ lines, projectId, locale, voice }) {
     const urls: Record<string, string> = {};
     let costCents = 0;
     // De dos en dos: son frases cortas y así no se pisa el límite de la cuenta.
@@ -156,7 +157,7 @@ export const falVoice: VoiceProvider = {
     for (let i = 0; i < keys.length; i += 2) {
       await Promise.all(
         keys.slice(i, i + 2).map(async (k) => {
-          const out = await falSpeech(lines[k], locale);
+          const out = await falSpeech(lines[k], locale, voice);
           urls[k] = await persistBuffer(out.audio, projectId, `voz/${k}.mp3`);
           costCents += out.costCents;
         }),

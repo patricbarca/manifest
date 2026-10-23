@@ -62,7 +62,7 @@ export async function currentUser(): Promise<User> {
 export type ChargeKind = "free" | "prelaunch" | "paid";
 
 /** Clave del diccionario con el motivo, no el mensaje ya escrito. */
-type ChargeError = "noFreeLeft";
+type ChargeError = "noFreeLeft" | "paymentRequired";
 
 export async function chargeForVideo(
   userId: string,
@@ -83,9 +83,9 @@ export async function chargeForVideo(
     return { ok: true, kind: "prelaunch", paidCents: 0 };
   }
 
-  // Aquí irá el cobro real cuando entre Stripe.
+  // El cobro lo hace Stripe Checkout (ver api/projects y lib/stripe).
   void priceCents;
-  return { ok: false, reason: "noFreeLeft" };
+  return { ok: false, reason: "paymentRequired" };
 }
 
 /** Cuántos vídeos gratis le quedan a este usuario. */

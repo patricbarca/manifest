@@ -9,6 +9,7 @@ import { db } from "@/lib/db/store";
 import { getDictionary } from "@/lib/i18n/server";
 import { checkBlocked, checkDesires, checkDetails } from "@/lib/safety";
 import type { ScriptPreview } from "@/lib/types";
+import { LOCALES } from "@/lib/i18n/locale";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -27,6 +28,7 @@ const Body = z.object({
   tone: z.enum(["calma", "firme", "cercana"]),
   durationSec: z.union([z.literal(30), z.literal(60)]),
   people: PeopleNames,
+  language: z.enum(LOCALES).optional(),
 });
 
 /**
@@ -40,12 +42,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: t.errors.betaOnly }, { status: 403 });
   }
   const user = await currentUser();
-  const { t, locale } = await getDictionary();
+  const { t, locale: uiLocale } = await getDictionary();
   const parsed = Body.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json({ error: t.errors.incomplete }, { status: 400 });
   }
   const { desires, details, tier, tone, durationSec } = parsed.data;
+  // El guion se escribe en el idioma del vídeo, que puede no ser el de la web.
+  const locale = parsed.data.language ?? uiLocale;
   const people = parsed.data.people.map((p) => ({ name: p.name, relation: p.relation }));
   const intention = intentionFrom(desires);
   const input = {

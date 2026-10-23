@@ -6,6 +6,7 @@ import { canRenderGlass, mediaDuration, renderGlass } from "./render/glass";
 import { sceneLength, voiceLines } from "./experience";
 import { localPathForMediaUrl } from "./paths";
 import { rm } from "node:fs/promises";
+import { dropIntermediates, sweepStorage } from "./cleanup";
 import type { Person, PipelineStep, Project, Scene, StepId } from "./types";
 
 /**
@@ -117,6 +118,7 @@ export async function runPipeline(projectId: string): Promise<void> {
   if (!start) throw new Error("Proyecto no encontrado");
 
   await db.patchProject(projectId, (p) => ({ ...p, status: "generating", error: undefined }));
+  void sweepStorage();
 
   let spentCents = 0;
   const charge = (cents: number) => {
@@ -210,6 +212,7 @@ export async function runPipeline(projectId: string): Promise<void> {
         lines: voiceLines(start.locale, start.id, script.affirmations),
         projectId,
         locale: start.locale,
+        voice: start.voice,
       });
       lineUrls = out.result;
       await db.patchProject(projectId, (p) => ({ ...p, voiceLines: lineUrls, voiceMode: "file" }));
@@ -224,6 +227,7 @@ export async function runPipeline(projectId: string): Promise<void> {
         tone: start.tone,
         projectId,
         locale: start.locale,
+        voice: start.voice,
       });
       await db.patchProject(projectId, (p) => ({
         ...p,
@@ -298,6 +302,17 @@ export async function runPipeline(projectId: string): Promise<void> {
     }));
     // Las fotos de otras personas solo hacían falta para las escenas.
     await deletePeoplePhotos(people);
+    // Con el vídeo montado, los clips sueltos sobran y ocupan mucho.
+    if (lineUrls) {
+      const done = await db.getProject(projectId);
+      if (done) {
+        await dropIntermediates(done);
+        await db.patchProject(projectId, (p) => ({
+          ...p,
+          scenes: p.scenes.map((sc) => ({ ...sc, videoUrl: undefined })),
+        }));
+      }
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await db.patchProject(projectId, (p) => ({

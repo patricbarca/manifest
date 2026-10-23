@@ -199,6 +199,10 @@ export interface Project {
   photoUrls?: string[];
   /** Otras personas con foto, hasta 4. */
   people?: Person[];
+  /** Voz elegida para el vídeo (id de ElevenLabs). */
+  voice?: string;
+  /** Sesión de Stripe Checkout con la que se pagó. */
+  stripeSessionId?: string;
   palette?: Palette;
   status: ProjectStatus;
   steps: PipelineStep[];

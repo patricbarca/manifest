@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { VideoStage } from "@/components/VideoStage";
+import { DeleteProjectButton } from "@/components/DeleteProjectButton";
 import { db } from "@/lib/db/store";
 import { currentUser } from "@/lib/db/session";
 import { getDictionary } from "@/lib/i18n/server";
@@ -17,5 +18,11 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
   // Un vídeo lleva la cara de quien lo hizo. Si no es tuyo, para ti no existe.
   if (!project || project.ownerId !== user.id) notFound();
 
-  return <VideoStage initial={project} t={t} />;
+  const busy = project.status === "generating" || project.status === "queued";
+  return (
+    <>
+      <VideoStage initial={project} t={t} />
+      {!busy && <DeleteProjectButton id={project.id} labels={t.deleteVideo} />}
+    </>
+  );
 }

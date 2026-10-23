@@ -78,6 +78,7 @@ export interface VoiceProvider {
     tone: VoiceTone;
     projectId: string;
     locale?: Locale;
+    voice?: string;
   }): Promise<Billed<{ url?: string; mode: "file" | "browser" }>>;
   /**
    * Una pista por frase (clave → texto). Es lo que usa el montaje nuevo, que
@@ -88,5 +89,6 @@ export interface VoiceProvider {
     lines: Record<string, string>;
     projectId: string;
     locale: Locale;
+    voice?: string;
   }): Promise<Billed<Record<string, string>>>;
 }

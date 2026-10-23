@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/db/session";
 import { mediaPath, mediaUrl } from "@/lib/paths";
 import { getDictionary } from "@/lib/i18n/server";
+import { sweepStorage } from "@/lib/cleanup";
 
 export const runtime = "nodejs";
 
@@ -18,6 +19,8 @@ const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
  * borrado automático, porque es un dato biométrico (ver docs/business-model.md).
  */
 export async function POST(request: Request) {
+  // Cualquier subida es buen momento para borrar fotos caducadas (como mucho una vez por hora).
+  void sweepStorage();
   const user = await currentUser();
   const { t } = await getDictionary();
   const form = await request.formData();
