@@ -1,3 +1,4 @@
+import { isSignedIn } from "@/lib/db/session";
 import { NextResponse } from "next/server";
 import { hasAccess } from "@/lib/access";
 import { z } from "zod";
@@ -20,6 +21,10 @@ const Body = z.object({ desires: Desires, area: Area.optional() });
  * regenerar escenas equivocadas cuesta imágenes.
  */
 export async function POST(request: Request) {
+  if (!(await isSignedIn())) {
+    const { t } = await getDictionary();
+    return NextResponse.json({ error: t.errors.signInRequired }, { status: 401 });
+  }
   if (!(await hasAccess())) {
     const { t } = await getDictionary();
     return NextResponse.json({ error: t.errors.betaOnly }, { status: 403 });

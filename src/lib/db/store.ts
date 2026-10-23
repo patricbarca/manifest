@@ -127,7 +127,7 @@ const jsonDb = {
 export type Store = typeof jsonDb;
 
 /**
- * Con Supabase configurado (NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SECRET_KEY)
+ * Con Supabase configurado (SUPABASE_URL + SUPABASE_SECRET_KEY)
  * todo va a Postgres; sin él, a los JSON locales (desarrollo).
  */
 export const db: Store = supabaseConfigured() ? supabaseDb : jsonDb;

@@ -4,11 +4,13 @@ import "@fontsource-variable/inter";
 import "./globals.css";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { Logo } from "@/components/Logo";
+import { authUser } from "@/lib/supabase/server";
+import { authEnabled } from "@/lib/supabase/config";
 import { getDictionary } from "@/lib/i18n/server";
 
 /** Correo de contacto público: solo se muestra si está configurado. */
-const CONTACT = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://manifest-production-7582.up.railway.app";
+const CONTACT = process.env.CONTACT_EMAIL;
+const SITE_URL = process.env.SITE_URL ?? "https://manifest-production-7582.up.railway.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -25,6 +27,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const { t, locale } = await getDictionary();
+  const auth = authEnabled() ? await authUser() : null;
 
   const nav = [
     { href: "/crear", label: t.nav.create },
@@ -56,6 +59,18 @@ export default async function RootLayout({
 
             <div className="flex items-center gap-2.5">
               <LocaleToggle current={locale} />
+              {authEnabled() &&
+                (auth ? (
+                  <form action="/auth/salir" method="post">
+                    <button type="submit" className="t-sub hidden text-[var(--color-label-2)] hover:text-[var(--color-label-1)] sm:block" title={auth.email}>
+                      {t.auth.signOut}
+                    </button>
+                  </form>
+                ) : (
+                  <Link href="/entrar" className="t-sub text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">
+                    {t.auth.signIn}
+                  </Link>
+                ))}
               <Link
                 href="/crear"
                 className="interactive rounded-full bg-white px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-black hover:bg-white/90"

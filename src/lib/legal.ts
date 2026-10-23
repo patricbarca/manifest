@@ -8,8 +8,7 @@ import type { Locale } from "./i18n/locale";
 
 export const LEGAL_UPDATED = "2026-10-23";
 
-const OWNER = process.env.NEXT_PUBLIC_LEGAL_NAME ?? "ManifestLifeAI";
-const CONTACT = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
+
 const UPLOAD_DAYS = Number(process.env.UPLOAD_TTL_DAYS ?? 30);
 
 export type LegalDoc = "privacy" | "terms" | "refunds";
@@ -19,12 +18,14 @@ export interface LegalSection {
 }
 
 function contact(locale: Locale): string {
+  const CONTACT = process.env.CONTACT_EMAIL;
   if (CONTACT) return CONTACT;
   return locale === "es" ? "el correo de contacto de esta web" : "this site's contact email";
 }
 
 export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; updated: string; sections: LegalSection[] } {
   const c = contact(locale);
+  const OWNER = process.env.LEGAL_NAME ?? "ManifestLifeAI";
   const es = locale === "es";
   const updated = es ? `Última actualización: ${LEGAL_UPDATED}` : `Last updated: ${LEGAL_UPDATED}`;
 

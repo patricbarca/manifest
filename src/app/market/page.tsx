@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { templatePreview } from "@/lib/templates";
 import { TEMPLATES } from "@/lib/templates";
 import { CREATOR_SHARE, PRODUCTS, formatUsd } from "@/lib/pricing";
 import { LIFE_AREAS } from "@/lib/types";
@@ -43,9 +44,19 @@ export default async function MarketPage() {
             className="card interactive overflow-hidden rounded-[var(--radius-lg)]"
           >
             <div
-              className="relative h-48"
+              className="relative aspect-[4/5]"
               style={{ background: `linear-gradient(150deg, ${bp.cover.from}, ${bp.cover.to})` }}
             >
+              <video
+                src={templatePreview(bp.slug).video}
+                poster={templatePreview(bp.slug).poster}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
               {/* Vineta: le quita al degradado el aspecto de relleno plano. */}
               <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_70%_15%,rgba(255,255,255,0.12),transparent_55%),linear-gradient(to_top,rgba(0,0,0,0.45),transparent_60%)]" />
               <span className="t-eyebrow absolute left-4 top-4 rounded-full bg-black/35 px-2.5 py-1.5 text-white/85 backdrop-blur-md">

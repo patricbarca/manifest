@@ -1,3 +1,4 @@
+import { isSignedIn } from "@/lib/db/session";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db/store";
@@ -6,7 +7,8 @@ import { estimateCostCents, priceUsd } from "@/lib/pricing";
 import { checkBlocked, checkDesires, checkDetails } from "@/lib/safety";
 import { Area, Desires, Details, People, intentionFrom } from "@/lib/api-schemas";
 import { inferArea } from "@/lib/script-engine";
-import { initialSteps, runPipeline } from "@/lib/pipeline";
+import { initialSteps } from "@/lib/pipeline";
+import { enqueue } from "@/lib/queue";
 import { templateBySlug } from "@/lib/templates";
 import { getDictionary } from "@/lib/i18n/server";
 import { PALETTES, type Palette, type Project } from "@/lib/types";
@@ -47,6 +49,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!(await isSignedIn())) {
+    const { t } = await getDictionary();
+    return NextResponse.json({ error: t.errors.signInRequired }, { status: 401 });
+  }
   const user = await currentUser();
   const { t, locale } = await getDictionary();
   if (!(await hasAccess())) {
@@ -172,9 +178,7 @@ export async function POST(request: Request) {
 
   // La generación corre en segundo plano y la UI la sondea. En producción esto
   // es un encolado (ver comentario de cabecera de lib/pipeline.ts).
-  void runPipeline(project.id).catch((err) => {
-    console.error("[pipeline]", project.id, err);
-  });
+  enqueue(project.id);
 
   return NextResponse.json({
     project,

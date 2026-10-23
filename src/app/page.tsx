@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { HeroVideo } from "@/components/HeroVideo";
-import { TEMPLATES } from "@/lib/templates";
+import { TEMPLATES, templatePreview } from "@/lib/templates";
 import { PRODUCTS, estimateCostCents, formatUsd } from "@/lib/pricing";
 import { LIFE_AREAS } from "@/lib/types";
 import type { Tier } from "@/lib/types";
@@ -161,8 +161,15 @@ export default async function HomePage() {
               href={`/market/${tpl.slug}`}
               className="card interactive w-[264px] shrink-0 overflow-hidden rounded-[var(--radius-md)]"
             >
-              <div
-                className="h-40"
+              <video
+                src={templatePreview(tpl.slug).video}
+                poster={templatePreview(tpl.slug).poster}
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                className="h-72 w-full object-cover"
                 style={{ background: `linear-gradient(150deg, ${tpl.cover.from}, ${tpl.cover.to})` }}
               />
               <div className="p-5">

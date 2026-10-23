@@ -11,12 +11,12 @@ import type { Project, ScriptPreview, User } from "../types";
  */
 
 export function supabaseConfigured(): boolean {
-  return !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.SUPABASE_SECRET_KEY;
+  return !!process.env.SUPABASE_URL && !!process.env.SUPABASE_SECRET_KEY;
 }
 
 let client: SupabaseClient | undefined;
 function sb(): SupabaseClient {
-  client ??= createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY!, {
+  client ??= createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY!, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   return client;

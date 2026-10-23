@@ -1,14 +1,17 @@
 import { cookies } from "next/headers";
 import { db } from "./store";
 import type { User } from "../types";
+import { authUser } from "../supabase/server";
+import { authEnabled } from "../supabase/config";
 import { FREE_VIDEOS, PAYMENTS_ENABLED } from "../pricing";
 
 /**
- * "Auth" del MVP: una cookie con un id anonimo.
+ * Identidad.
  *
- * Suficiente para probar el producto de punta a punta y para que cada visitante
- * tenga su biblioteca. NO es auth: antes de cobrar o de guardar selfies de
- * verdad hay que cambiarlo por Supabase Auth o similar (ver docs/roadmap.md).
+ * Con Supabase Auth configurado, el usuario es la cuenta con la que inició
+ * sesión (código por email o Google) y crear vídeos exige sesión. Sin sesión
+ * se navega con un id anónimo en cookie; al entrar, lo que hiciera como
+ * anónimo pasa a su cuenta. Sin Supabase (desarrollo), todo es anónimo.
  */
 
 const COOKIE = "manifest_uid";
@@ -17,33 +20,74 @@ function newId(): string {
   return "u_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 }
 
-export async function currentUser(): Promise<User> {
+async function anonymousId(): Promise<string> {
   const jar = await cookies();
   let id = jar.get(COOKIE)?.value;
-
   if (!id) {
     id = newId();
-    // En un Server Component la cookie puede no ser escribible; se ignora y se
-    // vuelve a intentar desde la ruta de API, que si puede.
+    // En un Server Component la cookie puede no ser escribible; se reintenta en la API.
     try {
       jar.set(COOKIE, id, { httpOnly: true, sameSite: "lax", maxAge: 60 * 60 * 24 * 365 });
     } catch {
       /* solo lectura en este contexto */
     }
   }
+  return id;
+}
 
+async function ensureUser(id: string, email = "", name = "Invitado"): Promise<User> {
   const existing = await db.getUser(id);
-  if (existing) return existing;
-
-  const user: User = {
-    id,
-    email: "",
-    name: "Invitado",
-    createdAt: Date.now(),
-    freeVideosUsed: 0,
-  };
+  if (existing) {
+    if (email && existing.email !== email) {
+      const updated = { ...existing, email, name: name || existing.name };
+      await db.putUser(updated);
+      return updated;
+    }
+    return existing;
+  }
+  const user: User = { id, email, name, createdAt: Date.now(), freeVideosUsed: 0 };
   await db.putUser(user);
   return user;
+}
+
+export async function currentUser(): Promise<User> {
+  const auth = await authUser();
+  if (auth) return ensureUser(auth.id, auth.email, auth.name ?? auth.email.split("@")[0]);
+  return ensureUser(await anonymousId());
+}
+
+/** True si se puede crear: con auth configurada hace falta sesión. */
+export async function isSignedIn(): Promise<boolean> {
+  if (!authEnabled()) return true;
+  return (await authUser()) !== null;
+}
+
+/**
+ * Al iniciar sesión, los vídeos y el contador del id anónimo pasan a la cuenta.
+ * El contador de vídeos gratis se suma: entrar no regala otro vídeo gratis.
+ */
+export async function linkAnonymousData(): Promise<void> {
+  const auth = await authUser();
+  const jar = await cookies();
+  const anonId = jar.get(COOKIE)?.value;
+  if (!auth || !anonId || anonId === auth.id) return;
+  const anon = await db.getUser(anonId);
+  const account = await ensureUser(auth.id, auth.email, auth.name ?? auth.email.split("@")[0]);
+  for (const p of await db.listProjects(anonId)) {
+    await db.patchProject(p.id, (cur) => ({ ...cur, ownerId: auth.id }));
+  }
+  if (anon) {
+    await db.putUser({
+      ...account,
+      freeVideosUsed: Math.max(account.freeVideosUsed, anon.freeVideosUsed),
+      usedQuotes: [...new Set([...(account.usedQuotes ?? []), ...(anon.usedQuotes ?? [])])],
+    });
+  }
+  try {
+    jar.delete(COOKIE);
+  } catch {
+    /* solo lectura */
+  }
 }
 
 /**

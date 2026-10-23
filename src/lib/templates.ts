@@ -436,6 +436,11 @@ export const TEMPLATES: Template[] = [
   },
 ];
 
+/** Clip de ejemplo de cada plantilla (persona generada por IA), en public/market/. */
+export function templatePreview(slug: string): { video: string; poster: string } {
+  return { video: `/market/${slug}.mp4`, poster: `/market/${slug}.jpg` };
+}
+
 export function templateBySlug(slug: string): Template | undefined {
   return TEMPLATES.find((t) => t.slug === slug);
 }
