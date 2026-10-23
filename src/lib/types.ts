@@ -50,6 +50,10 @@ export const VISUAL_STYLES: { id: VisualStyle; prompt: string }[] = [
 
 export type VoiceTone = "calma" | "firme" | "cercana";
 
+/** Color del fondo animado del vídeo (render/build_glass.py tiene los valores). */
+export type Palette = "dusk" | "ocean" | "sage" | "rose" | "lavender" | "gold";
+export const PALETTES: Palette[] = ["dusk", "ocean", "sage", "rose", "lavender", "gold"];
+
 export type ProjectStatus = "draft" | "queued" | "generating" | "ready" | "failed";
 
 export type StepId = "script" | "images" | "motion" | "voice" | "assemble";
@@ -175,6 +179,9 @@ export interface Project {
   locale: Locale;
   /** Ruta publica del selfie subido. Nunca se comparte fuera de la cuenta. */
   selfieUrl?: string;
+  /** Hasta 4 fotos del usuario: con varias, el parecido mejora mucho. */
+  photoUrls?: string[];
+  palette?: Palette;
   status: ProjectStatus;
   steps: PipelineStep[];
   /**
@@ -191,6 +198,8 @@ export interface Project {
    * de voz del navegador, que ademas deja probar el flujo sin gastar un euro.
    */
   voiceUrl?: string;
+  /** Una pista por frase (montaje nuevo): clave → URL /media. */
+  voiceLines?: Record<string, string>;
   voiceMode: "file" | "browser";
   musicKey?: string;
   /** MP4 final, si el ensamblado corrio. Si no, el player web es la entrega. */

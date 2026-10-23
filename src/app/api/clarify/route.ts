@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { hasAccess } from "@/lib/access";
 import { z } from "zod";
 import { providers } from "@/lib/ai";
 import { Area, Desires, intentionFrom } from "@/lib/api-schemas";
@@ -19,6 +20,10 @@ const Body = z.object({ desires: Desires, area: Area.optional() });
  * regenerar escenas equivocadas cuesta imágenes.
  */
 export async function POST(request: Request) {
+  if (!(await hasAccess())) {
+    const { t } = await getDictionary();
+    return NextResponse.json({ error: t.errors.betaOnly }, { status: 403 });
+  }
   const { t, locale } = await getDictionary();
   const parsed = Body.safeParse(await request.json());
   if (!parsed.success) {

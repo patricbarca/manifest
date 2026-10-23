@@ -9,7 +9,8 @@ import { inferArea } from "@/lib/script-engine";
 import { initialSteps, runPipeline } from "@/lib/pipeline";
 import { templateBySlug } from "@/lib/templates";
 import { getDictionary } from "@/lib/i18n/server";
-import type { Project } from "@/lib/types";
+import { PALETTES, type Palette, type Project } from "@/lib/types";
+import { hasAccess } from "@/lib/access";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -23,6 +24,9 @@ const CreateProject = z.object({
   tone: z.enum(["calma", "firme", "cercana"]),
   durationSec: z.union([z.literal(30), z.literal(60)]),
   selfieUrl: z.string().startsWith("/media/uploads/").optional(),
+  /** Hasta 4 fotos del usuario. */
+  photoUrls: z.array(z.string().startsWith("/media/uploads/")).max(4).optional(),
+  palette: z.enum(PALETTES as [Palette, ...Palette[]]).optional(),
   templateSlug: z.string().optional(),
   /** Guion aprobado en la revisión. */
   previewId: z.string().startsWith("sp_").optional(),
@@ -37,6 +41,9 @@ export async function GET() {
 export async function POST(request: Request) {
   const user = await currentUser();
   const { t, locale } = await getDictionary();
+  if (!(await hasAccess())) {
+    return NextResponse.json({ error: t.errors.betaOnly }, { status: 403 });
+  }
   const parsed = CreateProject.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json(
@@ -49,6 +56,12 @@ export async function POST(request: Request) {
 
   // El filtro devuelve una clave, no un mensaje: el texto sale del
   // diccionario en el idioma en el que está leyendo el usuario.
+  // Las fotos se nombran con el id del dueño al subirlas (ver api/upload).
+  const photos = input.photoUrls ?? (input.selfieUrl ? [input.selfieUrl] : []);
+  if (photos.some((u) => !u.split("/").pop()?.startsWith(`${user.id}_`))) {
+    return NextResponse.json({ error: t.errors.notYours }, { status: 403 });
+  }
+
   const verdict = checkDesires(input.desires);
   const detailsVerdict = checkDetails(input.details);
   const blocked = !verdict.ok ? verdict : !detailsVerdict.ok ? detailsVerdict : undefined;
@@ -96,7 +109,9 @@ export async function POST(request: Request) {
     tone: input.tone,
     durationSec: input.durationSec,
     locale,
-    selfieUrl: input.selfieUrl,
+    selfieUrl: photos[0],
+    photoUrls: photos,
+    palette: input.palette ?? "dusk",
     status: "queued",
     steps: initialSteps(input.tier),
     script: approved?.script,

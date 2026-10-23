@@ -11,7 +11,7 @@ export const es: Dictionary = {
   },
   footer: {
     disclaimer:
-      "Manifest es una herramienta de visualización y enfoque. No sustituye tratamiento médico ni asesoramiento financiero, y no garantiza resultados.",
+      "ManifestLifeAI es una herramienta de visualización y enfoque. No sustituye tratamiento médico ni asesoramiento financiero, y no garantiza resultados.",
   },
   common: {
     back: "Atrás",
@@ -169,7 +169,10 @@ export const es: Dictionary = {
     ideasLabel: "O empieza por una de estas:",
     photoTitle: "Tu cara en las escenas",
     photoHint:
-      "Un selfie de frente, con luz natural y sin gafas de sol. Sin foto también funciona: se generan escenas sin rostro visible.",
+      "Hasta 4 fotos tuyas: una de frente, una de tres cuartos y una de perfil. Con luz natural y sin gafas de sol. Cuantos más ángulos, más te pareces.",
+    addPhoto: "Añadir foto",
+    removePhoto: "Quitar",
+    photoCount: "{n} de 4 fotos",
     noPhoto: "Sin foto",
     uploading: "Subiendo…",
     photoPrivacy:
@@ -179,6 +182,15 @@ export const es: Dictionary = {
     videoType: "Qué tipo de vídeo",
     duration: "Duración",
     visualStyle: "Estilo visual",
+    palette: "Color del fondo",
+    palettes: {
+      dusk: "Atardecer",
+      ocean: "Océano",
+      sage: "Salvia",
+      rose: "Rosa",
+      lavender: "Lavanda",
+      gold: "Dorado",
+    },
     voice: "Voz",
     firstVideo: "Tu primer vídeo",
     price: "Precio",
@@ -321,7 +333,7 @@ export const es: Dictionary = {
     dream: "Onírico",
   },
   consent:
-    "Confirmo que la foto es mía, que soy mayor de edad y que autorizo a usarla para generar mi vídeo.",
+    "Confirmo que las fotos son mías, que soy mayor de edad y que autorizo a usarlas para generar mi vídeo.",
   safety: {
     tooShort: "Cuéntanos un poco más: al menos una frase completa.",
     tooLong: "Demasiado largo. Resúmelo en unas pocas frases.",
@@ -346,5 +358,6 @@ export const es: Dictionary = {
     previewFailed: "No se pudieron escribir las escenas. Inténtalo otra vez.",
     tooManyPreviews: "Has reescrito las escenas muchas veces esta hora. Espera un poco y vuelve a probar.",
     noFreeLeft: "Ya has usado tu vídeo gratis. Los pagos todavía no están activos.",
+    betaOnly: "ManifestLifeAI está en beta privada. Necesitas un enlace de invitación para crear vídeos.",
   },
 };

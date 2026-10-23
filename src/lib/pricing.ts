@@ -10,14 +10,14 @@ import type { Tier } from "./types";
  * Unidades: centavos de USD.
  */
 export const PROVIDER_COST = {
-  /** Imagen con identidad preservada. Rango observado 0,3–4,0 ¢/imagen. */
+  /** Imagen con identidad preservada (Seedream 4.5 vía fal). */
   imageCents: 4.0,
-  /** Vídeo image-to-video, por segundo. Rango observado 5–40 ¢/s según modelo. */
-  videoCentsPerSec: 10.0,
+  /** Vídeo image-to-video, por segundo (MiniMax H3 Max vía fal). */
+  videoCentsPerSec: 3.25,
   /** Modelos premium (Kling Pro y similares), por segundo. */
   videoPremiumCentsPerSec: 22.4,
-  /** TTS por 1.000 caracteres (modelos flash/turbo). */
-  voiceCentsPer1kChars: 5.0,
+  /** TTS por 1.000 caracteres (ElevenLabs v4 vía fal). */
+  voiceCentsPer1kChars: 8.0,
   /** Guion vía LLM. Prácticamente ruido, pero se contabiliza. */
   scriptCents: 1.0,
   /** Almacenamiento + CDN + orquestación amortizados por vídeo. */

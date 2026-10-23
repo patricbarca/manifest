@@ -369,38 +369,39 @@ export function buildScenePrompt(
   brief: string,
   style: VisualStyle,
   hasSelfie: boolean,
+  photoCount = 1,
 ): string {
   const styleDef = VISUAL_STYLES.find((s) => s.id === style) ?? VISUAL_STYLES[0];
   // Escena subjetiva: se ve desde los ojos de la persona, así que no hay
-  // cara que conservar. El pipeline tampoco le pasa el selfie: un modelo de
-  // edición lo usaría como base y metería la cara.
+  // cara que conservar. El pipeline tampoco le pasa las fotos: un modelo de
+  // edición las usaría como base y metería la cara.
+  // Con fotos, Seedream las llama "Figure 1..N": nombrarlas así ata la cara.
+  const figures =
+    photoCount > 1 ? `Figures 1 to ${photoCount}` : "Figure 1";
   const identity = isPovBrief(brief)
-    ? "first-person point of view through the person's own eyes, only their hands visible"
+    ? "First-person point of view through the person's own eyes, only their hands visible"
     : hasSelfie
-      ? "the person from the reference photo, same face and identity, natural likeness"
-      : "a person seen from behind or at a distance, face not visible";
+      ? `The person is exactly the person in ${figures}, with their own face, hair and features, natural likeness`
+      : "A person seen from behind or at a distance";
+  // Todo en positivo: las negaciones ("no text") el modelo las lee al revés.
   return [
-    `${identity}, ${brief.replace(/^pov:\s*/i, "")}`,
+    `Photorealistic high-definition photo. ${identity}. ${brief.replace(/^pov:\s*/i, "")}`,
     styleDef.prompt,
-    "vertical 9:16 composition, high detail, no text, no watermark, no logos",
-  ].join(", ");
+    "vertical framing, sharp focus on the face, crisp natural detail, clean image",
+  ].join(". ");
 }
 
-/**
- * Las escenas NO usan el final de la afirmación como final propio: la voz
- * calla antes de que acabe el hueco, pero la imagen tiene que seguir ahí
- * mientras el usuario repite. Cada escena ocupa su franja entera.
- */
 export function buildScenes(
   briefs: string[],
   style: VisualStyle,
   hasSelfie: boolean,
   durationSec: number,
+  photoCount = 1,
 ): Scene[] {
   const slot = durationSec / Math.max(1, briefs.length);
   return briefs.map((brief, i) => ({
     id: `sc_${i + 1}`,
-    prompt: buildScenePrompt(brief, style, hasSelfie),
+    prompt: buildScenePrompt(brief, style, hasSelfie, photoCount),
     pov: isPovBrief(brief) || undefined,
     startSec: +(i * slot).toFixed(2),
     endSec: +((i + 1) * slot).toFixed(2),

@@ -51,6 +51,8 @@ export interface ImageProvider {
     prompt: string;
     /** Ruta absoluta en disco del selfie, si el usuario subio uno. */
     referencePath?: string;
+    /** Varias fotos del usuario (mejor parecido). Si llega, manda sobre referencePath. */
+    referencePaths?: string[];
     projectId: string;
     sceneId: string;
   }): Promise<Billed<{ url: string }>>;
@@ -73,5 +75,16 @@ export interface VoiceProvider {
     text: string;
     tone: VoiceTone;
     projectId: string;
+    locale?: Locale;
   }): Promise<Billed<{ url?: string; mode: "file" | "browser" }>>;
+  /**
+   * Una pista por frase (clave → texto). Es lo que usa el montaje nuevo, que
+   * coloca cada frase en su escena. Los proveedores sin esto caen al montaje
+   * antiguo con una sola pista de narración.
+   */
+  speakLines?(input: {
+    lines: Record<string, string>;
+    projectId: string;
+    locale: Locale;
+  }): Promise<Billed<Record<string, string>>>;
 }

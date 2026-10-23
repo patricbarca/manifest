@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { VISUAL_STYLES } from "@/lib/types";
+import { PALETTES, type Palette } from "@/lib/types";
 import type {
   ClarifyAnswer,
   ClarifyQuestion,
@@ -16,6 +16,16 @@ import type {
 import { PRODUCTS, formatUsd, priceUsd } from "@/lib/pricing";
 import { fill, type Dictionary, type Locale } from "@/lib/i18n";
 import { Icon } from "./Icon";
+
+/** Muestra de cada paleta: mismos colores que el fondo animado del vídeo. */
+const PALETTE_SWATCH: Record<Palette, string> = {
+  dusk: "radial-gradient(circle at 30% 20%, #f6b296, transparent 60%), radial-gradient(circle at 70% 80%, #968adc, transparent 60%), #3a2a4a",
+  ocean: "radial-gradient(circle at 30% 20%, #6ec8dc, transparent 60%), radial-gradient(circle at 70% 80%, #5a6ec8, transparent 60%), #15304a",
+  sage: "radial-gradient(circle at 30% 20%, #dcd2aa, transparent 60%), radial-gradient(circle at 70% 80%, #82aa96, transparent 60%), #2a3a30",
+  rose: "radial-gradient(circle at 30% 20%, #facdbe, transparent 60%), radial-gradient(circle at 70% 80%, #c87896, transparent 60%), #4a2434",
+  lavender: "radial-gradient(circle at 30% 20%, #e6bef0, transparent 60%), radial-gradient(circle at 70% 80%, #8278d2, transparent 60%), #2c2650",
+  gold: "radial-gradient(circle at 30% 20%, #fae1aa, transparent 60%), radial-gradient(circle at 70% 80%, #be8c50, transparent 60%), #3a2c16",
+};
 
 /**
  * El asistente de creación.
@@ -32,7 +42,6 @@ import { Icon } from "./Icon";
  * revisión (ves las escenas antes de pagar y puedes corregirlas).
  */
 
-const TONES: VoiceTone[] = ["calma", "firme", "cercana"];
 
 const STEP = { desires: 0, details: 1, photo: 2, format: 3, review: 4 } as const;
 
@@ -62,13 +71,16 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
   // deduce el servidor a partir de los deseos.
   const area: LifeArea | undefined = template?.area ?? initialArea;
   const [desires, setDesires] = useState<string[]>([""]);
-  const [selfieUrl, setSelfieUrl] = useState<string>();
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [palette, setPalette] = useState<Palette>("dusk");
   const [consent, setConsent] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [tier, setTier] = useState<Tier>(template?.tier ?? "vision");
-  const [style, setStyle] = useState<VisualStyle>(template?.style ?? "cinematic");
-  const [tone, setTone] = useState<VoiceTone>(template?.tone ?? "calma");
-  const [durationSec, setDurationSec] = useState<30 | 60>(template?.durationSec ?? 30);
+  // Estilo, tono y duración ya no se preguntan: el vídeo nuevo tiene una
+  // sola voz y dura lo que piden las frases. Se mandan con su valor fijo.
+  const style: VisualStyle = template?.style ?? "cinematic";
+  const tone: VoiceTone = template?.tone ?? "calma";
+  const durationSec: 30 | 60 = 60;
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
 
@@ -230,7 +242,7 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? t.errors.uploadFailed);
-      setSelfieUrl(data.url);
+      setPhotoUrls((prev) => [...prev, data.url].slice(0, 4));
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -252,7 +264,8 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
           style,
           tone,
           durationSec,
-          selfieUrl,
+          photoUrls,
+          palette,
           templateSlug: template?.slug,
           details,
           // Solo si la revisión sigue siendo de lo que se va a generar.
@@ -401,44 +414,62 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
           title={t.create.photoTitle}
           hint={t.create.photoHint}
         >
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-            <div className="grid h-40 w-40 shrink-0 place-items-center overflow-hidden rounded-[var(--radius-lg)] border border-dashed border-[var(--color-hairline-strong)] bg-[var(--color-surface-2)]">
-              {selfieUrl ? (
-                <img src={selfieUrl} alt="Tu selfie" className="h-full w-full object-cover" />
-              ) : (
-                <span className="t-caption text-[var(--color-label-3)]">{t.create.noPhoto}</span>
-              )}
+          <div className="space-y-5">
+            <div className="grid grid-cols-4 gap-3">
+              {Array.from({ length: 4 }, (_, i) => photoUrls[i]).map((url, i) => (
+                <div
+                  key={i}
+                  className="relative aspect-[3/4] overflow-hidden rounded-[var(--radius-md)] border border-dashed border-[var(--color-hairline-strong)] bg-[var(--color-surface-2)]"
+                >
+                  {url ? (
+                    <>
+                      <img src={url} alt="" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setPhotoUrls((prev) => prev.filter((u) => u !== url))}
+                        className="t-caption absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-white backdrop-blur"
+                      >
+                        {t.create.removePhoto}
+                      </button>
+                    </>
+                  ) : (
+                    <span className="t-caption grid h-full place-items-center text-[var(--color-label-3)]">
+                      {i + 1}
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
 
-            <div className="flex-1 space-y-4">
-              <label className="t-sub flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
-                <input
-                  type="checkbox"
-                  checked={consent}
-                  onChange={(e) => setConsent(e.target.checked)}
-                  className="mt-[3px] h-4 w-4 accent-white"
-                />
-                <span>{t.consent}</span>
-              </label>
-
+            <label className="t-sub flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
               <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                disabled={!consent || uploading}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void upload(file);
-                }}
-                className="t-sub block w-full text-[var(--color-label-2)] file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-white file:px-5 file:py-2 file:text-[13px] file:font-medium file:text-black hover:file:bg-white/90 disabled:opacity-35"
+                type="checkbox"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+                className="mt-[3px] h-4 w-4 accent-white"
               />
-              {uploading && (
-                <p className="t-sub text-[var(--color-label-2)]">{t.create.uploading}</p>
-              )}
+              <span>{t.consent}</span>
+            </label>
 
-              <p className="t-caption leading-relaxed text-[var(--color-label-3)]">
-                {t.create.photoPrivacy}
-              </p>
-            </div>
+            <input
+              type="file"
+              multiple
+              accept="image/jpeg,image/png,image/webp"
+              disabled={!consent || uploading || photoUrls.length >= 4}
+              onChange={async (e) => {
+                const files = Array.from(e.target.files ?? []).slice(0, 4 - photoUrls.length);
+                e.target.value = "";
+                for (const file of files) await upload(file);
+              }}
+              className="t-sub block w-full text-[var(--color-label-2)] file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-white file:px-5 file:py-2 file:text-[13px] file:font-medium file:text-black hover:file:bg-white/90 disabled:opacity-35"
+            />
+            <p className="t-caption text-[var(--color-label-3)]">
+              {uploading ? t.create.uploading : fill(t.create.photoCount, { n: photoUrls.length })}
+            </p>
+
+            <p className="t-caption leading-relaxed text-[var(--color-label-3)]">
+              {t.create.photoPrivacy}
+            </p>
           </div>
         </Section>
       )}
@@ -461,52 +492,22 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
             </div>
           </Field>
 
-          <Field label={t.create.duration}>
-            <div className="flex gap-3">
-              {([30, 60] as const).map((d) => (
+          <Field label={t.create.palette}>
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+              {PALETTES.map((id) => (
                 <button
-                  key={d}
-                  onClick={() => setDurationSec(d)}
-                  className={`interactive t-sub rounded-full border px-5 py-2 ${
-                    durationSec === d
-                      ? "border-white bg-white text-black"
-                      : "border-[var(--color-hairline)] text-[var(--color-label-2)]"
-                  }`}
-                >
-                  {d} {t.common.seconds}
-                </button>
-              ))}
-            </div>
-          </Field>
-
-          <Field label={t.create.visualStyle}>
-            <div className="flex flex-wrap gap-2">
-              {VISUAL_STYLES.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => setStyle(s.id)}
-                  className={`interactive t-sub rounded-full border px-4 py-2 ${
-                    style === s.id
-                      ? "border-white bg-white text-black"
-                      : "border-[var(--color-hairline)] text-[var(--color-label-2)]"
-                  }`}
-                >
-                  {t.styles[s.id]}
-                </button>
-              ))}
-            </div>
-          </Field>
-
-          <Field label={t.create.voice}>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {TONES.map((id) => (
-                <Choice
                   key={id}
-                  selected={tone === id}
-                  onClick={() => setTone(id)}
-                  title={t.tones[id].label}
-                  sub={t.tones[id].blurb}
-                />
+                  type="button"
+                  onClick={() => setPalette(id)}
+                  className={`interactive overflow-hidden rounded-[var(--radius-md)] border text-left ${
+                    palette === id ? "border-white ring-1 ring-white" : "border-[var(--color-hairline)]"
+                  }`}
+                >
+                  <span className="block h-16" style={{ background: PALETTE_SWATCH[id] }} />
+                  <span className="t-caption block px-2 py-1.5 text-[var(--color-label-2)]">
+                    {t.create.palettes[id]}
+                  </span>
+                </button>
               ))}
             </div>
           </Field>

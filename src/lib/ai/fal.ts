@@ -1,98 +1,90 @@
-import type { ImageProvider, VideoProvider } from "./contracts";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { createFalClient, type FalClient } from "@fal-ai/client";
+import type { ImageProvider, VideoProvider, VoiceProvider } from "./contracts";
 import { PROVIDER_COST } from "../pricing";
-import { fileToDataUri, persistRemoteAsset } from "./storage";
+import { persistBuffer, persistRemoteAsset } from "./storage";
 import { localPathForMediaUrl } from "../paths";
 
 /**
- * fal.ai como pasarela unica para imagen y video.
+ * fal.ai como pasarela única: imagen, animación, voz y LLM con una sola key.
  *
- * Es la eleccion por defecto para el MVP por una razon practica: una sola key
- * da acceso a flux-kontext (identidad preservada), nano-banana y a los modelos
- * de video de Kling/Wan/Veo, asi que se puede cambiar de modelo tocando una
- * variable de entorno en vez de escribir otro adaptador.
+ * Modelos por defecto (elegidos en las pruebas de octubre de 2026):
+ *  - Imagen: Seedream 4.5 edit. Recibe hasta 10 fotos de referencia y es el
+ *    que mejor conservó la cara del usuario. 4 ¢/imagen.
+ *  - Animación: MiniMax H3 Max. Clips de hasta 15 s, 3,25 ¢/s.
+ *  - Voz: ElevenLabs v4, voz "Sarah", con tono suave. 8 ¢ / 1.000 caracteres.
+ *  - Guion: el router de OpenRouter dentro de fal.
+ * Cada modelo se puede cambiar con su variable de entorno.
  */
 
-const FAL_BASE = "https://fal.run";
-const FAL_QUEUE = "https://queue.fal.run";
+let client: FalClient | undefined;
 
-function key(): string {
-  const k = process.env.FAL_KEY;
-  if (!k) throw new Error("Falta FAL_KEY. Pon IMAGE_PROVIDER=mock o añade la key.");
-  return k;
+function fal(): FalClient {
+  const credentials = process.env.FAL_KEY;
+  if (!credentials) throw new Error("Falta FAL_KEY. Añádela en las variables del servicio.");
+  client ??= createFalClient({ credentials });
+  return client;
 }
 
-async function falCall(model: string, body: unknown): Promise<Record<string, unknown>> {
-  const res = await fetch(`${FAL_BASE}/${model}`, {
-    method: "POST",
-    headers: {
-      Authorization: `Key ${key()}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    throw new Error(`fal ${model} respondió ${res.status}: ${await res.text()}`);
+async function run<T>(endpoint: string, input: Record<string, unknown>): Promise<T> {
+  const res = await fal().subscribe(endpoint, { input, logs: false });
+  return res.data as T;
+}
+
+const MIME: Record<string, string> = {
+  ".png": "image/png",
+  ".webp": "image/webp",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".mp3": "audio/mpeg",
+};
+
+/**
+ * Sube un fichero local al almacenamiento de fal y devuelve su URL.
+ *
+ * Así el modelo no depende de que nuestra app sea alcanzable desde fuera, y
+ * no mandamos fotos de varios MB incrustadas en base64. Se cachea por ruta
+ * mientras dure el proceso: las 6 escenas reutilizan las mismas fotos.
+ */
+const uploads = new Map<string, Promise<string>>();
+
+export function falUpload(absPath: string): Promise<string> {
+  let p = uploads.get(absPath);
+  if (!p) {
+    p = (async () => {
+      const buf = await readFile(absPath);
+      const type = MIME[path.extname(absPath).toLowerCase()] ?? "application/octet-stream";
+      return fal().storage.upload(new Blob([new Uint8Array(buf)], { type }));
+    })();
+    uploads.set(absPath, p);
+    p.catch(() => uploads.delete(absPath));
   }
-  return (await res.json()) as Record<string, unknown>;
+  return p;
 }
 
-/** Los modelos largos van por cola: se envia y se sondea hasta que termina. */
-async function falQueue(
-  model: string,
-  body: unknown,
-  { timeoutMs = 300_000 }: { timeoutMs?: number } = {},
-): Promise<Record<string, unknown>> {
-  const submit = await fetch(`${FAL_QUEUE}/${model}`, {
-    method: "POST",
-    headers: { Authorization: `Key ${key()}`, "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!submit.ok) {
-    throw new Error(`fal queue ${model} respondió ${submit.status}: ${await submit.text()}`);
-  }
-  const { status_url, response_url } = (await submit.json()) as {
-    status_url: string;
-    response_url: string;
-  };
-
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    await new Promise((r) => setTimeout(r, 3000));
-    const st = await fetch(status_url, { headers: { Authorization: `Key ${key()}` } });
-    const state = (await st.json()) as { status?: string };
-    if (state.status === "COMPLETED") break;
-    if (state.status === "FAILED") throw new Error(`fal ${model} falló en cola`);
-  }
-
-  const out = await fetch(response_url, { headers: { Authorization: `Key ${key()}` } });
-  if (!out.ok) throw new Error(`fal ${model} sin resultado: ${out.status}`);
-  return (await out.json()) as Record<string, unknown>;
-}
-
-function firstImageUrl(payload: Record<string, unknown>): string {
-  const images = payload.images as { url?: string }[] | undefined;
-  if (images?.[0]?.url) return images[0].url;
-  const image = payload.image as { url?: string } | undefined;
-  if (image?.url) return image.url;
-  throw new Error("fal no devolvió ninguna imagen");
-}
+/** Tamaño vertical que acepta Seedream (entre 3,7 y 16,7 Mpx). */
+const IMAGE_SIZE = { width: 1728, height: 3072 };
 
 export const falImage: ImageProvider = {
   name: "fal",
-  async generate({ prompt, referencePath, projectId, sceneId }) {
-    const model = process.env.FAL_IMAGE_MODEL ?? "fal-ai/flux-pro/kontext";
-    const body: Record<string, unknown> = {
-      prompt,
-      aspect_ratio: "9:16",
-      num_images: 1,
-      output_format: "jpeg",
-      safety_tolerance: "2",
-    };
-    if (referencePath) body.image_url = await fileToDataUri(referencePath);
-
-    const payload = await falCall(model, body);
+  async generate({ prompt, referencePath, referencePaths, projectId, sceneId }) {
+    const refs = referencePaths?.length ? referencePaths : referencePath ? [referencePath] : [];
+    let model: string;
+    let input: Record<string, unknown>;
+    if (refs.length) {
+      model = process.env.FAL_IMAGE_MODEL ?? "fal-ai/bytedance/seedream/v4.5/edit";
+      const urls = await Promise.all(refs.slice(0, 10).map(falUpload));
+      input = { prompt, image_urls: urls, image_size: IMAGE_SIZE, num_images: 1 };
+    } else {
+      model = process.env.FAL_IMAGE_T2I_MODEL ?? "fal-ai/bytedance/seedream/v4.5/text-to-image";
+      input = { prompt, image_size: IMAGE_SIZE, num_images: 1 };
+    }
+    const data = await run<{ images?: { url?: string }[] }>(model, input);
+    const remote = data.images?.[0]?.url;
+    if (!remote) throw new Error("fal no devolvió ninguna imagen");
     // Se copia a nuestro almacenamiento: las URLs de fal caducan.
-    const url = await persistRemoteAsset(firstImageUrl(payload), projectId, `${sceneId}.jpg`);
+    const url = await persistRemoteAsset(remote, projectId, `${sceneId}.jpg`);
     return { result: { url }, costCents: PROVIDER_COST.imageCents, provider: `fal:${model}` };
   },
 };
@@ -100,32 +92,90 @@ export const falImage: ImageProvider = {
 export const falVideo: VideoProvider = {
   name: "fal",
   async animate({ imageUrl, prompt, durationSec, projectId, sceneId }) {
-    const model =
-      process.env.FAL_VIDEO_MODEL ?? "fal-ai/kling-video/v2/standard/image-to-video";
-    // La imagen base se manda incrustada, no por URL: generar no puede
-    // depender de que nuestra app sea alcanzable desde fuera.
+    const model = process.env.FAL_VIDEO_MODEL ?? "minimax/h3-max/image-to-video";
     const local = localPathForMediaUrl(imageUrl);
-    const image = local ? await fileToDataUri(local) : imageUrl;
+    const image = local ? await falUpload(local) : imageUrl;
+    const seconds = Math.min(15, Math.max(2, Math.ceil(durationSec * 2) / 2));
 
-    const payload = await falQueue(model, {
-      prompt,
-      image_url: image,
-      duration: String(Math.min(10, Math.max(5, Math.round(durationSec)))),
-      aspect_ratio: "9:16",
-    });
+    // Kling y MiniMax piden la duración de forma distinta.
+    const input: Record<string, unknown> = /kling/.test(model)
+      ? { prompt, image_url: image, duration: seconds > 7 ? "10" : "5", aspect_ratio: "9:16" }
+      : {
+          prompt,
+          image_url: image,
+          duration: seconds,
+          resolution: "768P",
+          prompt_expansion_mode: "disabled",
+        };
 
-    const video = payload.video as { url?: string } | undefined;
-    if (!video?.url) throw new Error("fal no devolvió ningún video");
-    const url = await persistRemoteAsset(video.url, projectId, `${sceneId}.mp4`);
-
-    const premium = /pro|master|veo/.test(model);
-    const perSec = premium
-      ? PROVIDER_COST.videoPremiumCentsPerSec
-      : PROVIDER_COST.videoCentsPerSec;
+    const data = await run<{ video?: { url?: string } }>(model, input);
+    if (!data.video?.url) throw new Error("fal no devolvió ningún vídeo");
+    const url = await persistRemoteAsset(data.video.url, projectId, `${sceneId}.mp4`);
     return {
       result: { url },
-      costCents: +(durationSec * perSec).toFixed(2),
+      costCents: +(seconds * PROVIDER_COST.videoCentsPerSec).toFixed(2),
       provider: `fal:${model}`,
     };
   },
 };
+
+/** Voz de una frase con ElevenLabs vía fal. Devuelve el MP3 y su coste. */
+export async function falSpeech(
+  text: string,
+  locale: string,
+): Promise<{ audio: Buffer; costCents: number }> {
+  const model = process.env.FAL_TTS_MODEL ?? "elevenlabs/tts/eleven-v4";
+  const data = await run<{ audio?: { url?: string } }>(model, {
+    // Las etiquetas entre corchetes marcan el tono en Eleven v4.
+    text: `[softly, calm and warm] ${text}`,
+    voice: process.env.FAL_TTS_VOICE ?? "Sarah",
+    stability: 0.6,
+    language_code: locale,
+  });
+  if (!data.audio?.url) throw new Error("fal no devolvió audio");
+  const res = await fetch(data.audio.url);
+  if (!res.ok) throw new Error(`No se pudo descargar el audio: ${res.status}`);
+  return {
+    audio: Buffer.from(await res.arrayBuffer()),
+    costCents: +((text.length / 1000) * PROVIDER_COST.voiceCentsPer1kChars).toFixed(3),
+  };
+}
+
+export const falVoice: VoiceProvider = {
+  name: "fal",
+  async speak({ text, projectId, locale }) {
+    const { audio, costCents } = await falSpeech(text, locale ?? "es");
+    const url = await persistBuffer(audio, projectId, "voz.mp3");
+    return { result: { url, mode: "file" as const }, costCents, provider: "fal:elevenlabs" };
+  },
+  async speakLines({ lines, projectId, locale }) {
+    const urls: Record<string, string> = {};
+    let costCents = 0;
+    // De dos en dos: son frases cortas y así no se pisa el límite de la cuenta.
+    const keys = Object.keys(lines);
+    for (let i = 0; i < keys.length; i += 2) {
+      await Promise.all(
+        keys.slice(i, i + 2).map(async (k) => {
+          const out = await falSpeech(lines[k], locale);
+          urls[k] = await persistBuffer(out.audio, projectId, `voz/${k}.mp3`);
+          costCents += out.costCents;
+        }),
+      );
+    }
+    return { result: urls, costCents: +costCents.toFixed(3), provider: "fal:elevenlabs" };
+  },
+};
+
+/** Texto con un LLM a través de fal (OpenRouter). */
+export async function falText(system: string, user: string, maxTokens: number): Promise<string> {
+  const data = await run<{ output?: string; error?: string | null }>("openrouter/router", {
+    model: process.env.FAL_LLM_MODEL ?? "anthropic/claude-sonnet-4.6",
+    system_prompt: system,
+    prompt: user,
+    max_tokens: maxTokens,
+    temperature: 0.8,
+  });
+  if (data.error) throw new Error(`LLM vía fal: ${data.error}`);
+  if (!data.output) throw new Error("LLM vía fal sin respuesta");
+  return data.output;
+}

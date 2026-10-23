@@ -94,14 +94,17 @@ comprobar con un `curl` sin entrar al panel.
 de los proveedores, y solo cuando quieras salir del modo demo:
 
 ```
-SCRIPT_PROVIDER=anthropic
+FAL_KEY=...
+SCRIPT_PROVIDER=fal
 IMAGE_PROVIDER=fal
 VIDEO_PROVIDER=fal
-VOICE_PROVIDER=elevenlabs
-ANTHROPIC_API_KEY=...
-FAL_KEY=...
-ELEVENLABS_API_KEY=...
+VOICE_PROVIDER=fal
+ACCESS_CODE=...
 ```
+
+Con `FAL_KEY` basta: el guion va por el router de OpenRouter dentro de fal, y
+la voz por ElevenLabs dentro de fal. `ACCESS_CODE` cierra la creación de
+vídeos a quien entre por `/api/access?code=...` mientras no haya pagos.
 
 Sin ninguna, la app despliega y funciona en modo demo. Sirve para comprobar
 que el despliegue está bien antes de gastar un euro.

@@ -61,7 +61,7 @@ export async function warnIfEphemeral(): Promise<void> {
 
   if (!status.writable) {
     console.error(
-      `\n[Manifest] ERROR: no se puede escribir en ${status.dir}.\n` +
+      `\n[ManifestLifeAI] ERROR: no se puede escribir en ${status.dir}.\n` +
         `La app no podrá guardar nada. ${status.note ?? ""}\n`,
     );
     return;
@@ -85,6 +85,6 @@ export async function warnIfEphemeral(): Promise<void> {
         "└───────────────────────────────────────────────────────────────┘\n",
     );
   } else {
-    console.log(`[Manifest] Almacenamiento persistente en ${status.dir} ✓`);
+    console.log(`[ManifestLifeAI] Almacenamiento persistente en ${status.dir} ✓`);
   }
 }

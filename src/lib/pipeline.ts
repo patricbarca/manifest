@@ -2,6 +2,8 @@ import { providers } from "./ai";
 import { db } from "./db/store";
 import { buildScenes, layoutTimeline, narrationText } from "./script-engine";
 import { assembleMp4 } from "./render/assemble";
+import { canRenderGlass, mediaDuration, renderGlass } from "./render/glass";
+import { sceneLength, voiceLines } from "./experience";
 import { localPathForMediaUrl } from "./paths";
 import type { PipelineStep, Project, StepId } from "./types";
 
@@ -22,8 +24,8 @@ export function initialSteps(tier: Project["tier"]): PipelineStep[] {
   const steps: { id: StepId; label: string }[] = [
     { id: "script", label: "Escribiendo tu guion" },
     { id: "images", label: "Creando las escenas contigo dentro" },
-    { id: "motion", label: "Dando movimiento a cada escena" },
     { id: "voice", label: "Grabando la voz" },
+    { id: "motion", label: "Dando movimiento a cada escena" },
     { id: "assemble", label: "Montando el vídeo" },
   ];
   return steps.map((s) => ({
@@ -61,9 +63,10 @@ async function setStep(
   }));
 }
 
-function selfieAbsolutePath(project: Project): string | undefined {
-  if (!project.selfieUrl) return undefined;
-  return localPathForMediaUrl(project.selfieUrl) ?? undefined;
+/** Las fotos del usuario en disco: varias si las subió, si no el selfie antiguo. */
+function photoAbsolutePaths(project: Project): string[] {
+  const urls = project.photoUrls?.length ? project.photoUrls : project.selfieUrl ? [project.selfieUrl] : [];
+  return urls.map((u) => localPathForMediaUrl(u)).filter((p): p is string => !!p);
 }
 
 export async function runPipeline(projectId: string): Promise<void> {
@@ -98,11 +101,13 @@ export async function runPipeline(projectId: string): Promise<void> {
         });
     const script = scriptOut.result;
     const timeline = layoutTimeline(script.affirmations, start.durationSec);
+    const photos = photoAbsolutePaths(start);
     const scenes = buildScenes(
       script.sceneBriefs,
       start.style,
-      !!start.selfieUrl,
+      photos.length > 0,
       start.durationSec,
+      photos.length,
     );
 
     await db.patchProject(projectId, (p) => ({
@@ -120,13 +125,12 @@ export async function runPipeline(projectId: string): Promise<void> {
 
     // ── 2. Imágenes ─────────────────────────────────────────────────────────
     await setStep(projectId, "images", { status: "running", startedAt: Date.now() });
-    const referencePath = selfieAbsolutePath(start);
     let imageCents = 0;
 
     await mapWithLimit(scenes, 3, async (scene) => {
       const out = await providers.image.generate({
         prompt: scene.prompt,
-        referencePath: scene.pov ? undefined : referencePath,
+        referencePaths: scene.pov ? undefined : photos,
         projectId,
         sceneId: scene.id,
       });
@@ -145,7 +149,54 @@ export async function runPipeline(projectId: string): Promise<void> {
       costCents: charge(imageCents),
     });
 
-    // ── 3. Movimiento (solo tier cine) ──────────────────────────────────────
+    // ── 3. Voz ──────────────────────────────────────────────────────────────
+    // Con el montaje nuevo cada frase es una pista: así cada escena dura lo
+    // que su frase más la pausa para repetirla. Sin él, una sola narración.
+    await setStep(projectId, "voice", { status: "running", startedAt: Date.now() });
+    const glass = !!providers.voice.speakLines && (await canRenderGlass());
+    let lineUrls: Record<string, string> | undefined;
+    if (glass) {
+      const out = await providers.voice.speakLines!({
+        lines: voiceLines(start.locale, start.id, script.affirmations),
+        projectId,
+        locale: start.locale,
+      });
+      lineUrls = out.result;
+      await db.patchProject(projectId, (p) => ({ ...p, voiceLines: lineUrls, voiceMode: "file" }));
+      await setStep(projectId, "voice", {
+        status: "done",
+        endedAt: Date.now(),
+        costCents: charge(out.costCents),
+      });
+    } else {
+      const voiceOut = await providers.voice.speak({
+        text: narrationText(script),
+        tone: start.tone,
+        projectId,
+        locale: start.locale,
+      });
+      await db.patchProject(projectId, (p) => ({
+        ...p,
+        voiceUrl: voiceOut.result.url,
+        voiceMode: voiceOut.result.mode,
+      }));
+      await setStep(projectId, "voice", {
+        status: "done",
+        endedAt: Date.now(),
+        costCents: charge(voiceOut.costCents),
+      });
+    }
+
+    // Duración real de cada escena (para pedir clips del largo justo).
+    const sceneSecs: number[] = [];
+    if (lineUrls) {
+      for (let i = 0; i < scenes.length; i++) {
+        const abs = localPathForMediaUrl(lineUrls[`a${i}`]);
+        sceneSecs.push(abs ? sceneLength(await mediaDuration(abs)) : 8);
+      }
+    }
+
+    // ── 4. Movimiento (solo tier cine) ──────────────────────────────────────
     if (start.tier === "cinematic") {
       await setStep(projectId, "motion", { status: "running", startedAt: Date.now() });
       const withImages = (await db.getProject(projectId))!.scenes;
@@ -153,10 +204,12 @@ export async function runPipeline(projectId: string): Promise<void> {
 
       await mapWithLimit(withImages, 2, async (scene) => {
         if (!scene.imageUrl) return;
+        const brief = (script.sceneBriefs[withImages.indexOf(scene)] ?? "").replace(/^pov:\s*/i, "");
         const out = await providers.video.animate({
           imageUrl: scene.imageUrl,
-          prompt: scene.prompt,
-          durationSec: scene.endSec - scene.startSec,
+          // Al vídeo no le sirve el prompt de la imagen: necesita movimiento.
+          prompt: `Gentle, realistic natural motion in this scene: ${brief}. Subtle movement of hair, clothes and light, people move naturally, steady camera, every face stays the same.`,
+          durationSec: sceneSecs[withImages.indexOf(scene)] ?? scene.endSec - scene.startSec,
           projectId,
           sceneId: scene.id,
         });
@@ -175,28 +228,12 @@ export async function runPipeline(projectId: string): Promise<void> {
       });
     }
 
-    // ── 4. Voz ──────────────────────────────────────────────────────────────
-    await setStep(projectId, "voice", { status: "running", startedAt: Date.now() });
-    const voiceOut = await providers.voice.speak({
-      text: narrationText(script),
-      tone: start.tone,
-      projectId,
-    });
-    await db.patchProject(projectId, (p) => ({
-      ...p,
-      voiceUrl: voiceOut.result.url,
-      voiceMode: voiceOut.result.mode,
-    }));
-    await setStep(projectId, "voice", {
-      status: "done",
-      endedAt: Date.now(),
-      costCents: charge(voiceOut.costCents),
-    });
-
     // ── 5. Montaje ──────────────────────────────────────────────────────────
     await setStep(projectId, "assemble", { status: "running", startedAt: Date.now() });
     const current = (await db.getProject(projectId))!;
-    const assembled = await assembleMp4(current);
+    const assembled = lineUrls
+      ? { ...(await renderGlass(current, lineUrls)), skipped: false, reason: undefined }
+      : await assembleMp4(current);
     await setStep(projectId, "assemble", {
       status: assembled.skipped ? "skipped" : "done",
       endedAt: Date.now(),

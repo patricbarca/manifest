@@ -6,7 +6,7 @@ import { LocaleToggle } from "@/components/LocaleToggle";
 import { getDictionary } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
-  title: "Manifest — see yourself living it",
+  title: "ManifestLifeAI — see yourself living it",
   description:
     "Upload a photo and get a visualization video with your face, your script and a voice that guides you while you repeat your affirmations out loud.",
 };
@@ -36,7 +36,7 @@ export default async function RootLayout({
               href="/"
               className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--color-label-1)]"
             >
-              Manifest
+              ManifestLifeAI
             </Link>
 
             <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
@@ -68,7 +68,7 @@ export default async function RootLayout({
         <footer className="relative z-10 mt-32 border-t border-[var(--color-hairline)]">
           <div className="mx-auto flex max-w-[1120px] flex-col gap-5 px-6 py-12 sm:flex-row sm:items-start sm:justify-between">
             <p className="t-caption text-[var(--color-label-3)]">
-              © {new Date().getFullYear()} Manifest
+              © {new Date().getFullYear()} ManifestLifeAI
             </p>
             <p className="t-caption max-w-sm leading-relaxed text-[var(--color-label-3)]">
               {t.footer.disclaimer}

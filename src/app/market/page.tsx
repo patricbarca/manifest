@@ -5,7 +5,7 @@ import { LIFE_AREAS } from "@/lib/types";
 import { fill } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/server";
 
-export const metadata = { title: "Market — Manifest" };
+export const metadata = { title: "Market — ManifestLifeAI" };
 
 export default async function MarketPage() {
   const { t, locale } = await getDictionary();

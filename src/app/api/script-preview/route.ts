@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { hasAccess } from "@/lib/access";
 import { z } from "zod";
 import { providers } from "@/lib/ai";
 import { Area, Desires, Details, intentionFrom } from "@/lib/api-schemas";
@@ -33,6 +34,10 @@ const Body = z.object({
  * crea después con su id, nunca con un guion que mande el cliente.
  */
 export async function POST(request: Request) {
+  if (!(await hasAccess())) {
+    const { t } = await getDictionary();
+    return NextResponse.json({ error: t.errors.betaOnly }, { status: 403 });
+  }
   const user = await currentUser();
   const { t, locale } = await getDictionary();
   const parsed = Body.safeParse(await request.json());

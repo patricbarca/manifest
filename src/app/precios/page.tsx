@@ -10,7 +10,7 @@ import {
 import { fill } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/server";
 
-export const metadata = { title: "Pricing — Manifest" };
+export const metadata = { title: "Pricing — ManifestLifeAI" };
 
 export default async function PreciosPage() {
   const { t } = await getDictionary();

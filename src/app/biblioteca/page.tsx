@@ -5,7 +5,7 @@ import { fill } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Library — Manifest" };
+export const metadata = { title: "Library — ManifestLifeAI" };
 
 export default async function BibliotecaPage() {
   const { t, locale } = await getDictionary();
