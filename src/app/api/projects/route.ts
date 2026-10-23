@@ -3,8 +3,8 @@ import { z } from "zod";
 import { db } from "@/lib/db/store";
 import { currentUser, chargeForVideo } from "@/lib/db/session";
 import { estimateCostCents, priceUsd } from "@/lib/pricing";
-import { checkDesires, checkDetails } from "@/lib/safety";
-import { Area, Desires, Details, intentionFrom } from "@/lib/api-schemas";
+import { checkBlocked, checkDesires, checkDetails } from "@/lib/safety";
+import { Area, Desires, Details, People, intentionFrom } from "@/lib/api-schemas";
 import { inferArea } from "@/lib/script-engine";
 import { initialSteps, runPipeline } from "@/lib/pipeline";
 import { templateBySlug } from "@/lib/templates";
@@ -27,6 +27,8 @@ const CreateProject = z.object({
   /** Hasta 4 fotos del usuario. */
   photoUrls: z.array(z.string().startsWith("/media/uploads/")).max(4).optional(),
   palette: z.enum(PALETTES as [Palette, ...Palette[]]).optional(),
+  /** Otras personas que salen en las escenas, con sus fotos. */
+  people: People,
   templateSlug: z.string().optional(),
   /** Guion aprobado en la revisión. */
   previewId: z.string().startsWith("sp_").optional(),
@@ -58,13 +60,21 @@ export async function POST(request: Request) {
   // diccionario en el idioma en el que está leyendo el usuario.
   // Las fotos se nombran con el id del dueño al subirlas (ver api/upload).
   const photos = input.photoUrls ?? (input.selfieUrl ? [input.selfieUrl] : []);
-  if (photos.some((u) => !u.split("/").pop()?.startsWith(`${user.id}_`))) {
+  const peoplePhotos = input.people.flatMap((p) => p.photoUrls);
+  if ([...photos, ...peoplePhotos].some((u) => !u.split("/").pop()?.startsWith(`${user.id}_`))) {
     return NextResponse.json({ error: t.errors.notYours }, { status: 403 });
   }
 
   const verdict = checkDesires(input.desires);
   const detailsVerdict = checkDetails(input.details);
-  const blocked = !verdict.ok ? verdict : !detailsVerdict.ok ? detailsVerdict : undefined;
+  const peopleVerdict = input.people
+    .map((p) => checkBlocked(`${p.name} ${p.relation ?? ""}`))
+    .find((v) => !v.ok);
+  const blocked = !verdict.ok
+    ? verdict
+    : !detailsVerdict.ok
+      ? detailsVerdict
+      : peopleVerdict;
   if (blocked) {
     return NextResponse.json({ error: t.safety[blocked.key!] }, { status: 422 });
   }
@@ -82,6 +92,8 @@ export async function POST(request: Request) {
     preview.tier === input.tier &&
     preview.tone === input.tone &&
     preview.durationSec === input.durationSec &&
+    JSON.stringify(preview.people ?? []) ===
+      JSON.stringify(input.people.map((p) => ({ name: p.name, relation: p.relation }))) &&
     preview.locale === locale
       ? preview
       : undefined;
@@ -112,6 +124,7 @@ export async function POST(request: Request) {
     selfieUrl: photos[0],
     photoUrls: photos,
     palette: input.palette ?? "dusk",
+    people: input.people.map((p, i) => ({ id: `pe_${i + 1}`, ...p })),
     status: "queued",
     steps: initialSteps(input.tier),
     script: approved?.script,

@@ -77,7 +77,7 @@ export function checkDetails(answers: { answer: string }[]): SafetyVerdict {
   return { ok: true };
 }
 
-function checkBlocked(text: string): SafetyVerdict {
+export function checkBlocked(text: string): SafetyVerdict {
   for (const { re, key } of BLOCKED_PATTERNS) {
     if (re.test(text)) return { ok: false, key };
   }

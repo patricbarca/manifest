@@ -124,7 +124,7 @@ export const es: Dictionary = {
     by: "de",
   },
   create: {
-    steps: ["Deseos", "Detalles", "Foto", "Formato", "Revisión"],
+    steps: ["Deseos", "Detalles", "Foto", "Personas", "Formato", "Revisión"],
     fromTemplate:
       "Partiendo de {title} de {author}. El guion y las escenas vienen dados; tú pones tu cara y tu intención.",
     areaTitle: "¿Qué parte de tu vida quieres ver distinta?",
@@ -177,6 +177,19 @@ export const es: Dictionary = {
     uploading: "Subiendo…",
     photoPrivacy:
       "Tu foto es tuya. No se publica, no se usa para entrenar modelos y la puedes borrar desde tu biblioteca junto con el vídeo.",
+    peopleTitle: "Quién más sale en tus escenas",
+    peopleHint:
+      "Opcional. Si un deseo incluye a alguien (tu pareja, tu mamá, una amiga), añade su nombre y de 1 a 3 fotos claras de su cara. Solo sale en las escenas donde corresponde.",
+    personName: "Nombre",
+    personNamePlaceholder: "p. ej. Javi",
+    personRelation: "Quién es para ti",
+    personRelationPlaceholder: "p. ej. mi pareja",
+    personPhotos: "{n} de 3 fotos",
+    addPerson: "Añadir persona",
+    removePerson: "Quitar persona",
+    peopleConsent: "Tengo permiso de esta persona para usar sus fotos y es mayor de edad.",
+    peopleIncomplete: "Cada persona necesita un nombre y al menos una foto.",
+    peoplePrivacy: "Sus fotos solo se usan para crear tus escenas y se borran cuando el vídeo está listo.",
     formatTitle: "Cómo quieres que se vea",
     formatHint: "Esto es lo que determina el precio.",
     videoType: "Qué tipo de vídeo",

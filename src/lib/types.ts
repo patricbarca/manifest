@@ -50,6 +50,18 @@ export const VISUAL_STYLES: { id: VisualStyle; prompt: string }[] = [
 
 export type VoiceTone = "calma" | "firme" | "cercana";
 
+/**
+ * Otra persona que sale en el vídeo (pareja, familia, amigos). La sube el
+ * usuario con su permiso; sus fotos se borran al terminar el vídeo.
+ */
+export interface Person {
+  id: string;
+  name: string;
+  /** Cómo la llama el usuario: "mi pareja", "mamá"… */
+  relation?: string;
+  photoUrls: string[];
+}
+
 /** Color del fondo animado del vídeo (render/build_glass.py tiene los valores). */
 export type Palette = "dusk" | "ocean" | "sage" | "rose" | "lavender" | "gold";
 export const PALETTES: Palette[] = ["dusk", "ocean", "sage", "rose", "lavender", "gold"];
@@ -82,6 +94,8 @@ export interface Scene {
   prompt: string;
   /** Vista en primera persona: sin cara, y se genera sin el selfie. */
   pov?: boolean;
+  /** Ids de las personas (Person) que salen en esta escena. */
+  cast?: string[];
   imageUrl?: string;
   /** Solo en tier `cinematic`. */
   videoUrl?: string;
@@ -146,6 +160,8 @@ export interface ScriptPreview {
   intention: string;
   desires?: string[];
   details: ClarifyAnswer[];
+  /** Nombres y relaciones de las personas añadidas (sin fotos). */
+  people?: { name: string; relation?: string }[];
   tier: Tier;
   tone: VoiceTone;
   durationSec: 30 | 60;
@@ -181,6 +197,8 @@ export interface Project {
   selfieUrl?: string;
   /** Hasta 4 fotos del usuario: con varias, el parecido mejora mucho. */
   photoUrls?: string[];
+  /** Otras personas con foto, hasta 4. */
+  people?: Person[];
   palette?: Palette;
   status: ProjectStatus;
   steps: PipelineStep[];

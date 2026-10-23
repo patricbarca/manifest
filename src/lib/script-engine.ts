@@ -413,3 +413,59 @@ export function buildScenes(
 export function narrationText(script: ScriptDraft): string {
   return [script.hook, ...script.affirmations, script.closing].join("\n\n");
 }
+
+// ── Personas con foto ──────────────────────────────────────────────────────
+
+function norm(s: string): string {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+
+function escapeRe(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Quién sale en una escena: las personas que el LLM marcó como [[Nombre]] en
+ * la escena, o a las que el deseo nombra por su nombre o su relación.
+ */
+export function sceneCast(
+  brief: string,
+  desire: string | undefined,
+  people: { id: string; name: string; relation?: string }[],
+): string[] {
+  const b = norm(brief);
+  const d = norm(desire ?? "");
+  return people
+    .filter((p) => {
+      const name = norm(p.name);
+      if (b.includes(`[[${name}]]`)) return true;
+      const word = (w: string) => w.length > 1 && new RegExp(`(^|[^a-z])${escapeRe(w)}([^a-z]|$)`).test(d);
+      return word(name) || (!!p.relation && word(norm(p.relation.replace(/^(mi|my)\s+/i, ""))));
+    })
+    .map((p) => p.id);
+}
+
+/**
+ * Sustituye cada [[Nombre]] por "la persona de las Figuras X a Y" y, si alguna
+ * persona del reparto no aparece marcada, la añade al final de la escena.
+ */
+export function applyCast(
+  prompt: string,
+  cast: { name: string; first: number; last: number }[],
+): string {
+  let out = prompt;
+  const extra: string[] = [];
+  for (const c of cast) {
+    const figs = c.first === c.last ? `Figure ${c.first}` : `Figures ${c.first} to ${c.last}`;
+    const who = `the person in ${figs}`;
+    const re = new RegExp(`\\[\\[\\s*${escapeRe(c.name)}\\s*\\]\\]`, "gi");
+    if (re.test(out)) out = out.replace(re, who);
+    else extra.push(`Also in the scene, close to the main person: ${who}`);
+  }
+  // Marcas de personas que no están en el reparto: se quitan los corchetes.
+  out = out.replace(/\[\[\s*([^\]]+?)\s*\]\]/g, "a person");
+  const identity = cast.length
+    ? ` Each person keeps exactly their own face and features from their figures.`
+    : "";
+  return [out, ...extra].join(". ") + identity;
+}

@@ -18,6 +18,24 @@ export function intentionFrom(desires: string[]): string {
   return desires.join("\n");
 }
 
+/** Personas añadidas por el usuario: nombre, relación y sus fotos. */
+export const People = z
+  .array(
+    z.object({
+      name: z.string().trim().min(1).max(40).regex(/^[^[\]]+$/),
+      relation: z.string().trim().max(40).optional(),
+      photoUrls: z.array(z.string().startsWith("/media/uploads/")).min(1).max(3),
+    }),
+  )
+  .max(4)
+  .default([]);
+
+/** Lo que el guion necesita saber de ellas (sin fotos). */
+export const PeopleNames = z
+  .array(z.object({ name: z.string().trim().min(1).max(40).regex(/^[^[\]]+$/), relation: z.string().trim().max(40).optional() }))
+  .max(4)
+  .default([]);
+
 export const Details = z
   .array(
     z.object({

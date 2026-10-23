@@ -31,6 +31,8 @@ export interface ScriptProvider {
     details?: ClarifyAnswer[];
     /** Si llega, manda: una escena y una frase por deseo, en su orden. */
     desires?: string[];
+    /** Personas con foto que el usuario añadió. */
+    people?: { name: string; relation?: string }[];
   }): Promise<Billed<ScriptDraft>>;
 }
 

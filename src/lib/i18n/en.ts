@@ -125,7 +125,7 @@ export const en = {
     by: "by",
   },
   create: {
-    steps: ["Desires", "Details", "Photo", "Format", "Review"],
+    steps: ["Desires", "Details", "Photo", "People", "Format", "Review"],
     fromTemplate:
       "Starting from {title} by {author}. The script and scenes come ready; you bring your face and your intention.",
     areaTitle: "Which part of your life do you want to see differently?",
@@ -178,6 +178,19 @@ export const en = {
     uploading: "Uploading…",
     photoPrivacy:
       "Your photo is yours. It isn't published, it isn't used to train models, and you can delete it from your library along with the video.",
+    peopleTitle: "Who else is in your scenes",
+    peopleHint:
+      "Optional. If a desire includes someone (your partner, your mum, a friend), add their name and 1 to 3 clear photos of their face. We only put them in the scenes where they belong.",
+    personName: "Name",
+    personNamePlaceholder: "e.g. Javi",
+    personRelation: "Who they are to you",
+    personRelationPlaceholder: "e.g. my partner",
+    personPhotos: "{n} of 3 photos",
+    addPerson: "Add a person",
+    removePerson: "Remove person",
+    peopleConsent: "I have this person's permission to use their photos, and they are an adult.",
+    peopleIncomplete: "Each person needs a name and at least one photo.",
+    peoplePrivacy: "Their photos are only used to create your scenes and are deleted when the video is ready.",
     formatTitle: "How you want it to look",
     formatHint: "This is what determines the price.",
     videoType: "What kind of video",
