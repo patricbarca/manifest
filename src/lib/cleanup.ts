@@ -1,7 +1,8 @@
 import { readdir, rm, stat } from "node:fs/promises";
+import { deletePrefix, objectStorageEnabled, putFile } from "./object-storage";
 import path from "node:path";
 import { db } from "./db/store";
-import { DATA_DIR, localPathForMediaUrl, mediaDir, mediaPath } from "./paths";
+import { DATA_DIR, contentTypeFor, localPathForMediaUrl, mediaDir, mediaPath } from "./paths";
 import type { Project } from "./types";
 
 /**
@@ -41,12 +42,44 @@ export async function deleteProject(project: Project): Promise<void> {
   }
   await rm(mediaPath("generated", project.id), { recursive: true, force: true });
   await rm(path.join(DATA_DIR, "tmp", `render-${project.id}`), { recursive: true, force: true });
+  if (objectStorageEnabled()) {
+    await deletePrefix(`generated/${project.id}/`).catch((err) => console.error("[bucket] borrar", project.id, err));
+  }
   await db.deleteProject(project.id);
 }
 
 /** Después de montar el vídeo los clips ya no hacen falta: pesan más que el vídeo final. */
 export async function dropIntermediates(project: Project): Promise<void> {
   for (const s of project.scenes) if (s.videoUrl) await removeUrl(s.videoUrl);
+}
+
+async function walk(dir: string): Promise<string[]> {
+  const out: string[] = [];
+  for (const e of await readdir(dir, { withFileTypes: true }).catch(() => [])) {
+    const abs = path.join(dir, e.name);
+    if (e.isDirectory()) out.push(...(await walk(abs)));
+    else out.push(abs);
+  }
+  return out;
+}
+
+/**
+ * Con el vídeo terminado, sube su carpeta (vídeo, escenas, voz) al bucket y
+ * la borra del disco. Las URLs /media/... siguen valiendo: la ruta de media
+ * redirige al bucket. Si algo falla, se deja en disco y no pasa nada.
+ */
+export async function offloadProject(projectId: string): Promise<void> {
+  if (!objectStorageEnabled()) return;
+  const dir = mediaPath("generated", projectId);
+  try {
+    for (const abs of await walk(dir)) {
+      const rel = path.relative(dir, abs).split(path.sep).join("/");
+      await putFile(`generated/${projectId}/${rel}`, abs, contentTypeFor(abs));
+    }
+    await rm(dir, { recursive: true, force: true });
+  } catch (err) {
+    console.error("[bucket] subir", projectId, err);
+  }
 }
 
 async function oldEntries(dir: string, maxAgeMs: number): Promise<string[]> {

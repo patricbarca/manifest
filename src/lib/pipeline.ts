@@ -6,7 +6,7 @@ import { canRenderGlass, mediaDuration, renderGlass } from "./render/glass";
 import { sceneLength, voiceLines } from "./experience";
 import { localPathForMediaUrl } from "./paths";
 import { rm } from "node:fs/promises";
-import { dropIntermediates, sweepStorage } from "./cleanup";
+import { dropIntermediates, offloadProject, sweepStorage } from "./cleanup";
 import { nextQuoteId } from "./quotes";
 import { sendVideoReady } from "./email";
 import type { Person, PipelineStep, Project, Scene, StepId } from "./types";
@@ -337,6 +337,8 @@ export async function runPipeline(projectId: string): Promise<void> {
         }));
       }
     }
+    // El vídeo y sus escenas pasan al bucket (si está configurado).
+    await offloadProject(projectId);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await db.patchProject(projectId, (p) => ({
