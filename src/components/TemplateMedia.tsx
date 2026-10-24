@@ -1,30 +1,37 @@
 import { templatePreview } from "@/lib/templates";
 import type { Template } from "@/lib/types";
 
+/** Qué versión del ejemplo se enseña. */
+export type PreviewVariant = "stills" | "animated";
+
 /**
  * Vista previa de una plantilla, fiel a lo que se compra:
- * - "cinematic" (Animado): el clip de ejemplo, que se mueve de verdad.
- * - "vision" (Imágenes): una imagen fija con movimiento de cámara, que es
- *   exactamente lo que entrega ese producto. Enseñar un clip animado aquí
- *   sería vender algo que no incluye.
+ * - "animated" (Animado): el clip de ejemplo, que se mueve de verdad.
+ * - "stills" (Imágenes): un fotograma representativo con movimiento de
+ *   cámara, que es exactamente lo que entrega ese producto.
  * Sin preview, solo el degradado de portada.
  */
 export function TemplateMedia({
   template,
+  variant,
   className = "",
 }: {
   template: Pick<Template, "slug" | "tier" | "cover">;
+  /** Por defecto, la del producto de la plantilla. */
+  variant?: PreviewVariant;
   className?: string;
 }) {
-  const { video, poster } = templatePreview(template.slug);
+  const { video, poster, still } = templatePreview(template.slug);
   const background = `linear-gradient(150deg, ${template.cover.from}, ${template.cover.to})`;
+  const v = variant ?? (template.tier === "vision" ? "stills" : "animated");
 
-  if (template.tier === "vision") {
+  if (v === "stills") {
+    const src = still ?? poster;
     return (
       <div className={`overflow-hidden ${className}`} style={{ background }}>
-        {poster && (
+        {src && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={poster} alt="" className="kb-loop h-full w-full object-cover" />
+          <img src={src} alt="" className="kb-loop h-full w-full object-cover" />
         )}
       </div>
     );
@@ -32,6 +39,7 @@ export function TemplateMedia({
 
   return (
     <video
+      key={video}
       src={video}
       poster={poster}
       autoPlay
