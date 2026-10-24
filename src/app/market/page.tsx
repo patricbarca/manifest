@@ -62,7 +62,7 @@ export default async function MarketPage({
             title={bp.title[locale]}
             summary={bp.summary[locale]}
             by={t.market.by}
-            seconds={t.common.seconds}
+            referenceLabel={t.market.referenceShort}
             membersBadge={t.market.membersBadge}
             options={[
               { variant: "stills", label: t.products.vision.name, price: formatUsd(PRODUCTS.vision.priceUsd) },
