@@ -1,11 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
-import {
-  PRODUCTS,
-  estimateCostCents,
-  formatUsd,
-} from "@/lib/pricing";
-import { fill } from "@/lib/i18n";
+import { PRODUCTS, formatUsd } from "@/lib/pricing";
 import { getDictionary } from "@/lib/i18n/server";
 
 export const metadata = { title: "Pricing — ManifestLifeAI" };
@@ -77,16 +72,6 @@ export default async function PreciosPage() {
       <p className="t-sub mx-auto mt-8 max-w-md text-center text-[var(--color-label-2)]">
         {t.pricing.freeNote}
       </p>
-
-      {/* ── Transparencia de coste ───────────────────────────────────────── */}
-      <section className="mx-auto mt-24 max-w-lg text-center">
-        <p className="t-caption leading-relaxed text-[var(--color-label-3)]">
-          {fill(t.pricing.transparency, {
-            stills: formatUsd(estimateCostCents("vision", 60) / 100),
-            animated: formatUsd(estimateCostCents("cinematic", 60) / 100),
-          })}
-        </p>
-      </section>
     </div>
   );
 }

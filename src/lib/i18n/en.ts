@@ -67,7 +67,6 @@ export const en = {
       "Ready-made templates. Put your face in and your version is generated, with you inside.",
     closingTitle: "What you look at every day starts to feel possible.",
     closingCta: "Get started",
-    costNote: "Costs us {cost} to produce.",
     durationBoth: "≈ 2 min",
     soundOn: "Turn sound on",
     examplesTitle: "This is what you get",
@@ -103,8 +102,6 @@ export const en = {
       "When you finish a video you like, you can publish it as a template. Whoever uses it generates their own version with their face, and you get {stills} for every stills video and {animated} for every animated one.",
     publishNote:
       "What gets published is the recipe — script, scenes, style — not your finished video. Nobody ever receives a video with your face in it.",
-    transparency:
-      "So you can see where the numbers come from: producing a 60 s stills video costs us {stills} in AI models, and a 60 s animated one, {animated}. The price difference isn't a whim: animating each scene costs 30 to 100 times more than generating an image.",
   },
   products: {
     vision: {
@@ -326,7 +323,6 @@ export const en = {
     detailsTitle: "Production details",
     paid: "Paid",
     freeLabel: "free",
-    providerCost: "Provider cost",
     sceneCount: "Scenes",
     voiceLabel: "Voice",
     voiceBrowser: "synthesized in the browser (demo)",

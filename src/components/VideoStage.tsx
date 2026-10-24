@@ -267,7 +267,7 @@ function GenerationProgress({ project, t }: { project: Project; t: Dictionary })
   );
 }
 
-/** Transparencia de coste. En producción esto va detrás de un flag interno. */
+/** Detalles del vídeo: lo pagado, escenas y voz. */
 function CostPanel({ project, t }: { project: Project; t: Dictionary }) {
   return (
     <details className="card rounded-[var(--radius-md)] p-5">
@@ -282,10 +282,6 @@ function CostPanel({ project, t }: { project: Project; t: Dictionary }) {
               ? t.video.freeLabel
               : formatUsd(project.paidCents / 100)
           }
-        />
-        <Row
-          label={t.video.providerCost}
-          value={`$${(project.costCents / 100).toFixed(3)}`}
         />
         <Row label={t.video.sceneCount} value={`${project.scenes.length}`} />
         <Row

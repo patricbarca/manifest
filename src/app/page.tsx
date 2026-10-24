@@ -2,11 +2,11 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { HeroVideo } from "@/components/HeroVideo";
 import { TEMPLATES, templatePreview } from "@/lib/templates";
-import { PRODUCTS, estimateCostCents, formatUsd } from "@/lib/pricing";
+import { PRODUCTS, formatUsd } from "@/lib/pricing";
 import { LIFE_AREAS } from "@/lib/types";
 import type { Tier } from "@/lib/types";
 import { isDemoMode } from "@/lib/ai";
-import { fill, type Dictionary, type Locale } from "@/lib/i18n";
+import { type Dictionary, type Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/server";
 
 export default async function HomePage() {
@@ -249,10 +249,6 @@ function TierCard({ id, t }: { id: Tier; t: Dictionary }) {
           </li>
         ))}
       </ul>
-
-      <p className="t-caption mt-7 border-t border-[var(--color-hairline)] pt-5 text-[var(--color-label-3)]">
-        {fill(t.home.costNote, { cost: formatUsd(estimateCostCents(id, 60) / 100) })}
-      </p>
     </div>
   );
 }

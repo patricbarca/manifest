@@ -66,7 +66,6 @@ export const es: Dictionary = {
       "Plantillas listas. Les pones tu cara y se genera tu versión, contigo dentro.",
     closingTitle: "Lo que miras todos los días acaba pareciéndote posible.",
     closingCta: "Empezar",
-    costNote: "Nos cuesta {cost} producirlo.",
     durationBoth: "≈ 2 min",
     soundOn: "Activar sonido",
     examplesTitle: "Así se ve",
@@ -102,8 +101,6 @@ export const es: Dictionary = {
       "Cuando termines un vídeo que te guste, puedes publicarlo como plantilla. Quien la use genera su propia versión con su cara, y a ti te llegan {stills} por cada vídeo de imágenes y {animated} por cada animado.",
     publishNote:
       "Lo que se publica es la receta —guion, escenas, estilo—, no tu vídeo montado. Nadie recibe nunca un vídeo con tu cara dentro.",
-    transparency:
-      "Para que se vea de dónde salen los números: producir un vídeo de imágenes de 60 s nos cuesta {stills} en modelos de IA, y uno animado de 60 s, {animated}. La diferencia de precio no es un capricho: animar cada escena cuesta entre 30 y 100 veces más que generar una imagen.",
   },
   products: {
     vision: {
@@ -325,7 +322,6 @@ export const es: Dictionary = {
     detailsTitle: "Detalle de producción",
     paid: "Pagado",
     freeLabel: "gratis",
-    providerCost: "Coste de proveedor",
     sceneCount: "Escenas",
     voiceLabel: "Voz",
     voiceBrowser: "sintetizada en el navegador (demo)",
