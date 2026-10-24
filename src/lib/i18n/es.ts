@@ -35,7 +35,6 @@ export const es: Dictionary = {
     lede: "Sube un selfie, escribe tus deseos y recibe un vídeo de unos 2 minutos donde te ves viviéndolos. Una voz te guía: respiras, ves cada escena contigo dentro y repites tus afirmaciones en voz alta.",
     ctaPrimary: "Crear mi vídeo",
     ctaSecondary: "Ver el market",
-    freeNote: "Tu primer vídeo es gratis. Sin tarjeta.",
     previewLine: "Dirijo mi propio estudio.",
     previewCue: "ahora tú — dilo en voz alta",
     steps: [
@@ -59,7 +58,7 @@ export const es: Dictionary = {
     productsLede:
       "Imágenes fijas con movimiento de cámara, escenas animadas, o animadas con nuestro modelo premium en alta definición. Las tres funcionan para visualizar.",
     freeAfterProducts:
-      "Tu primer vídeo es gratis. Después pagas por vídeo, o te haces socio y tienes uno nuevo cada mes.",
+      "Pagas por vídeo, o te haces socio y tienes uno nuevo cada mes.",
     areasTitle: "¿Qué quieres ver?",
     marketTitle: "Del market",
     marketLede:
@@ -117,11 +116,11 @@ export const es: Dictionary = {
   },
   pricing: {
     title: "Tres precios, y ya",
-    lede: "Pagas por vídeo, o te haces socio y tienes uno nuevo cada mes. El primero es gratis para que veas si te resuena.",
+    lede: "Pagas por vídeo, o te haces socio y tienes uno nuevo cada mes.",
     sameDuration: "por vídeo · unos 2 minutos",
     create: "Crear",
     freeNote:
-      "Tu primer vídeo es gratis. A partir de ahí pagas solo cuando creas.",
+      "Pagas solo cuando creas. Antes de pagar revisas y corriges las escenas.",
     marketTitle: "Y si usas la plantilla de alguien",
     marketLede:
       "Pagas exactamente lo mismo. No hay tarifa aparte por la plantilla: del precio del vídeo, un {share} % va a quien la creó.",
@@ -180,7 +179,7 @@ export const es: Dictionary = {
       "Descripciones en inglés: es el idioma con el que mejor responden los modelos de imagen. Estilo {style}.",
     useTemplate: "Usar esta plantilla",
     useWith: "Usar con {name}",
-    compareNote: "El mismo ejemplo en Imágenes y en Animado, para que veas la diferencia. Al crear también puedes elegir Elevado ({elevated}). Usar la plantilla cuesta lo mismo que crear uno de cero.",
+    compareNote: "El mismo ejemplo en Imágenes, Animado y Elevado (alta definición), para que veas la diferencia. Usar la plantilla cuesta lo mismo que crear uno de cero.",
     membersBadge: "Socios",
     membersNote: "Plantilla del mes: incluida para socios.",
     priceNote: "Lo mismo que crear uno de cero. Sin tarifa aparte por la plantilla.",

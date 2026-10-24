@@ -117,13 +117,13 @@ export function formatUsd(amount: number): string {
 }
 
 /**
- * PRIMER VÍDEO GRATIS
+ * VÍDEOS GRATIS
  *
- * El output es un vídeo vertical con la cara del usuario, que él mismo
- * comparte. Es el anuncio más barato que se puede comprar: cuesta ~0,58 $ y
- * se lo lleva puesto.
+ * Desactivado por defecto (decisión de producto, oct. 2026): todos los vídeos
+ * se pagan. Con FREE_VIDEOS=1 vuelve el primer vídeo gratis con marca de agua,
+ * y la web solo lo anuncia en el asistente y la biblioteca.
  */
-export const FREE_VIDEOS = Number(process.env.FREE_VIDEOS ?? 1);
+export const FREE_VIDEOS = Number(process.env.FREE_VIDEOS ?? 0);
 
 /**
  * Mientras no haya pasarela de pago, no se cobra: se enseña el precio y se

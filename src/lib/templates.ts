@@ -712,13 +712,20 @@ const PREVIEWED = new Set([
  * Clip de ejemplo de cada plantilla (persona generada por IA). Sin clip,
  * la tarjeta muestra solo el degradado de portada.
  */
-export function templatePreview(slug: string): { video?: string; poster?: string; still?: string } {
+export function templatePreview(slug: string): {
+  video?: string;
+  poster?: string;
+  still?: string;
+  hd?: string;
+} {
   if (!PREVIEWED.has(slug)) return {};
   return {
     video: `/market/${slug}.mp4`,
     poster: `/market/${slug}.jpg`,
     // Fotograma elegido a mano: el momento que mejor cuenta el deseo.
     still: `/market/${slug}-still.jpg`,
+    // Versión Elevado: la misma imagen animada con Kling 3.0 Pro, en 720p.
+    hd: `/market/${slug}-hd.mp4`,
   };
 }
 
