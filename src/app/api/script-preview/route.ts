@@ -25,7 +25,7 @@ const Body = z.object({
   area: Area.optional(),
   desires: Desires,
   details: Details,
-  tier: z.enum(["vision", "cinematic"]),
+  tier: z.enum(["vision", "cinematic", "elevated"]),
   tone: z.enum(["calma", "firme", "cercana"]),
   durationSec: z.union([z.literal(30), z.literal(60)]),
   people: PeopleNames,

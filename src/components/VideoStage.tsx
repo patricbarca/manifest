@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import type { Project } from "@/lib/types";
+import { isAnimated, type Project } from "@/lib/types";
 import { VisualizationPlayer } from "./VisualizationPlayer";
 import { Icon } from "./Icon";
 import { formatUsd } from "@/lib/pricing";
@@ -199,7 +199,7 @@ function GenerationProgress({ project, t }: { project: Project; t: Dictionary })
     <div className="mx-auto max-w-xl px-6 py-24">
       <h1 className="t-title text-balance">{t.video.generatingTitle}</h1>
       <p className="t-body mt-3 text-[var(--color-label-2)]">
-        {project.tier === "cinematic"
+        {isAnimated(project.tier)
           ? t.video.generatingAnimated
           : t.video.generatingStills}
       </p>

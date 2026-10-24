@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { PRODUCTS, formatUsd } from "@/lib/pricing";
+import { TIERS } from "@/lib/types";
 import { getDictionary } from "@/lib/i18n/server";
 
 export const metadata = { title: "Pricing — ManifestLifeAI" };
@@ -17,8 +18,8 @@ export default async function PreciosPage() {
         </p>
       </header>
 
-      <div className="mx-auto mt-16 grid max-w-3xl gap-4 sm:grid-cols-2">
-        {(["vision", "cinematic"] as const).map((id) => {
+      <div className="mx-auto mt-16 grid max-w-5xl gap-4 md:grid-cols-3">
+        {TIERS.map((id) => {
           const copy = t.products[id];
           return (
             <div

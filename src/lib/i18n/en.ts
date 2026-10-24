@@ -56,9 +56,9 @@ export const en = {
         body: "Scenes with you in them, affirmations written for your case, and a voice that says them so you can repeat them.",
       },
     ],
-    productsTitle: "Two ways to see it",
+    productsTitle: "Three ways to see it",
     productsLede:
-      "The difference isn't image quality: it's whether the scenes actually move. Both work for visualizing, and they cost very different amounts to produce.",
+      "Still images with camera movement, animated scenes, or animated with our premium model in high definition. All three work for visualizing.",
     freeAfterProducts:
       "Your first video is free. After that you only pay when you create — no subscription.",
     areasTitle: "What do you want to see?",
@@ -88,7 +88,7 @@ export const en = {
     ],
   },
   pricing: {
-    title: "Two prices, that's it",
+    title: "Three prices, that's it",
     lede: "You pay per video. No subscription, no credits, no bundles. The first one is free so you can see if it resonates.",
     sameDuration: "per video · about 2 minutes",
     create: "Create",
@@ -124,6 +124,17 @@ export const en = {
         "You move inside the scene",
         "Same script and voice, with more room between lines",
         "MP4 download",
+      ],
+    },
+    elevated: {
+      name: "Elevated",
+      tagline: "Animated, with our most advanced video model",
+      waitLabel: "takes 10 to 20 minutes",
+      points: [
+        "Every scene is a clip from the premium video model",
+        "Native high-definition clips (1080p)",
+        "Higher-quality export",
+        "Same script and guiding voice, MP4 download",
       ],
     },
   },

@@ -55,9 +55,9 @@ export const es: Dictionary = {
         body: "Escenas contigo dentro, afirmaciones escritas para tu caso y una voz que las dice para que las repitas.",
       },
     ],
-    productsTitle: "Dos formas de verlo",
+    productsTitle: "Tres formas de verlo",
     productsLede:
-      "La diferencia no es la calidad de la imagen: es si las escenas se mueven de verdad. Las dos funcionan para visualizar, y cuestan muy distinto de producir.",
+      "Imágenes fijas con movimiento de cámara, escenas animadas, o animadas con nuestro modelo premium en alta definición. Las tres funcionan para visualizar.",
     freeAfterProducts:
       "Tu primer vídeo es gratis. Después pagas solo cuando creas — sin suscripción.",
     areasTitle: "¿Qué quieres ver?",
@@ -87,7 +87,7 @@ export const es: Dictionary = {
     ],
   },
   pricing: {
-    title: "Dos precios, y ya",
+    title: "Tres precios, y ya",
     lede: "Pagas por vídeo. Sin suscripción, sin créditos, sin paquetes. El primero es gratis para que veas si te resuena.",
     sameDuration: "por vídeo · unos 2 minutos",
     create: "Crear",
@@ -123,6 +123,17 @@ export const es: Dictionary = {
         "Tú te mueves dentro de la escena",
         "Mismo guion y voz, con más aire entre frases",
         "Descarga en MP4",
+      ],
+    },
+    elevated: {
+      name: "Elevado",
+      tagline: "Animado, con nuestro modelo de vídeo más avanzado",
+      waitLabel: "tarda entre 10 y 20 minutos",
+      points: [
+        "Cada escena, un clip con el modelo de vídeo premium",
+        "Clips nativos en alta definición (1080p)",
+        "Exportación con más calidad de imagen",
+        "Mismo guion y voz guía, descarga en MP4",
       ],
     },
   },

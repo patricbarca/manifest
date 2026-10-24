@@ -4,7 +4,7 @@ import { HeroVideo } from "@/components/HeroVideo";
 import { TEMPLATES } from "@/lib/templates";
 import { TemplateMedia } from "@/components/TemplateMedia";
 import { PRODUCTS, formatUsd } from "@/lib/pricing";
-import { LIFE_AREAS } from "@/lib/types";
+import { LIFE_AREAS, TIERS } from "@/lib/types";
 import type { Tier } from "@/lib/types";
 import { isDemoMode } from "@/lib/ai";
 import { type Dictionary, type Locale } from "@/lib/i18n";
@@ -106,8 +106,8 @@ export default async function HomePage() {
           <p className="t-body mt-3 text-[var(--color-label-2)]">{t.home.productsLede}</p>
         </div>
 
-        <div className="mx-auto mt-12 grid max-w-3xl gap-4 sm:grid-cols-2">
-          {(["vision", "cinematic"] as const).map((id) => (
+        <div className="mx-auto mt-12 grid max-w-5xl gap-4 md:grid-cols-3">
+          {TIERS.map((id) => (
             <TierCard key={id} id={id} t={t} />
           ))}
         </div>

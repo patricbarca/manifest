@@ -110,6 +110,8 @@ export async function renderGlass(
     voices,
     work_dir: work,
     out: outAbs,
+    // Elevado conserva el detalle de los clips 1080p; el resto pesa menos.
+    crf: project.tier === "elevated" ? 20 : 27,
   };
   const jobPath = path.join(work, "job.json");
   await writeFile(jobPath, JSON.stringify(job));

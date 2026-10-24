@@ -24,7 +24,7 @@ const CreateProject = z.object({
   area: Area.optional(),
   desires: Desires,
   details: Details,
-  tier: z.enum(["vision", "cinematic"]),
+  tier: z.enum(["vision", "cinematic", "elevated"]),
   style: z.enum(["cinematic", "editorial", "golden", "minimal", "dream"]),
   tone: z.enum(["calma", "firme", "cercana"]),
   durationSec: z.union([z.literal(30), z.literal(60)]),
