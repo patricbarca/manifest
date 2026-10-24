@@ -27,6 +27,10 @@ export default async function CrearPage({
   }
   const [user, { t, locale }] = await Promise.all([currentUser(), getDictionary()]);
 
+  // La plantilla del mes es para socios: al resto se le enseña el plan.
+  const tpl = template ? templateBySlug(template) : undefined;
+  if (tpl?.membersOnly && !isMember(user)) redirect("/precios#socio");
+
   // Siguiente capítulo: solo de un vídeo propio.
   const previous = continuar ? await db.getProject(continuar) : undefined;
   const chapter = previous && previous.ownerId === user.id ? previous : undefined;
@@ -38,7 +42,7 @@ export default async function CrearPage({
   return (
     <CreateWizard
       initialArea={initialArea}
-      template={template ? templateBySlug(template) : undefined}
+      template={tpl}
       freeLeft={freeVideosLeft(user)}
       prices={{
         vision: priceForUser("vision", user),

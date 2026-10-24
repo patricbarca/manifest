@@ -156,7 +156,7 @@ export default async function HomePage() {
         </div>
 
         <div className="no-scrollbar mt-10 flex gap-4 overflow-x-auto pb-2">
-          {TEMPLATES.slice(0, 4).map((tpl) => (
+          {TEMPLATES.filter((tpl) => !tpl.membersOnly).slice(0, 4).map((tpl) => (
             <Link
               key={tpl.slug}
               href={`/market/${tpl.slug}`}

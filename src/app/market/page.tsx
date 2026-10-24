@@ -71,6 +71,11 @@ export default async function MarketPage({
               <span className="t-eyebrow absolute left-4 top-4 rounded-full bg-black/35 px-2.5 py-1.5 text-white/85 backdrop-blur-md">
                 {t.products[bp.tier].name}
               </span>
+              {bp.membersOnly && (
+                <span className="t-eyebrow absolute right-4 top-4 rounded-full bg-white px-2.5 py-1.5 text-black">
+                  {t.market.membersBadge}
+                </span>
+              )}
             </div>
             <div className="p-6">
               <h2 className="t-headline">{bp.title[locale]}</h2>

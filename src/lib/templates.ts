@@ -29,6 +29,61 @@ const SEEDED_AT = Date.UTC(2026, 8, 1);
 
 export const TEMPLATES: Template[] = [
   {
+    // Plantilla del mes (noviembre 2026), solo para socios.
+    slug: "cerrar-el-ano",
+    title: { es: "Cerrar el año", en: "Closing the year" },
+    author: "ManifestLifeAI",
+    area: "confianza",
+    style: "golden",
+    tone: "calma",
+    tier: "vision",
+    durationSec: 60,
+    membersOnly: true,
+    summary: {
+      es: "Para las últimas semanas del año: verte en la noche del 31 habiendo cumplido lo que te prometiste en enero, o lo que todavía estás a tiempo de cumplir.",
+      en: "For the last weeks of the year: seeing yourself on the night of the 31st having kept the promise you made in January, or the one you still have time to keep.",
+    },
+    protocol: {
+      es: "Cada mañana desde hoy hasta el 31 de diciembre. Antes de verlo, escribe en una línea qué harás hoy para acercarte.",
+      en: "Every morning from today until December 31st. Before watching, write one line about what you'll do today to get closer.",
+    },
+    affirmations: {
+      es: [
+        "Cierro este año en paz con lo que hice.",
+        "Cumplo lo que me prometí, paso a paso.",
+        "Todavía estoy a tiempo, y lo aprovecho.",
+        "Celebro lo que conseguí, por pequeño que sea.",
+        "Suelto lo que no salió sin culparme.",
+        "Llego a diciembre con energía, no agotado.",
+        "Brindo el 31 sabiendo que cumplí.",
+        "El año que viene empieza hoy.",
+      ],
+      en: [
+        "I close this year at peace with what I did.",
+        "I keep the promises I made myself, step by step.",
+        "I still have time, and I use it.",
+        "I celebrate what I achieved, however small.",
+        "I let go of what didn't work out without blaming myself.",
+        "I reach December with energy, not exhausted.",
+        "I toast on the 31st knowing I kept my word.",
+        "Next year starts today.",
+      ],
+    },
+    sceneBriefs: [
+      "writing in a journal by a window on a crisp late-autumn morning, warm light",
+      "crossing items off a handwritten list with a quiet smile",
+      "walking through a city street with warm lights in the early evening",
+      "looking at old photos from January, nodding with satisfaction",
+      "sitting with a cup of tea, calm, deep breath",
+      "laughing with friends at a cozy dinner table with candles",
+      "raising a glass at midnight on December 31st, city fireworks in the background",
+      "standing at a window at sunrise on January 1st, confident and rested",
+    ],
+    cover: { from: "#0b0907", to: "#b0895a" },
+    publishedAt: Date.UTC(2026, 10, 1),
+    uses: 0,
+  },
+  {
     slug: "salir-al-escenario",
     title: { es: "Salir al escenario", en: "Walking on stage" },
     author: "ManifestLifeAI",

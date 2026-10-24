@@ -179,6 +179,8 @@ export const es: Dictionary = {
     scenesNote:
       "Descripciones en inglés: es el idioma con el que mejor responden los modelos de imagen. Estilo {style}.",
     useTemplate: "Usar esta plantilla",
+    membersBadge: "Socios",
+    membersNote: "Plantilla del mes: incluida para socios.",
     priceNote: "Lo mismo que crear uno de cero. Sin tarifa aparte por la plantilla.",
     usedBySingular: "persona lo ha usado",
     usedByPlural: "personas lo han usado",
@@ -457,6 +459,7 @@ export const es: Dictionary = {
     signInRequired: "Entra en tu cuenta para crear tu vídeo.",
     paymentRequired: "Para crear este vídeo hace falta pagar.",
     paymentFailed: "No se pudo abrir el pago. Inténtalo de nuevo en un momento.",
+    membersOnly: "Esta plantilla es solo para socios.",
     alreadyMember: "Ya eres socio. Puedes gestionar tu plan desde tu biblioteca.",
     paymentsOff: "Los pagos todavía no están activos.",
     notMember: "No tienes una suscripción que gestionar.",

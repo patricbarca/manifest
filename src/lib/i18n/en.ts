@@ -179,6 +179,8 @@ export const en = {
     scenesTitle: "The scenes",
     scenesNote:
       "Descriptions in English: it's the language image models respond to best. {style} style.",
+    membersBadge: "Members",
+    membersNote: "Template of the month: included for members.",
     useTemplate: "Use this template",
     priceNote: "The same as creating one from scratch. No separate template fee.",
     usedBySingular: "person has used it",
@@ -457,6 +459,7 @@ export const en = {
   errors: {
     signInRequired: "Sign in to create your video.",
     paymentRequired: "This video needs to be paid for.",
+    membersOnly: "This template is for members only.",
     alreadyMember: "You're already a member. You can manage your plan from your library.",
     paymentsOff: "Payments aren't live yet.",
     notMember: "You don't have a subscription to manage.",

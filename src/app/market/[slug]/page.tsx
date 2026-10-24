@@ -64,7 +64,7 @@ export default async function TemplatePage({
                 {formatUsd(PRODUCTS[bp.tier].priceUsd)}
               </p>
               <p className="t-caption mt-2 text-[var(--color-label-2)]">
-                {t.market.priceNote}
+                {bp.membersOnly ? t.market.membersNote : t.market.priceNote}
               </p>
             </div>
             <Link

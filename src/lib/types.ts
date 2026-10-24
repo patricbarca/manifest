@@ -292,6 +292,8 @@ export interface Template {
   sceneBriefs: string[];
   /** La versión del creador. Lo que se ve en la ficha. */
   previewUrl?: string;
+  /** Plantilla del mes: solo la pueden usar los socios. */
+  membersOnly?: boolean;
   cover: { from: string; to: string };
   publishedAt: number;
   /**

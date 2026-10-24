@@ -16,6 +16,7 @@ import { hasAccess } from "@/lib/access";
 import { LOCALES } from "@/lib/i18n/locale";
 import { VOICE_IDS } from "@/lib/voices";
 import { createCheckout, siteOrigin, stripeEnabled } from "@/lib/stripe";
+import { isMember } from "@/lib/membership";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -110,6 +111,12 @@ export async function POST(request: Request) {
     preview.locale === videoLocale
       ? preview
       : undefined;
+
+  // La plantilla del mes es para socios: se comprueba antes de cobrar nada.
+  const requested = input.templateSlug ? templateBySlug(input.templateSlug) : undefined;
+  if (requested?.membersOnly && !isMember(await db.getUser(user.id))) {
+    return NextResponse.json({ error: t.errors.membersOnly }, { status: 403 });
+  }
 
   const charge = await chargeForVideo(user.id, input.tier);
   const priceCents = charge.priceCents;
