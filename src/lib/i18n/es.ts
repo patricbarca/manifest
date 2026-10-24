@@ -274,6 +274,10 @@ export const es: Dictionary = {
     price: "Precio",
     watermarkNote: "",
     desiresTitle: "¿Qué quieres manifestar?",
+    chapterTitle: "Tu siguiente capítulo",
+    chapterHint: "Partimos de «{title}». Ajusta lo que quieres y cuéntanos qué ha cambiado: el vídeo nuevo sigue desde ahí.",
+    changesLabel: "¿Qué ha cambiado desde tu último vídeo?",
+    changesPlaceholder: "Ej.: ya tengo la entrevista; he ahorrado la mitad; empecé a entrenar tres días por semana…",
     desiresHint:
       "Hasta 6 cosas, una por casilla. Cada una será una imagen tuya viviéndola y una frase para repetir. Cuanto más concreta, mejor.",
     desirePlaceholders: [
@@ -352,6 +356,10 @@ export const es: Dictionary = {
     failedRefund: "Si no llegó a generarse ninguna escena, no se te ha cobrado.",
     tryAgain: "Intentarlo otra vez",
     download: "Descargar MP4",
+    streakOne: "Llevas 1 día. Vuelve mañana y empieza tu racha.",
+    streakMany: "Racha: {n} días seguidos",
+    streakNone: "Dale al play para empezar tu racha de hoy.",
+    nextChapter: "Crear el siguiente capítulo",
     downloadUnavailable: "Descarga MP4 no disponible en este entorno",
     scriptTitle: "Tu guía",
     scriptNote:

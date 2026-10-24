@@ -134,6 +134,15 @@ export const supabaseDb = {
     });
   },
 
+  /** Socios con la suscripción activa. Filtra dentro del jsonb, sin columna aparte. */
+  async listActiveMembers(): Promise<User[]> {
+    const rows = check(
+      await sb().from("app_users").select("data").eq("data->membership->>status", "active"),
+      "listar socios",
+    );
+    return (rows ?? []).map((r) => r.data as User);
+  },
+
   /** Lectura fresca + escritura en la misma fila de la cola del proceso. */
   async patchUser(id: string, patch: (current: User) => User): Promise<User | undefined> {
     return serialize(async () => {

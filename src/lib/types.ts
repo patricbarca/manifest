@@ -312,6 +312,27 @@ export interface User {
   usedQuotes?: string[];
   /** Suscripción de socio (Stripe). Ausente si nunca se suscribió. */
   membership?: Membership;
+  /** Práctica diaria: racha y avisos. */
+  practice?: Practice;
+}
+
+/** Cuántos días seguidos mira su vídeo, y qué avisos se le mandaron. */
+export interface Practice {
+  /** Último día (YYYY-MM-DD, hora local del usuario) en que lo vio. */
+  lastDay: string;
+  /** Días seguidos hasta lastDay. */
+  streak: number;
+  best: number;
+  /** Días distintos en que lo ha visto, en total. */
+  totalDays: number;
+  /** Diferencia con UTC en minutos (como Date.getTimezoneOffset). */
+  tzOffsetMin?: number;
+  /** Día local del último recordatorio enviado. */
+  lastReminderDay?: string;
+  /** Proyecto por el que ya se mandó la revisión mensual. */
+  checkinSentFor?: string;
+  /** Pidió no recibir recordatorios. */
+  remindersOff?: boolean;
 }
 
 /**

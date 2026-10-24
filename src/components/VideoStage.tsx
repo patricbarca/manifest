@@ -6,7 +6,7 @@ import { isAnimated, type Project } from "@/lib/types";
 import { VisualizationPlayer } from "./VisualizationPlayer";
 import { Icon } from "./Icon";
 import { formatUsd } from "@/lib/pricing";
-import type { Dictionary } from "@/lib/i18n";
+import { fill, type Dictionary } from "@/lib/i18n";
 
 /**
  * La pantalla del vídeo.
@@ -15,8 +15,33 @@ import type { Dictionary } from "@/lib/i18n";
  * caen. Enseñar el progreso real (y las primeras imágenes) es lo que hace
  * soportable una espera de minutos en el tier cine.
  */
-export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) {
+export function VideoStage({
+  initial,
+  initialStreak = 0,
+  t,
+}: {
+  initial: Project;
+  /** Racha vigente al cargar la página. */
+  initialStreak?: number;
+  t: Dictionary;
+}) {
   const [project, setProject] = useState(initial);
+  const [streak, setStreak] = useState(initialStreak);
+  const [counted, setCounted] = useState(false);
+
+  /** Primer play de la visita: suma el día a la racha. */
+  function onPlay() {
+    if (counted) return;
+    setCounted(true);
+    void fetch("/api/practice/view", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projectId: project.id, tzOffsetMin: new Date().getTimezoneOffset() }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { streak?: number } | null) => d?.streak && setStreak(d.streak))
+      .catch(() => undefined);
+  }
   const working = project.status === "queued" || project.status === "generating";
   const awaitingPayment = project.status === "draft";
 
@@ -76,10 +101,11 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
             src={project.exportUrl}
             controls
             playsInline
+            onPlay={onPlay}
             className="aspect-[9/16] w-full rounded-[var(--radius-lg)] bg-black"
           />
         ) : (
-          <VisualizationPlayer project={project} t={t} />
+          <VisualizationPlayer project={project} t={t} onPlay={onPlay} />
         )}
 
         <div className="space-y-8">
@@ -88,6 +114,14 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
               {t.products[project.tier].name} · {project.durationSec} {t.common.seconds}
             </p>
             <h1 className="t-title mt-3 text-balance">{project.title}</h1>
+            <p className="t-sub mt-3 flex items-center gap-2 text-[var(--color-label-2)]">
+              <span aria-hidden>🔥</span>
+              {streak > 1
+                ? fill(t.video.streakMany, { n: streak })
+                : streak === 1
+                  ? t.video.streakOne
+                  : t.video.streakNone}
+            </p>
             {/* Sin LLM el titulo sale de la intencion, y entonces repetirla sobra. */}
             {!project.intention.startsWith(project.title.replace(/…$/, "")) && (
               <p className="t-body mt-3 text-[var(--color-label-2)]">{project.intention}</p>
@@ -110,10 +144,10 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
               </span>
             )}
             <Link
-              href="/crear"
+              href={`/crear?continuar=${project.id}`}
               className="interactive t-sub rounded-full border border-[var(--color-hairline)] px-5 py-2.5 text-[var(--color-label-1)]"
             >
-              {t.common.createAnother}
+              {t.video.nextChapter}
             </Link>
           </div>
 

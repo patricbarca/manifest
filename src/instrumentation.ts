@@ -6,4 +6,14 @@ export async function register() {
   setTimeout(() => {
     resumeInterrupted().catch((err) => console.error("[queue] al reanudar:", err));
   }, 5000);
+
+  // Avisos a socios (recordatorio diario y revisión mensual), cada 20 minutos.
+  const { remindersEnabled, runPracticeJobs } = await import("./lib/reminders");
+  if (remindersEnabled()) {
+    setInterval(() => {
+      runPracticeJobs()
+        .then((r) => (r.reminders || r.checkins) && console.log("[avisos]", r))
+        .catch((err) => console.error("[avisos]", err));
+    }, 20 * 60_000);
+  }
 }

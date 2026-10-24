@@ -123,6 +123,12 @@ const jsonDb = {
     });
   },
 
+  /** Socios con la suscripción activa (para los avisos diarios). */
+  async listActiveMembers(): Promise<User[]> {
+    const all = await readCollection<User>("users");
+    return Object.values(all).filter((u) => u.membership?.status === "active");
+  },
+
   /** Update con lectura fresca dentro de la cola: no pisa campos que cambió otro. */
   async patchUser(id: string, patch: (current: User) => User): Promise<User | undefined> {
     return serialize(async () => {

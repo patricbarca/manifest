@@ -4,6 +4,7 @@ import { DeleteProjectButton } from "@/components/DeleteProjectButton";
 import { db } from "@/lib/db/store";
 import { currentUser } from "@/lib/db/session";
 import { getDictionary } from "@/lib/i18n/server";
+import { currentStreak } from "@/lib/practice";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
   const busy = project.status === "generating" || project.status === "queued";
   return (
     <>
-      <VideoStage initial={project} t={t} />
+      <VideoStage initial={project} initialStreak={currentStreak(user.practice)} t={t} />
       {!busy && <DeleteProjectButton id={project.id} labels={t.deleteVideo} />}
     </>
   );

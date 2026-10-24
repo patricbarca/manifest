@@ -274,6 +274,10 @@ export const en = {
     firstVideo: "Your first video",
     price: "Price",
     watermarkNote: "",
+    chapterTitle: "Your next chapter",
+    chapterHint: "We're starting from «{title}». Adjust what you want and tell us what has changed: the new video picks up from there.",
+    changesLabel: "What has changed since your last video?",
+    changesPlaceholder: "E.g.: I got the interview; I've saved half; I started training three days a week…",
     desiresTitle: "What do you want to manifest?",
     desiresHint:
       "Up to 6 things, one per box. Each one becomes an image of you living it and a line to repeat. The more specific, the better.",
@@ -353,6 +357,10 @@ export const en = {
     failedRefund: "If no scene was generated, you weren't charged.",
     tryAgain: "Try again",
     download: "Download MP4",
+    streakOne: "Day 1. Come back tomorrow to start your streak.",
+    streakMany: "Streak: {n} days in a row",
+    streakNone: "Press play to start today's streak.",
+    nextChapter: "Create the next chapter",
     downloadUnavailable: "MP4 download not available in this environment",
     scriptTitle: "Your guide",
     scriptNote:

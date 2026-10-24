@@ -70,6 +70,8 @@ type Props = {
   member: boolean;
   /** Vídeos de Imágenes incluidos en el plan de socio que le quedan. */
   includedLeft: number;
+  /** Siguiente capítulo: parte de un vídeo anterior del mismo usuario. */
+  chapterOf?: { title: string; desires: string[]; tier: Tier; style: VisualStyle; tone: VoiceTone };
   /** El diccionario llega por prop: este componente corre en el cliente. */
   t: Dictionary;
   locale: Locale;
@@ -82,6 +84,7 @@ export function CreateWizard({
   prices,
   member,
   includedLeft,
+  chapterOf,
   t,
   locale,
 }: Props) {
@@ -93,8 +96,14 @@ export function CreateWizard({
   const area: LifeArea | undefined = template?.area ?? initialArea;
   // Con plantilla, sus frases son el punto de partida: se pueden editar.
   const [desires, setDesires] = useState<string[]>(
-    template ? template.affirmations[locale].slice(0, MAX_DESIRES) : [""],
+    chapterOf
+      ? chapterOf.desires.slice(0, MAX_DESIRES)
+      : template
+        ? template.affirmations[locale].slice(0, MAX_DESIRES)
+        : [""],
   );
+  // Lo que cambió desde el capítulo anterior: va al guion como un detalle más.
+  const [changes, setChanges] = useState("");
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [palette, setPalette] = useState<Palette>("dusk");
   const [videoLocale, setVideoLocale] = useState<VideoLocale>(locale as VideoLocale);
@@ -104,11 +113,11 @@ export function CreateWizard({
   const [peopleConsent, setPeopleConsent] = useState(false);
   const [uploadingPerson, setUploadingPerson] = useState<number>();
   const [uploading, setUploading] = useState(false);
-  const [tier, setTier] = useState<Tier>(template?.tier ?? "vision");
+  const [tier, setTier] = useState<Tier>(chapterOf?.tier ?? template?.tier ?? "vision");
   // Estilo, tono y duración ya no se preguntan: el vídeo nuevo tiene una
   // sola voz y dura lo que piden las frases. Se mandan con su valor fijo.
-  const style: VisualStyle = template?.style ?? "cinematic";
-  const tone: VoiceTone = template?.tone ?? "calma";
+  const style: VisualStyle = chapterOf?.style ?? template?.style ?? "cinematic";
+  const tone: VoiceTone = chapterOf?.tone ?? template?.tone ?? "calma";
   const durationSec: 30 | 60 = 60;
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
@@ -193,8 +202,9 @@ export function CreateWizard({
         .map((q, i) => ({ question: q.question, answer: (answers[i] ?? "").trim() }))
         .filter((d) => d.answer),
       ...corrections.map((answer) => ({ question: t.create.reviewFixQuestion, answer })),
+      ...(changes.trim() ? [{ question: t.create.changesLabel, answer: changes.trim().slice(0, 300) }] : []),
     ],
-    [questions, answers, corrections, t],
+    [questions, answers, corrections, changes, t],
   );
 
   // Todo lo que cambia el guion. Si difiere del de la revisión, esa revisión
@@ -389,7 +399,26 @@ export function CreateWizard({
 
       {/* ── Paso 0: deseos ────────────────────────────────────────────── */}
       {step === STEP.desires && (
-        <Section title={t.create.desiresTitle} hint={t.create.desiresHint}>
+        <Section
+          title={chapterOf ? t.create.chapterTitle : t.create.desiresTitle}
+          hint={chapterOf ? fill(t.create.chapterHint, { title: chapterOf.title }) : t.create.desiresHint}
+        >
+          {chapterOf && (
+            <div className="mb-8">
+              <label className="t-sub mb-2 block text-[var(--color-label-1)]" htmlFor="changes">
+                {t.create.changesLabel}
+              </label>
+              <textarea
+                id="changes"
+                value={changes}
+                onChange={(e) => setChanges(e.target.value)}
+                maxLength={300}
+                rows={3}
+                placeholder={t.create.changesPlaceholder}
+                className="t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none transition-colors duration-200 placeholder:text-[var(--color-label-4)] focus:border-[var(--color-hairline-strong)]"
+              />
+            </div>
+          )}
           <div className="space-y-3">
             {desires.map((d, i) => (
               <div key={i} className="flex items-center gap-2">

@@ -18,9 +18,9 @@ import { fill, type Dictionary } from "@/lib/i18n";
  * rAF lleva el tiempo y la voz del navegador lee cada frase al entrar.
  */
 
-type Props = { project: Project; t: Dictionary };
+type Props = { project: Project; t: Dictionary; onPlay?: () => void };
 
-export function VisualizationPlayer({ project, t }: Props) {
+export function VisualizationPlayer({ project, t, onPlay }: Props) {
   const shellRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const rafRef = useRef<number>(0);
@@ -168,6 +168,11 @@ export function VisualizationPlayer({ project, t }: Props) {
       }
     };
   }, []);
+
+  // Avisa hacia fuera cuando empieza a sonar (para la racha).
+  useEffect(() => {
+    if (playing) onPlay?.();
+  }, [playing, onPlay]);
 
   // ── Controles ────────────────────────────────────────────────────────────
   const toggle = useCallback(() => {
