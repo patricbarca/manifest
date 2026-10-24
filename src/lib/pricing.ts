@@ -16,6 +16,11 @@ export const PROVIDER_COST = {
   videoCentsPerSec: 3.25,
   /** Modelos premium (Kling Pro y similares), por segundo. */
   videoPremiumCentsPerSec: 22.4,
+  /**
+   * Nivel Elevado: Kling 3.0 Pro vía fal, sin audio. 14 ¢/s según get_pricing
+   * de fal el 24-oct-2026. No está confirmado si activar el audio lo encarece.
+   */
+  videoElevatedCentsPerSec: 14.0,
   /** TTS por 1.000 caracteres (ElevenLabs v4 vía fal). */
   voiceCentsPer1kChars: 8.0,
   /** Guion vía LLM. Prácticamente ruido, pero se contabiliza. */
@@ -46,6 +51,7 @@ export interface Product {
 export const PRODUCTS: Record<Tier, Product> = {
   vision: { id: "vision", priceUsd: 9 },
   cinematic: { id: "cinematic", priceUsd: 29 },
+  elevated: { id: "elevated", priceUsd: 49 },
 };
 
 export function productFor(tier: Tier): Product {
@@ -71,10 +77,13 @@ export function estimateCostCents(tier: Tier, durationSec: 30 | 60, premium = fa
   cents += scenes * PROVIDER_COST.imageCents;
   cents += (chars / 1000) * PROVIDER_COST.voiceCentsPer1kChars;
 
-  if (tier === "cinematic") {
-    const perSec = premium
-      ? PROVIDER_COST.videoPremiumCentsPerSec
-      : PROVIDER_COST.videoCentsPerSec;
+  if (tier !== "vision") {
+    const perSec =
+      tier === "elevated"
+        ? PROVIDER_COST.videoElevatedCentsPerSec
+        : premium
+          ? PROVIDER_COST.videoPremiumCentsPerSec
+          : PROVIDER_COST.videoCentsPerSec;
     cents += durationSec * perSec;
   }
   return Math.round(cents * 100) / 100;

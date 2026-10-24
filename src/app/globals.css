@@ -208,6 +208,9 @@ body {
 .kb-0 { animation: kb-0 var(--kb-duration, 8s) linear both; }
 .kb-1 { animation: kb-1 var(--kb-duration, 8s) linear both; }
 .kb-2 { animation: kb-2 var(--kb-duration, 8s) linear both; }
+/* Vista previa de plantillas "Imágenes" en el market: el mismo movimiento, en bucle. */
+.kb-loop { animation: kb-0 10s ease-in-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) { .kb-loop { animation: none; } }
 
 @keyframes rise {
   from { opacity: 0; transform: translateY(10px); filter: blur(6px); }

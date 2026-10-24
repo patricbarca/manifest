@@ -458,6 +458,6 @@ subprocess.run([FF, "-y", "-loglevel", "error", "-i", f"{T}/joined.mp4", "-i", f
                 "[1:a]volume=0.30[m];"
                 "[m][v1]sidechaincompress=threshold=0.015:ratio=5:attack=40:release=900[md];"
                 f"[v2][md]amix=inputs=2:normalize=0:duration=first,afade=out:st={total - 3:.2f}:d=3[ao]",
-                "-map", "0:v", "-map", "[ao]", "-c:v", "libx264", "-crf", "27", "-preset", "slow",
+                "-map", "0:v", "-map", "[ao]", "-c:v", "libx264", "-crf", str(JOB.get("crf", 27)), "-preset", "slow",
                 "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", OUT], check=True)
 print(json.dumps({"ok": True, "segments": len(segs), "durationSec": round(dur(OUT), 1)}))

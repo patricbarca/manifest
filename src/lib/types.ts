@@ -29,8 +29,20 @@ export const LIFE_AREAS: { id: LifeArea; icon: IconName }[] = [
   { id: "libertad", icon: "compass" },
 ];
 
-/** Los dos productos. `vision` = imagenes fijas con movimiento. `cinematic` = escenas animadas. */
-export type Tier = "vision" | "cinematic";
+/**
+ * Los tres productos.
+ * - `vision`: imágenes fijas con movimiento de cámara.
+ * - `cinematic`: escenas animadas (MiniMax).
+ * - `elevated`: escenas animadas con el modelo premium (Kling 3.0 Pro).
+ */
+export type Tier = "vision" | "cinematic" | "elevated";
+
+export const TIERS: readonly Tier[] = ["vision", "cinematic", "elevated"];
+
+/** True si el producto anima las escenas (todo menos `vision`). */
+export function isAnimated(tier: Tier): boolean {
+  return tier !== "vision";
+}
 
 export type VisualStyle =
   | "cinematic"

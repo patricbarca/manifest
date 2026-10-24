@@ -1,15 +1,26 @@
 import Link from "next/link";
-import { templatePreview } from "@/lib/templates";
+import { TemplateMedia } from "@/components/TemplateMedia";
 import { TEMPLATES } from "@/lib/templates";
 import { CREATOR_SHARE, PRODUCTS, formatUsd } from "@/lib/pricing";
-import { LIFE_AREAS } from "@/lib/types";
+import { LIFE_AREAS, type LifeArea } from "@/lib/types";
 import { fill } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/server";
 
 export const metadata = { title: "Market — ManifestLifeAI" };
 
-export default async function MarketPage() {
+export default async function MarketPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const { t, locale } = await getDictionary();
+  const raw = (await searchParams).area;
+  const area = LIFE_AREAS.find((a) => a.id === raw)?.id as LifeArea | undefined;
+  const templates = area ? TEMPLATES.filter((tpl) => tpl.area === area) : TEMPLATES;
+  const chip = (active: boolean) =>
+    active
+      ? "t-caption rounded-full bg-white px-4 py-1.5 font-medium text-black"
+      : "interactive t-caption rounded-full border border-[var(--color-hairline)] px-4 py-1.5 text-[var(--color-label-2)]";
   return (
     <div className="mx-auto max-w-[1120px] px-6 py-20">
       <header className="mx-auto max-w-2xl text-center">
@@ -23,21 +34,28 @@ export default async function MarketPage() {
       </header>
 
       <div className="no-scrollbar mt-14 flex flex-wrap justify-center gap-2">
-        <span className="t-caption rounded-full bg-white px-4 py-1.5 font-medium text-black">
+        <Link href="/market" scroll={false} aria-current={!area ? "page" : undefined} className={chip(!area)}>
           {t.market.all}
-        </span>
+        </Link>
         {LIFE_AREAS.map((a) => (
-          <span
+          <Link
             key={a.id}
-            className="interactive t-caption cursor-pointer rounded-full border border-[var(--color-hairline)] px-4 py-1.5 text-[var(--color-label-2)]"
+            href={`/market?area=${a.id}`}
+            scroll={false}
+            aria-current={area === a.id ? "page" : undefined}
+            className={chip(area === a.id)}
           >
             {t.areas[a.id].label}
-          </span>
+          </Link>
         ))}
       </div>
 
+      {templates.length === 0 && (
+        <p className="t-sub mt-16 text-center text-[var(--color-label-3)]">{t.market.empty}</p>
+      )}
+
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {TEMPLATES.map((bp) => (
+        {templates.map((bp) => (
           <Link
             key={bp.slug}
             href={`/market/${bp.slug}`}
@@ -47,16 +65,7 @@ export default async function MarketPage() {
               className="relative aspect-[4/5]"
               style={{ background: `linear-gradient(150deg, ${bp.cover.from}, ${bp.cover.to})` }}
             >
-              <video
-                src={templatePreview(bp.slug).video}
-                poster={templatePreview(bp.slug).poster}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                className="absolute inset-0 h-full w-full object-cover"
-              />
+              <TemplateMedia template={bp} className="absolute inset-0 h-full w-full" />
               {/* Vineta: le quita al degradado el aspecto de relleno plano. */}
               <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_70%_15%,rgba(255,255,255,0.12),transparent_55%),linear-gradient(to_top,rgba(0,0,0,0.45),transparent_60%)]" />
               <span className="t-eyebrow absolute left-4 top-4 rounded-full bg-black/35 px-2.5 py-1.5 text-white/85 backdrop-blur-md">

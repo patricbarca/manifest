@@ -9,7 +9,7 @@ import { rm } from "node:fs/promises";
 import { dropIntermediates, offloadProject, sweepStorage } from "./cleanup";
 import { nextQuoteId } from "./quotes";
 import { sendVideoReady } from "./email";
-import type { Person, PipelineStep, Project, Scene, StepId } from "./types";
+import { isAnimated, type Person, type PipelineStep, type Project, type Scene, type StepId } from "./types";
 
 /**
  * El pipeline de generación.
@@ -34,7 +34,7 @@ export function initialSteps(tier: Project["tier"]): PipelineStep[] {
   ];
   return steps.map((s) => ({
     ...s,
-    status: s.id === "motion" && tier === "vision" ? "skipped" : "pending",
+    status: s.id === "motion" && !isAnimated(tier) ? "skipped" : "pending",
   }));
 }
 
@@ -264,22 +264,27 @@ export async function runPipeline(projectId: string): Promise<void> {
       }
     }
 
-    // ── 4. Movimiento (solo tier cine) ──────────────────────────────────────
-    if (start.tier === "cinematic") {
+    // ── 4. Movimiento (Animado y Elevado) ───────────────────────────────────
+    if (isAnimated(start.tier)) {
       await setStep(projectId, "motion", { status: "running", startedAt: Date.now() });
       const withImages = (await db.getProject(projectId))!.scenes;
       let motionCents = 0;
 
-      await mapWithLimit(withImages, 2, async (scene) => {
+      // Kling tarda minutos por clip: en Elevado se piden más a la vez.
+      const parallel = start.tier === "elevated" ? 5 : 2;
+      await mapWithLimit(withImages, parallel, async (scene) => {
         if (!scene.imageUrl) return;
         const brief = plainBrief(script.sceneBriefs[withImages.indexOf(scene)] ?? "");
         const out = await providers.video.animate({
           imageUrl: scene.imageUrl,
           // Al vídeo no le sirve el prompt de la imagen: necesita movimiento.
-          prompt: `Gentle, realistic natural motion in this scene: ${brief}. Subtle movement of hair, clothes and light, people move naturally, steady camera, every face stays the same.`,
+          // "Facing the camera": en las pruebas, MiniMax giraba a la persona de
+          // espaldas al final del clip y la cara desaparecía.
+          prompt: `Gentle, realistic natural motion in this scene: ${brief}. Subtle movement of hair, clothes and light, people move naturally, the person keeps their face visible and turned toward the camera the whole time, steady camera, every face stays the same.`,
           durationSec: sceneSecs[withImages.indexOf(scene)] ?? scene.endSec - scene.startSec,
           projectId,
           sceneId: scene.id,
+          quality: start.tier === "elevated" ? "elevated" : "standard",
         });
         motionCents += out.costCents;
         await db.patchProject(projectId, (p) => ({

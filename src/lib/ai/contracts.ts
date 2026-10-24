@@ -68,6 +68,8 @@ export interface VideoProvider {
     durationSec: number;
     projectId: string;
     sceneId: string;
+    /** "elevated" usa el modelo premium del nivel Elevado. */
+    quality?: "standard" | "elevated";
   }): Promise<Billed<{ url: string }>>;
 }
 

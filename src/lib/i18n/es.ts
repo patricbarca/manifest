@@ -55,9 +55,9 @@ export const es: Dictionary = {
         body: "Escenas contigo dentro, afirmaciones escritas para tu caso y una voz que las dice para que las repitas.",
       },
     ],
-    productsTitle: "Dos formas de verlo",
+    productsTitle: "Tres formas de verlo",
     productsLede:
-      "La diferencia no es la calidad de la imagen: es si las escenas se mueven de verdad. Las dos funcionan para visualizar, y cuestan muy distinto de producir.",
+      "Imágenes fijas con movimiento de cámara, escenas animadas, o animadas con nuestro modelo premium en alta definición. Las tres funcionan para visualizar.",
     freeAfterProducts:
       "Tu primer vídeo es gratis. Después pagas solo cuando creas — sin suscripción.",
     areasTitle: "¿Qué quieres ver?",
@@ -66,7 +66,6 @@ export const es: Dictionary = {
       "Plantillas listas. Les pones tu cara y se genera tu versión, contigo dentro.",
     closingTitle: "Lo que miras todos los días acaba pareciéndote posible.",
     closingCta: "Empezar",
-    costNote: "Nos cuesta {cost} producirlo.",
     durationBoth: "≈ 2 min",
     soundOn: "Activar sonido",
     examplesTitle: "Así se ve",
@@ -88,7 +87,7 @@ export const es: Dictionary = {
     ],
   },
   pricing: {
-    title: "Dos precios, y ya",
+    title: "Tres precios, y ya",
     lede: "Pagas por vídeo. Sin suscripción, sin créditos, sin paquetes. El primero es gratis para que veas si te resuena.",
     sameDuration: "por vídeo · unos 2 minutos",
     create: "Crear",
@@ -102,8 +101,6 @@ export const es: Dictionary = {
       "Cuando termines un vídeo que te guste, puedes publicarlo como plantilla. Quien la use genera su propia versión con su cara, y a ti te llegan {stills} por cada vídeo de imágenes y {animated} por cada animado.",
     publishNote:
       "Lo que se publica es la receta —guion, escenas, estilo—, no tu vídeo montado. Nadie recibe nunca un vídeo con tu cara dentro.",
-    transparency:
-      "Para que se vea de dónde salen los números: producir un vídeo de imágenes de 60 s nos cuesta {stills} en modelos de IA, y uno animado de 60 s, {animated}. La diferencia de precio no es un capricho: animar cada escena cuesta entre 30 y 100 veces más que generar una imagen.",
   },
   products: {
     vision: {
@@ -128,6 +125,17 @@ export const es: Dictionary = {
         "Descarga en MP4",
       ],
     },
+    elevated: {
+      name: "Elevado",
+      tagline: "Animado, con nuestro modelo de vídeo más avanzado",
+      waitLabel: "tarda entre 10 y 20 minutos",
+      points: [
+        "Cada escena, un clip con el modelo de vídeo premium",
+        "Clips nativos en alta definición (1080p)",
+        "Exportación con más calidad de imagen",
+        "Mismo guion y voz guía, descarga en MP4",
+      ],
+    },
   },
   market: {
     previewNote: "Ejemplo con una persona generada por IA. Tu versión se hace con tu cara.",
@@ -135,6 +143,7 @@ export const es: Dictionary = {
     lede: "Plantillas listas. Eliges una, le pones tu cara, y se genera tu versión: las mismas escenas y el mismo guion, contigo dentro.",
     note: "Cuesta lo mismo que crear uno de cero.",
     all: "Todos",
+    empty: "Todavía no hay plantillas en esta área.",
     howToUse: "Cómo usarlo",
     affirmationsTitle: "Las afirmaciones",
     scenesTitle: "Las escenas",
@@ -325,7 +334,6 @@ export const es: Dictionary = {
     detailsTitle: "Detalle de producción",
     paid: "Pagado",
     freeLabel: "gratis",
-    providerCost: "Coste de proveedor",
     sceneCount: "Escenas",
     voiceLabel: "Voz",
     voiceBrowser: "sintetizada en el navegador (demo)",

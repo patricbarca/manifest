@@ -91,29 +91,42 @@ export const falImage: ImageProvider = {
 
 export const falVideo: VideoProvider = {
   name: "fal",
-  async animate({ imageUrl, prompt, durationSec, projectId, sceneId }) {
-    const model = process.env.FAL_VIDEO_MODEL ?? "minimax/h3-max/image-to-video";
+  async animate({ imageUrl, prompt, durationSec, projectId, sceneId, quality }) {
+    const elevated = quality === "elevated";
+    const model = elevated
+      ? (process.env.FAL_VIDEO_MODEL_ELEVATED ?? "fal-ai/kling-video/v3/pro/image-to-video")
+      : (process.env.FAL_VIDEO_MODEL ?? "minimax/h3-max/image-to-video");
     const local = localPathForMediaUrl(imageUrl);
     const image = local ? await falUpload(local) : imageUrl;
-    const seconds = Math.min(15, Math.max(2, Math.ceil(durationSec * 2) / 2));
+    let seconds = Math.min(15, Math.max(2, Math.ceil(durationSec * 2) / 2));
 
-    // Kling y MiniMax piden la duración de forma distinta.
-    const input: Record<string, unknown> = /kling/.test(model)
-      ? { prompt, image_url: image, duration: seconds > 7 ? "10" : "5", aspect_ratio: "9:16" }
-      : {
-          prompt,
-          image_url: image,
-          duration: seconds,
-          resolution: "768P",
-          prompt_expansion_mode: "disabled",
-        };
+    // Cada familia pide la duración y la imagen de forma distinta.
+    let input: Record<string, unknown>;
+    if (/kling-video\/(v3|o3)/.test(model)) {
+      // Kling 3: segundos enteros de 3 a 15, la imagen marca el formato.
+      seconds = Math.min(15, Math.max(3, Math.ceil(seconds)));
+      input = { prompt, start_image_url: image, duration: String(seconds), generate_audio: false };
+    } else if (/kling/.test(model)) {
+      seconds = seconds > 7 ? 10 : 5;
+      input = { prompt, image_url: image, duration: String(seconds), aspect_ratio: "9:16" };
+    } else {
+      input = {
+        prompt,
+        image_url: image,
+        duration: seconds,
+        resolution: "768P",
+        prompt_expansion_mode: "disabled",
+      };
+    }
 
     const data = await run<{ video?: { url?: string } }>(model, input);
     if (!data.video?.url) throw new Error("fal no devolvió ningún vídeo");
     const url = await persistRemoteAsset(data.video.url, projectId, `${sceneId}.mp4`);
     return {
       result: { url },
-      costCents: +(seconds * PROVIDER_COST.videoCentsPerSec).toFixed(2),
+      costCents: +(
+        seconds * (elevated ? PROVIDER_COST.videoElevatedCentsPerSec : PROVIDER_COST.videoCentsPerSec)
+      ).toFixed(2),
       provider: `fal:${model}`,
     };
   },

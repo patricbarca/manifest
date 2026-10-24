@@ -56,9 +56,9 @@ export const en = {
         body: "Scenes with you in them, affirmations written for your case, and a voice that says them so you can repeat them.",
       },
     ],
-    productsTitle: "Two ways to see it",
+    productsTitle: "Three ways to see it",
     productsLede:
-      "The difference isn't image quality: it's whether the scenes actually move. Both work for visualizing, and they cost very different amounts to produce.",
+      "Still images with camera movement, animated scenes, or animated with our premium model in high definition. All three work for visualizing.",
     freeAfterProducts:
       "Your first video is free. After that you only pay when you create — no subscription.",
     areasTitle: "What do you want to see?",
@@ -67,7 +67,6 @@ export const en = {
       "Ready-made templates. Put your face in and your version is generated, with you inside.",
     closingTitle: "What you look at every day starts to feel possible.",
     closingCta: "Get started",
-    costNote: "Costs us {cost} to produce.",
     durationBoth: "≈ 2 min",
     soundOn: "Turn sound on",
     examplesTitle: "This is what you get",
@@ -89,7 +88,7 @@ export const en = {
     ],
   },
   pricing: {
-    title: "Two prices, that's it",
+    title: "Three prices, that's it",
     lede: "You pay per video. No subscription, no credits, no bundles. The first one is free so you can see if it resonates.",
     sameDuration: "per video · about 2 minutes",
     create: "Create",
@@ -103,8 +102,6 @@ export const en = {
       "When you finish a video you like, you can publish it as a template. Whoever uses it generates their own version with their face, and you get {stills} for every stills video and {animated} for every animated one.",
     publishNote:
       "What gets published is the recipe — script, scenes, style — not your finished video. Nobody ever receives a video with your face in it.",
-    transparency:
-      "So you can see where the numbers come from: producing a 60 s stills video costs us {stills} in AI models, and a 60 s animated one, {animated}. The price difference isn't a whim: animating each scene costs 30 to 100 times more than generating an image.",
   },
   products: {
     vision: {
@@ -129,6 +126,17 @@ export const en = {
         "MP4 download",
       ],
     },
+    elevated: {
+      name: "Elevated",
+      tagline: "Animated, with our most advanced video model",
+      waitLabel: "takes 10 to 20 minutes",
+      points: [
+        "Every scene is a clip from the premium video model",
+        "Native high-definition clips (1080p)",
+        "Higher-quality export",
+        "Same script and guiding voice, MP4 download",
+      ],
+    },
   },
   market: {
     previewNote: "Example with an AI-generated person. Your version is made with your face.",
@@ -136,6 +144,7 @@ export const en = {
     lede: "Ready-made templates. Pick one, put your face in, and your version gets generated: the same scenes and the same script, with you inside.",
     note: "It costs the same as creating one from scratch.",
     all: "All",
+    empty: "No templates in this area yet.",
     howToUse: "How to use it",
     affirmationsTitle: "The affirmations",
     scenesTitle: "The scenes",
@@ -326,7 +335,6 @@ export const en = {
     detailsTitle: "Production details",
     paid: "Paid",
     freeLabel: "free",
-    providerCost: "Provider cost",
     sceneCount: "Scenes",
     voiceLabel: "Voice",
     voiceBrowser: "synthesized in the browser (demo)",

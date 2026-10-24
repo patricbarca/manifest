@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { HeroVideo } from "@/components/HeroVideo";
-import { TEMPLATES, templatePreview } from "@/lib/templates";
-import { PRODUCTS, estimateCostCents, formatUsd } from "@/lib/pricing";
-import { LIFE_AREAS } from "@/lib/types";
+import { TEMPLATES } from "@/lib/templates";
+import { TemplateMedia } from "@/components/TemplateMedia";
+import { PRODUCTS, formatUsd } from "@/lib/pricing";
+import { LIFE_AREAS, TIERS } from "@/lib/types";
 import type { Tier } from "@/lib/types";
 import { isDemoMode } from "@/lib/ai";
-import { fill, type Dictionary, type Locale } from "@/lib/i18n";
+import { type Dictionary, type Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/server";
 
 export default async function HomePage() {
@@ -105,8 +106,8 @@ export default async function HomePage() {
           <p className="t-body mt-3 text-[var(--color-label-2)]">{t.home.productsLede}</p>
         </div>
 
-        <div className="mx-auto mt-12 grid max-w-3xl gap-4 sm:grid-cols-2">
-          {(["vision", "cinematic"] as const).map((id) => (
+        <div className="mx-auto mt-12 grid max-w-5xl gap-4 md:grid-cols-3">
+          {TIERS.map((id) => (
             <TierCard key={id} id={id} t={t} />
           ))}
         </div>
@@ -161,17 +162,7 @@ export default async function HomePage() {
               href={`/market/${tpl.slug}`}
               className="card interactive w-[264px] shrink-0 overflow-hidden rounded-[var(--radius-md)]"
             >
-              <video
-                src={templatePreview(tpl.slug).video}
-                poster={templatePreview(tpl.slug).poster}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                className="h-72 w-full object-cover"
-                style={{ background: `linear-gradient(150deg, ${tpl.cover.from}, ${tpl.cover.to})` }}
-              />
+              <TemplateMedia template={tpl} className="h-72 w-full" />
               <div className="p-5">
                 <h3 className="t-headline">{tpl.title[locale as Locale]}</h3>
                 <p className="t-caption mt-1.5 line-clamp-2 text-[var(--color-label-2)]">
@@ -249,10 +240,6 @@ function TierCard({ id, t }: { id: Tier; t: Dictionary }) {
           </li>
         ))}
       </ul>
-
-      <p className="t-caption mt-7 border-t border-[var(--color-hairline)] pt-5 text-[var(--color-label-3)]">
-        {fill(t.home.costNote, { cost: formatUsd(estimateCostCents(id, 60) / 100) })}
-      </p>
     </div>
   );
 }

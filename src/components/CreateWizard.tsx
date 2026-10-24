@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { PALETTES, type Palette } from "@/lib/types";
+import { PALETTES, TIERS, type Palette } from "@/lib/types";
 import type {
   ClarifyAnswer,
   ClarifyQuestion,
@@ -675,8 +675,8 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
       {step === STEP.format && (
         <Section title={t.create.formatTitle} hint={t.create.formatHint}>
           <Field label={t.create.videoType}>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {(["vision", "cinematic"] as const).map((id) => (
+            <div className="grid gap-3 sm:grid-cols-3">
+              {TIERS.map((id) => (
                 <Choice
                   key={id}
                   selected={tier === id}

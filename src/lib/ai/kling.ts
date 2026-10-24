@@ -43,19 +43,25 @@ async function imageBase64(url: string): Promise<string> {
 
 export const klingVideo: VideoProvider = {
   name: "kling",
-  async animate({ imageUrl, prompt, durationSec, projectId, sceneId }) {
+  async animate({ imageUrl, prompt, durationSec, projectId, sceneId, quality }) {
     const jwt = token();
+    // El nivel Elevado va siempre en modo pro, con su propio modelo si se define.
+    const elevated = quality === "elevated";
+    const mode = elevated ? "pro" : (process.env.KLING_MODE ?? "std");
+    const modelName = elevated
+      ? (process.env.KLING_MODEL_ELEVATED ?? process.env.KLING_MODEL ?? "kling-v2-master")
+      : (process.env.KLING_MODEL ?? "kling-v2-master");
     const duration = durationSec <= 5 ? "5" : "10";
 
     const create = await fetch(`${BASE}/v1/videos/image2video`, {
       method: "POST",
       headers: { Authorization: `Bearer ${jwt}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model_name: process.env.KLING_MODEL ?? "kling-v2-master",
+        model_name: modelName,
         image: await imageBase64(imageUrl),
         prompt,
         duration,
-        mode: process.env.KLING_MODE ?? "std",
+        mode,
         aspect_ratio: "9:16",
       }),
     });
@@ -85,7 +91,7 @@ export const klingVideo: VideoProvider = {
         if (!remote) throw new Error("Kling terminó sin URL de video");
         const url = await persistRemoteAsset(remote, projectId, `${sceneId}.mp4`);
         const perSec =
-          (process.env.KLING_MODE ?? "std") === "pro"
+          mode === "pro"
             ? PROVIDER_COST.videoPremiumCentsPerSec
             : PROVIDER_COST.videoCentsPerSec;
         return {

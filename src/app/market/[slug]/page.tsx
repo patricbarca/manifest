@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { templatePreview } from "@/lib/templates";
+import { TemplateMedia } from "@/components/TemplateMedia";
 import { notFound } from "next/navigation";
 import { TEMPLATES, templateBySlug } from "@/lib/templates";
 import { PRODUCTS, formatUsd } from "@/lib/pricing";
@@ -34,17 +35,13 @@ export default async function TemplatePage({
 
       <div className="mt-8 grid gap-12 lg:grid-cols-[320px_1fr] lg:items-start">
         <div className="relative">
-          <video
-            src={templatePreview(bp.slug).video}
-            poster={templatePreview(bp.slug).poster}
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="aspect-[9/16] w-full rounded-[var(--radius-xl)] object-cover ring-1 ring-[var(--color-hairline)]"
-            style={{ background: `linear-gradient(150deg, ${bp.cover.from}, ${bp.cover.to})` }}
+          <TemplateMedia
+            template={bp}
+            className="aspect-[9/16] w-full rounded-[var(--radius-xl)] ring-1 ring-[var(--color-hairline)]"
           />
-          <p className="t-caption mt-3 text-center text-[var(--color-label-3)]">{t.market.previewNote}</p>
+          {templatePreview(bp.slug).video && (
+            <p className="t-caption mt-3 text-center text-[var(--color-label-3)]">{t.market.previewNote}</p>
+          )}
         </div>
 
         <div>
