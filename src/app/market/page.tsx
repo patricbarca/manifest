@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TemplateMedia } from "@/components/TemplateMedia";
+import { TemplateCard } from "@/components/TemplateCard";
 import { TEMPLATES } from "@/lib/templates";
 import { CREATOR_SHARE, PRODUCTS, formatUsd } from "@/lib/pricing";
 import { LIFE_AREAS, type LifeArea } from "@/lib/types";
@@ -56,45 +56,19 @@ export default async function MarketPage({
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {templates.map((bp) => (
-          <Link
+          <TemplateCard
             key={bp.slug}
-            href={`/market/${bp.slug}`}
-            className="card interactive overflow-hidden rounded-[var(--radius-lg)]"
-          >
-            <div
-              className="relative aspect-[4/5]"
-              style={{ background: `linear-gradient(150deg, ${bp.cover.from}, ${bp.cover.to})` }}
-            >
-              <TemplateMedia template={bp} className="absolute inset-0 h-full w-full" />
-              {/* Vineta: le quita al degradado el aspecto de relleno plano. */}
-              <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_70%_15%,rgba(255,255,255,0.12),transparent_55%),linear-gradient(to_top,rgba(0,0,0,0.45),transparent_60%)]" />
-              <span className="t-eyebrow absolute left-4 top-4 rounded-full bg-black/35 px-2.5 py-1.5 text-white/85 backdrop-blur-md">
-                {t.products[bp.tier].name}
-              </span>
-              {bp.membersOnly && (
-                <span className="t-eyebrow absolute right-4 top-4 rounded-full bg-white px-2.5 py-1.5 text-black">
-                  {t.market.membersBadge}
-                </span>
-              )}
-            </div>
-            <div className="p-6">
-              <h2 className="t-headline">{bp.title[locale]}</h2>
-              <p className="t-caption mt-1 text-[var(--color-label-3)]">
-                {t.market.by} {bp.author}
-              </p>
-              <p className="t-sub mt-3.5 line-clamp-2 text-[var(--color-label-2)]">
-                {bp.summary[locale]}
-              </p>
-              <div className="mt-5 flex items-center justify-between">
-                <span className="t-sub font-medium tabular-nums">
-                  {formatUsd(PRODUCTS[bp.tier].priceUsd)}
-                </span>
-                <span className="t-caption tabular-nums text-[var(--color-label-3)]">
-                  {bp.durationSec} {t.common.seconds}
-                </span>
-              </div>
-            </div>
-          </Link>
+            template={bp}
+            title={bp.title[locale]}
+            summary={bp.summary[locale]}
+            by={t.market.by}
+            seconds={t.common.seconds}
+            membersBadge={t.market.membersBadge}
+            options={[
+              { variant: "stills", label: t.products.vision.name, price: formatUsd(PRODUCTS.vision.priceUsd) },
+              { variant: "animated", label: t.products.cinematic.name, price: formatUsd(PRODUCTS.cinematic.priceUsd) },
+            ]}
+          />
         ))}
       </div>
     </div>

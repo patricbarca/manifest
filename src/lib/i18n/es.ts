@@ -179,6 +179,8 @@ export const es: Dictionary = {
     scenesNote:
       "Descripciones en inglés: es el idioma con el que mejor responden los modelos de imagen. Estilo {style}.",
     useTemplate: "Usar esta plantilla",
+    useWith: "Usar con {name}",
+    compareNote: "El mismo ejemplo en Imágenes y en Animado, para que veas la diferencia. Al crear también puedes elegir Elevado ({elevated}). Usar la plantilla cuesta lo mismo que crear uno de cero.",
     membersBadge: "Socios",
     membersNote: "Plantilla del mes: incluida para socios.",
     priceNote: "Lo mismo que crear uno de cero. Sin tarifa aparte por la plantilla.",

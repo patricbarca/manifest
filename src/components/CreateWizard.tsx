@@ -70,6 +70,8 @@ type Props = {
   member: boolean;
   /** Vídeos de Imágenes incluidos en el plan de socio que le quedan. */
   includedLeft: number;
+  /** Producto elegido antes de entrar (desde la ficha de una plantilla). */
+  initialTier?: Tier;
   /** Siguiente capítulo: parte de un vídeo anterior del mismo usuario. */
   chapterOf?: { title: string; desires: string[]; tier: Tier; style: VisualStyle; tone: VoiceTone };
   /** El diccionario llega por prop: este componente corre en el cliente. */
@@ -85,6 +87,7 @@ export function CreateWizard({
   member,
   includedLeft,
   chapterOf,
+  initialTier,
   t,
   locale,
 }: Props) {
@@ -113,7 +116,9 @@ export function CreateWizard({
   const [peopleConsent, setPeopleConsent] = useState(false);
   const [uploadingPerson, setUploadingPerson] = useState<number>();
   const [uploading, setUploading] = useState(false);
-  const [tier, setTier] = useState<Tier>(chapterOf?.tier ?? template?.tier ?? "vision");
+  const [tier, setTier] = useState<Tier>(
+    initialTier ?? chapterOf?.tier ?? template?.tier ?? "vision",
+  );
   // Estilo, tono y duración ya no se preguntan: el vídeo nuevo tiene una
   // sola voz y dura lo que piden las frases. Se mandan con su valor fijo.
   const style: VisualStyle = chapterOf?.style ?? template?.style ?? "cinematic";
