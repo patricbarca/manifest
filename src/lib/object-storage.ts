@@ -1,0 +1,72 @@
+import { readFile } from "node:fs/promises";
+import {
+  DeleteObjectsCommand,
+  GetObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+/**
+ * Almacenamiento de vídeos en un bucket S3 (Railway Buckets).
+ *
+ * El bucket es privado: nunca se enlaza directo. La app sigue usando sus
+ * URLs /media/...; la ruta comprueba que el fichero es del usuario y le
+ * redirige a un enlace firmado que caduca. Sin variables S3_* todo se queda
+ * en el disco, como antes.
+ */
+
+export function objectStorageEnabled(): boolean {
+  return !!(process.env.S3_ENDPOINT && process.env.S3_BUCKET && process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY);
+}
+
+let client: S3Client | undefined;
+function s3(): S3Client {
+  client ??= new S3Client({
+    endpoint: process.env.S3_ENDPOINT,
+    region: process.env.S3_REGION || "auto",
+    credentials: {
+      accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+    },
+    // Railway usa URLs virtual-hosted; S3_FORCE_PATH_STYLE=true para buckets antiguos.
+    forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+  });
+  return client;
+}
+
+const BUCKET = () => process.env.S3_BUCKET!;
+
+export async function putFile(key: string, absPath: string, contentType: string): Promise<void> {
+  await s3().send(
+    new PutObjectCommand({ Bucket: BUCKET(), Key: key, Body: await readFile(absPath), ContentType: contentType }),
+  );
+}
+
+/** Enlace temporal para ver un fichero (1 h por defecto). */
+export async function signedUrl(key: string, seconds = 3600): Promise<string> {
+  return getSignedUrl(s3(), new GetObjectCommand({ Bucket: BUCKET(), Key: key }), { expiresIn: seconds });
+}
+
+/** Borra todo lo que cuelga de un prefijo (p. ej. generated/<id>/). */
+export async function deletePrefix(prefix: string): Promise<void> {
+  let token: string | undefined;
+  do {
+    const page = await s3().send(new ListObjectsV2Command({ Bucket: BUCKET(), Prefix: prefix, ContinuationToken: token }));
+    const keys = (page.Contents ?? []).map((o) => ({ Key: o.Key! }));
+    if (keys.length) await s3().send(new DeleteObjectsCommand({ Bucket: BUCKET(), Delete: { Objects: keys } }));
+    token = page.IsTruncated ? page.NextContinuationToken : undefined;
+  } while (token);
+}
+
+/** Comprueba que el bucket responde (para /api/health?deep=1). */
+export async function pingBucket(): Promise<boolean> {
+  try {
+    await s3().send(new ListObjectsV2Command({ Bucket: BUCKET(), MaxKeys: 1 }));
+    return true;
+  } catch (err) {
+    console.error("[bucket] ping", err);
+    return false;
+  }
+}

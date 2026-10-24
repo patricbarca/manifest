@@ -5,6 +5,7 @@ import { Readable } from "node:stream";
 import { currentUser } from "@/lib/db/session";
 import { db } from "@/lib/db/store";
 import { contentTypeFor, resolveMediaPath } from "@/lib/paths";
+import { objectStorageEnabled, signedUrl } from "@/lib/object-storage";
 
 export const runtime = "nodejs";
 
@@ -55,6 +56,12 @@ export async function GET(
   try {
     info = await stat(absolute);
   } catch {
+    // Ya no está en disco: si es de un vídeo terminado, vive en el bucket.
+    // Se redirige a un enlace firmado que caduca (la descarga no pasa por el servidor).
+    if (kind === "generated" && objectStorageEnabled()) {
+      const url = await signedUrl(`generated/${parts.join("/")}`);
+      return NextResponse.redirect(url, { status: 302, headers: { "Cache-Control": "private, no-store" } });
+    }
     return NextResponse.json({ error: "No existe" }, { status: 404 });
   }
   if (!info.isFile()) {
