@@ -132,6 +132,7 @@ export const es: Dictionary = {
     lede: "Plantillas listas. Eliges una, le pones tu cara, y se genera tu versión: las mismas escenas y el mismo guion, contigo dentro.",
     note: "Cuesta lo mismo que crear uno de cero.",
     all: "Todos",
+    empty: "Todavía no hay plantillas en esta área.",
     howToUse: "Cómo usarlo",
     affirmationsTitle: "Las afirmaciones",
     scenesTitle: "Las escenas",

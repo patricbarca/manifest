@@ -434,10 +434,226 @@ export const TEMPLATES: Template[] = [
     publishedAt: SEEDED_AT,
     uses: 0,
   },
+  {
+    slug: "despegar",
+    title: { es: "Despegar", en: "Takeoff" },
+    author: "ManifestLifeAI",
+    area: "libertad",
+    style: "golden",
+    tone: "cercana",
+    tier: "cinematic",
+    durationSec: 30,
+    summary: {
+      es: "Para el viaje que llevas años aplazando. Del control de seguridad a la primera mañana al otro lado.",
+      en: "For the trip you've been putting off for years. From the security line to the first morning on the other side.",
+    },
+    protocol: {
+      es: "Cada noche desde el día que lo decides hasta que compras el billete. Después, una vez a la semana hasta que despegas.",
+      en: "Every night from the day you decide until you buy the ticket. After that, once a week until takeoff.",
+    },
+    affirmations: {
+      es: [
+        "Ya tengo el billete en la mano.",
+        "Me merezco ver el mundo.",
+        "Viajar es parte de mi vida, no un premio lejano.",
+        "Me muevo ligero y con calma.",
+        "Llego, miro alrededor y me siento en casa.",
+        "Vuelvo distinto de como me fui.",
+      ],
+      en: [
+        "I already have the ticket in my hand.",
+        "I deserve to see the world.",
+        "Travel is part of my life, not a distant prize.",
+        "I move light and calm.",
+        "I arrive, look around and feel at home.",
+        "I come back different from how I left.",
+      ],
+    },
+    sceneBriefs: [
+      "walking through a bright airport terminal with a carry-on, boarding pass in hand",
+      "climbing the stairs up to a plane on the tarmac at golden hour, looking back with a smile",
+      "window seat, watching clouds below at sunset, relaxed",
+      "stepping out of the arrivals gate into warm foreign air",
+      "first morning on a balcony overlooking an unfamiliar city, coffee in hand",
+      "walking a narrow old street, camera around the neck, curious",
+    ],
+    cover: { from: "#0b0a08", to: "#b08a5a" },
+    publishedAt: SEEDED_AT,
+    uses: 0,
+  },
+  {
+    slug: "el-ascenso",
+    title: { es: "El ascenso", en: "The promotion" },
+    author: "ManifestLifeAI",
+    area: "carrera",
+    style: "editorial",
+    tone: "firme",
+    tier: "vision",
+    durationSec: 60,
+    summary: {
+      es: "Para cuando sabes que ya haces el trabajo del puesto de arriba y falta que se vea. Del despacho a la primera reunión liderando.",
+      en: "For when you already do the job one level up and it just needs to be seen. From the office talk to your first meeting in charge.",
+    },
+    protocol: {
+      es: "Las 4 semanas antes de tu evaluación o de pedir el ascenso, cada mañana antes de abrir el correo.",
+      en: "The 4 weeks before your review or before asking for the promotion, every morning before opening your inbox.",
+    },
+    affirmations: {
+      es: [
+        "Mi trabajo habla por mí, y yo también.",
+        "Pido lo que me corresponde con calma.",
+        "Ya pienso como la persona del puesto que quiero.",
+        "Tomo decisiones y respondo por ellas.",
+        "Mi equipo confía en mí porque cumplo.",
+        "Aprendo rápido lo que todavía no sé.",
+        "Me siento cómodo con más responsabilidad.",
+        "Este puesto es el siguiente paso natural.",
+      ],
+      en: [
+        "My work speaks for me, and so do I.",
+        "I calmly ask for what I've earned.",
+        "I already think like the person in the role I want.",
+        "I make decisions and own them.",
+        "My team trusts me because I deliver.",
+        "I quickly learn what I don't know yet.",
+        "I'm comfortable with more responsibility.",
+        "This role is the natural next step.",
+      ],
+    },
+    sceneBriefs: [
+      "preparing notes at a desk early in the morning, focused, city outside the window",
+      "sitting across from a manager in a glass office, confident conversation",
+      "shaking hands with a smile after good news",
+      "moving belongings into a new office with a view",
+      "leading a meeting at the head of a table, team engaged",
+      "presenting results on a screen, calm and clear",
+      "a colleague congratulating with a pat on the shoulder",
+      "walking out of the building at dusk, quiet pride",
+    ],
+    cover: { from: "#0a0a0c", to: "#7d8696" },
+    publishedAt: SEEDED_AT,
+    uses: 0,
+  },
+  {
+    slug: "primer-millon",
+    title: { es: "El primer millón", en: "The first million" },
+    author: "ManifestLifeAI",
+    area: "abundancia",
+    style: "cinematic",
+    tone: "firme",
+    tier: "cinematic",
+    durationSec: 60,
+    summary: {
+      es: "No va de lotería: va de convertirte en alguien que construye patrimonio. Hábitos, decisiones y el día en que el número llega.",
+      en: "It isn't about the lottery: it's about becoming someone who builds wealth. Habits, decisions and the day the number arrives.",
+    },
+    protocol: {
+      es: "Cada domingo, justo antes de revisar tus cuentas de la semana. Y antes de cualquier decisión grande de dinero.",
+      en: "Every Sunday, right before you review the week's numbers. And before any big money decision.",
+    },
+    affirmations: {
+      es: [
+        "El dinero llega a quien sabe cuidarlo, y yo sé.",
+        "Gasto menos de lo que gano, siempre.",
+        "Invierto con paciencia y sin prisa.",
+        "Creo valor y me pagan bien por él.",
+        "Mis decisiones de hoy pagan mi libertad de mañana.",
+        "Me siento tranquilo hablando de cifras grandes.",
+        "Mi patrimonio crece mes a mes.",
+        "Soy alguien que construye riqueza.",
+      ],
+      en: [
+        "Money comes to those who know how to care for it, and I do.",
+        "I always spend less than I earn.",
+        "I invest patiently, without rushing.",
+        "I create value and get paid well for it.",
+        "Today's decisions pay for tomorrow's freedom.",
+        "I'm calm talking about big numbers.",
+        "My net worth grows month after month.",
+        "I'm someone who builds wealth.",
+      ],
+    },
+    sceneBriefs: [
+      "reviewing a portfolio dashboard on a laptop at night, calm satisfaction",
+      "signing documents with an advisor in an elegant office",
+      "standing on the terrace of a modern home overlooking the sea",
+      "handing over keys to a family member, emotional moment",
+      "walking into a fine restaurant without checking the prices",
+      "at a desk writing long-term goals in a notebook, morning light",
+      "celebrating quietly with a toast with a partner",
+      "looking at a phone screen showing a seven-figure balance, deep breath, smile",
+    ],
+    cover: { from: "#08090a", to: "#8c7a4a" },
+    publishedAt: SEEDED_AT,
+    uses: 0,
+  },
+  {
+    slug: "las-llaves-de-mi-casa",
+    title: { es: "Las llaves de mi casa", en: "The keys to my home" },
+    author: "ManifestLifeAI",
+    area: "abundancia",
+    style: "golden",
+    tone: "calma",
+    tier: "vision",
+    durationSec: 30,
+    summary: {
+      es: "Para quien está ahorrando la entrada de su primera casa. La meta concreta: el día que te dan las llaves.",
+      en: "For anyone saving for the down payment on their first home. The concrete goal: the day you get the keys.",
+    },
+    protocol: {
+      es: "Cada vez que apartes dinero para la entrada. El vídeo y el ahorro, juntos, siempre.",
+      en: "Every time you put money aside for the down payment. The video and the saving, always together.",
+    },
+    affirmations: {
+      es: [
+        "Cada euro que ahorro es un ladrillo de mi casa.",
+        "Elijo mi meta por encima del capricho.",
+        "Mi hogar ya me está esperando.",
+        "Firmo con calma y con los números claros.",
+        "Abro la puerta y es mía.",
+        "Aquí empieza otra etapa.",
+      ],
+      en: [
+        "Every dollar I save is a brick in my home.",
+        "I choose my goal over the impulse.",
+        "My home is already waiting for me.",
+        "I sign calmly, with the numbers clear.",
+        "I open the door and it's mine.",
+        "A new chapter starts here.",
+      ],
+    },
+    sceneBriefs: [
+      "dropping coins into a jar labeled home, warm kitchen light",
+      "touring a sunny empty apartment, imagining the furniture",
+      "signing papers at a notary, steady hand",
+      "receiving a set of keys, holding them up with a grin",
+      "opening the front door of a new home for the first time",
+      "sitting on the floor of the empty living room among boxes, golden light",
+    ],
+    cover: { from: "#0b0907", to: "#a07850" },
+    publishedAt: SEEDED_AT,
+    uses: 0,
+  },
 ];
 
-/** Clip de ejemplo de cada plantilla (persona generada por IA), en public/market/. */
-export function templatePreview(slug: string): { video: string; poster: string } {
+/** Plantillas que ya tienen clip de ejemplo en public/market/. */
+const PREVIEWED = new Set([
+  "salir-al-escenario",
+  "la-conversacion-de-sueldo",
+  "primer-dia",
+  "noventa-dias-de-constancia",
+  "el-mes-que-no-llego-justo",
+  "amor-tranquilo",
+  "fundadora-en-lisboa",
+  "un-ano-sin-oficina",
+]);
+
+/**
+ * Clip de ejemplo de cada plantilla (persona generada por IA). Sin clip,
+ * la tarjeta muestra solo el degradado de portada.
+ */
+export function templatePreview(slug: string): { video?: string; poster?: string } {
+  if (!PREVIEWED.has(slug)) return {};
   return { video: `/market/${slug}.mp4`, poster: `/market/${slug}.jpg` };
 }
 

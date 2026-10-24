@@ -133,6 +133,7 @@ export const en = {
     lede: "Ready-made templates. Pick one, put your face in, and your version gets generated: the same scenes and the same script, with you inside.",
     note: "It costs the same as creating one from scratch.",
     all: "All",
+    empty: "No templates in this area yet.",
     howToUse: "How to use it",
     affirmationsTitle: "The affirmations",
     scenesTitle: "The scenes",

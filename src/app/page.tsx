@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { HeroVideo } from "@/components/HeroVideo";
-import { TEMPLATES, templatePreview } from "@/lib/templates";
+import { TEMPLATES } from "@/lib/templates";
+import { TemplateMedia } from "@/components/TemplateMedia";
 import { PRODUCTS, formatUsd } from "@/lib/pricing";
 import { LIFE_AREAS } from "@/lib/types";
 import type { Tier } from "@/lib/types";
@@ -161,17 +162,7 @@ export default async function HomePage() {
               href={`/market/${tpl.slug}`}
               className="card interactive w-[264px] shrink-0 overflow-hidden rounded-[var(--radius-md)]"
             >
-              <video
-                src={templatePreview(tpl.slug).video}
-                poster={templatePreview(tpl.slug).poster}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                className="h-72 w-full object-cover"
-                style={{ background: `linear-gradient(150deg, ${tpl.cover.from}, ${tpl.cover.to})` }}
-              />
+              <TemplateMedia template={tpl} className="h-72 w-full" />
               <div className="p-5">
                 <h3 className="t-headline">{tpl.title[locale as Locale]}</h3>
                 <p className="t-caption mt-1.5 line-clamp-2 text-[var(--color-label-2)]">
