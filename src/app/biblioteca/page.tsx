@@ -3,12 +3,18 @@ import { currentUser, freeVideosLeft } from "@/lib/db/session";
 import { db } from "@/lib/db/store";
 import { fill } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/server";
+import { MembershipPanel } from "@/components/MembershipPanel";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Library — ManifestLifeAI" };
 
-export default async function BibliotecaPage() {
+export default async function BibliotecaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ member?: string }>;
+}) {
   const { t, locale } = await getDictionary();
+  const justJoined = (await searchParams).member === "1";
   const user = await currentUser();
   const projects = await db.listProjects(user.id);
   const freeLeft = freeVideosLeft(user);
@@ -40,6 +46,8 @@ export default async function BibliotecaPage() {
           {t.library.createBtn}
         </Link>
       </div>
+
+      <MembershipPanel user={user} t={t} locale={locale} justJoined={justJoined} />
 
       {projects.length === 0 ? (
         <div className="card mt-12 rounded-[var(--radius-xl)] px-6 py-20 text-center">

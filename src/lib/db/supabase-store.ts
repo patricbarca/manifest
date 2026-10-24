@@ -133,4 +133,18 @@ export const supabaseDb = {
       return user;
     });
   },
+
+  /** Lectura fresca + escritura en la misma fila de la cola del proceso. */
+  async patchUser(id: string, patch: (current: User) => User): Promise<User | undefined> {
+    return serialize(async () => {
+      const current = await supabaseDb.getUser(id);
+      if (!current) return undefined;
+      const next = patch(current);
+      check(
+        await sb().from("app_users").upsert({ id: next.id, email: next.email || null, created_at: iso(next.createdAt), data: next }),
+        "guardar usuario",
+      );
+      return next;
+    });
+  },
 };

@@ -119,7 +119,7 @@ async function deletePeoplePhotos(people: Person[]) {
 async function assignQuote(ownerId: string): Promise<string> {
   const user = await db.getUser(ownerId);
   const id = nextQuoteId(user?.usedQuotes ?? [], ownerId);
-  if (user) await db.putUser({ ...user, usedQuotes: [...(user.usedQuotes ?? []), id] });
+  if (user) await db.patchUser(ownerId, (u) => ({ ...u, usedQuotes: [...(u.usedQuotes ?? []), id] }));
   return id;
 }
 

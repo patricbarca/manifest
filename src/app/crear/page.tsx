@@ -5,6 +5,7 @@ import { templateBySlug } from "@/lib/templates";
 import { LIFE_AREAS } from "@/lib/types";
 import type { LifeArea } from "@/lib/types";
 import { getDictionary } from "@/lib/i18n/server";
+import { creditsLeft, isMember, priceForUser } from "@/lib/membership";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,13 @@ export default async function CrearPage({
       initialArea={initialArea}
       template={template ? templateBySlug(template) : undefined}
       freeLeft={freeVideosLeft(user)}
+      prices={{
+        vision: priceForUser("vision", user),
+        cinematic: priceForUser("cinematic", user),
+        elevated: priceForUser("elevated", user),
+      }}
+      member={isMember(user)}
+      includedLeft={creditsLeft(user)}
       t={t}
       locale={locale}
     />

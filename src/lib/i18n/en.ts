@@ -60,7 +60,7 @@ export const en = {
     productsLede:
       "Still images with camera movement, animated scenes, or animated with our premium model in high definition. All three work for visualizing.",
     freeAfterProducts:
-      "Your first video is free. After that you only pay when you create — no subscription.",
+      "Your first video is free. After that you pay per video, or become a member and get a new one every month.",
     areasTitle: "What do you want to see?",
     marketTitle: "From the market",
     marketLede:
@@ -87,9 +87,38 @@ export const en = {
       { q: "Does manifesting work?", a: "ManifestLifeAI is a visualization and focus tool: it helps you see clearly what you want and repeat it daily. It doesn't guarantee results or replace medical, psychological or financial help." },
     ],
   },
+  membership: {
+    name: "Member",
+    title: "Become a member",
+    lede: "For people who visualize every day. A new video each month that picks up where the last one left off.",
+    perMonth: "/month",
+    perYear: "/year",
+    yearlyNote: "2 months free · the year is charged upfront",
+    points: [
+      "1 Stills video included every month (up to 3 roll over)",
+      "Animated at {cinematic} and Elevated at {elevated}",
+      "Daily reminder and streak",
+      "Monthly check-in: your next chapter, with what has changed",
+      "A new template every month",
+    ],
+    cancelNote: "Cancel anytime. You stay a member until the end of the paid period.",
+    joinMonthly: "Monthly",
+    joinYearly: "Yearly",
+    manage: "Manage subscription",
+    youAreMember: "You're a member",
+    credits: "Included Stills videos available: {n}",
+    renews: "Renews on {date}",
+    ends: "Ends on {date}",
+    pastDue: "Your last payment failed. Update your card to stay a member.",
+    welcome: "You're a member now. Your first included Stills video is ready to use.",
+    included: "Included in your plan",
+    memberPrice: "Member price",
+    signInFirst: "Sign in to become a member.",
+    processing: "We're confirming your payment with Stripe. Reload the page in a few seconds.",
+  },
   pricing: {
     title: "Three prices, that's it",
-    lede: "You pay per video. No subscription, no credits, no bundles. The first one is free so you can see if it resonates.",
+    lede: "Pay per video, or become a member and get a new one every month. The first one is free so you can see if it resonates.",
     sameDuration: "per video · about 2 minutes",
     create: "Create",
     freeNote:
@@ -420,6 +449,9 @@ export const en = {
   errors: {
     signInRequired: "Sign in to create your video.",
     paymentRequired: "This video needs to be paid for.",
+    alreadyMember: "You're already a member. You can manage your plan from your library.",
+    paymentsOff: "Payments aren't live yet.",
+    notMember: "You don't have a subscription to manage.",
     paymentFailed: "Couldn't open the payment page. Try again in a moment.",
     stillGenerating: "Wait until the video is ready before deleting it.",
     noFile: "File missing",

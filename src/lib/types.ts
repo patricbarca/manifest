@@ -310,4 +310,27 @@ export interface User {
   freeVideosUsed: number;
   /** Frases de apertura que ya le salieron, para no repetirlas. */
   usedQuotes?: string[];
+  /** Suscripción de socio (Stripe). Ausente si nunca se suscribió. */
+  membership?: Membership;
+}
+
+/**
+ * Socio: $7/mes o $70/año. Incluye un vídeo de Imágenes cada 30 días, que se
+ * acumulan hasta 3, y precio de socio en Animado y Elevado.
+ */
+export interface Membership {
+  /** active = cobrando; past_due = falló un cobro; canceled = terminada. */
+  status: "active" | "past_due" | "canceled";
+  plan: "monthly" | "yearly";
+  stripeCustomerId: string;
+  stripeSubscriptionId: string;
+  /** Fin del periodo pagado, en ms. */
+  currentPeriodEnd: number;
+  /** Si canceló: sigue activo hasta currentPeriodEnd y no renueva. */
+  cancelAtPeriodEnd: boolean;
+  /** Vídeos de Imágenes incluidos sin usar (máx. 3). */
+  credits: number;
+  /** Desde cuándo se cuentan los 30 días del siguiente vídeo incluido. */
+  lastAccrualAt: number;
+  startedAt: number;
 }

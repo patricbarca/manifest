@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { db } from "./store";
-import type { User } from "../types";
+import type { Tier, User } from "../types";
+import { accrue, isMember, priceForUser } from "../membership";
 import { authUser } from "../supabase/server";
 import { authEnabled } from "../supabase/config";
 import { FREE_VIDEOS, PAYMENTS_ENABLED } from "../pricing";
@@ -39,9 +40,8 @@ async function ensureUser(id: string, email = "", name = "Invitado"): Promise<Us
   const existing = await db.getUser(id);
   if (existing) {
     if (email && existing.email !== email) {
-      const updated = { ...existing, email, name: name || existing.name };
-      await db.putUser(updated);
-      return updated;
+      const updated = await db.patchUser(id, (u) => ({ ...u, email, name: name || u.name }));
+      return updated ?? existing;
     }
     return existing;
   }
@@ -77,11 +77,11 @@ export async function linkAnonymousData(): Promise<void> {
     await db.patchProject(p.id, (cur) => ({ ...cur, ownerId: auth.id }));
   }
   if (anon) {
-    await db.putUser({
-      ...account,
-      freeVideosUsed: Math.max(account.freeVideosUsed, anon.freeVideosUsed),
-      usedQuotes: [...new Set([...(account.usedQuotes ?? []), ...(anon.usedQuotes ?? [])])],
-    });
+    await db.patchUser(account.id, (u) => ({
+      ...u,
+      freeVideosUsed: Math.max(u.freeVideosUsed, anon.freeVideosUsed),
+      usedQuotes: [...new Set([...(u.usedQuotes ?? []), ...(anon.usedQuotes ?? [])])],
+    }));
   }
   try {
     jar.delete(COOKIE);
@@ -102,37 +102,62 @@ export async function linkAnonymousData(): Promise<void> {
  *                  genera igual, pero SIN marca de agua: no es un vídeo de
  *                  regalo, es que aún no sabemos cobrar.
  *  - `paid`      — pagado de verdad. Sin marca de agua.
+ *  - `included`  — vídeo de Imágenes incluido en el plan de socio.
  */
-export type ChargeKind = "free" | "prelaunch" | "paid";
+export type ChargeKind = "free" | "prelaunch" | "paid" | "included";
 
 /** Clave del diccionario con el motivo, no el mensaje ya escrito. */
 type ChargeError = "noFreeLeft" | "paymentRequired";
 
+/**
+ * Decide cómo se paga un vídeo. Orden:
+ *  1. Socio con un vídeo de Imágenes incluido → se gasta (`included`).
+ *  2. Socio sin incluido → paga precio de socio en Stripe.
+ *  3. No socio con vídeo gratis → `free` (con marca de agua).
+ *  4. Sin pasarela de pago → `prelaunch`.
+ *  5. Si no, paga precio de catálogo en Stripe.
+ * `priceCents` es lo que se cobraría en Stripe (ya con precio de socio).
+ */
 export async function chargeForVideo(
   userId: string,
-  priceCents: number,
+  tier: Tier,
 ): Promise<
-  | { ok: true; kind: ChargeKind; paidCents: number }
-  | { ok: false; reason: ChargeError }
+  | { ok: true; kind: ChargeKind; paidCents: number; priceCents: number }
+  | { ok: false; reason: ChargeError; priceCents: number }
 > {
   const user = await db.getUser(userId);
-  if (!user) return { ok: false, reason: "noFreeLeft" };
+  const priceCents = priceForUser(tier, user) * 100;
+  if (!user) return { ok: false, reason: "noFreeLeft", priceCents };
 
-  if (user.freeVideosUsed < FREE_VIDEOS) {
-    await db.putUser({ ...user, freeVideosUsed: user.freeVideosUsed + 1 });
-    return { ok: true, kind: "free", paidCents: 0 };
+  if (isMember(user) && tier === "vision") {
+    // Se gasta dentro de la cola: dos peticiones a la vez no gastan el mismo.
+    let used = false;
+    await db.patchUser(userId, (u) => {
+      if (!u.membership || u.membership.status !== "active") return u;
+      const m = accrue(u.membership);
+      if (m.credits < 1) return { ...u, membership: m };
+      used = true;
+      return { ...u, membership: { ...m, credits: m.credits - 1 } };
+    });
+    if (used) return { ok: true, kind: "included", paidCents: 0, priceCents };
+  }
+
+  if (!isMember(user) && user.freeVideosUsed < FREE_VIDEOS) {
+    await db.patchUser(userId, (u) => ({ ...u, freeVideosUsed: u.freeVideosUsed + 1 }));
+    return { ok: true, kind: "free", paidCents: 0, priceCents };
   }
 
   if (!PAYMENTS_ENABLED) {
-    return { ok: true, kind: "prelaunch", paidCents: 0 };
+    return { ok: true, kind: "prelaunch", paidCents: 0, priceCents };
   }
 
   // El cobro lo hace Stripe Checkout (ver api/projects y lib/stripe).
-  void priceCents;
-  return { ok: false, reason: "paymentRequired" };
+  return { ok: false, reason: "paymentRequired", priceCents };
 }
 
 /** Cuántos vídeos gratis le quedan a este usuario. */
 export function freeVideosLeft(user: User): number {
+  // Los socios no gastan el gratis (lleva marca de agua): usan los incluidos.
+  if (isMember(user)) return 0;
   return Math.max(0, FREE_VIDEOS - user.freeVideosUsed);
 }

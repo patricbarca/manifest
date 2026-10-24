@@ -122,6 +122,18 @@ const jsonDb = {
       return user;
     });
   },
+
+  /** Update con lectura fresca dentro de la cola: no pisa campos que cambió otro. */
+  async patchUser(id: string, patch: (current: User) => User): Promise<User | undefined> {
+    return serialize(async () => {
+      const all = await readCollection<User>("users");
+      const current = all[id];
+      if (!current) return undefined;
+      all[id] = patch(current);
+      await writeCollection("users", all);
+      return all[id];
+    });
+  },
 };
 
 export type Store = typeof jsonDb;

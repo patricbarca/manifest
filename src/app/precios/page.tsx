@@ -3,11 +3,16 @@ import { Icon } from "@/components/Icon";
 import { PRODUCTS, formatUsd } from "@/lib/pricing";
 import { TIERS } from "@/lib/types";
 import { getDictionary } from "@/lib/i18n/server";
+import { MembershipCard } from "@/components/MembershipCard";
+import { currentUser, isSignedIn } from "@/lib/db/session";
+import { isMember } from "@/lib/membership";
 
 export const metadata = { title: "Pricing — ManifestLifeAI" };
 
 export default async function PreciosPage() {
   const { t } = await getDictionary();
+  const signedIn = await isSignedIn();
+  const member = signedIn ? isMember(await currentUser()) : false;
 
   return (
     <div className="mx-auto max-w-[1120px] px-6 py-20">
@@ -73,6 +78,8 @@ export default async function PreciosPage() {
       <p className="t-sub mx-auto mt-8 max-w-md text-center text-[var(--color-label-2)]">
         {t.pricing.freeNote}
       </p>
+
+      <MembershipCard t={t} signedIn={signedIn} member={member} />
     </div>
   );
 }

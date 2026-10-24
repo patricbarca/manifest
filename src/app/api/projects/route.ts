@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db/store";
 import { currentUser, chargeForVideo } from "@/lib/db/session";
-import { estimateCostCents, priceUsd } from "@/lib/pricing";
+import { estimateCostCents } from "@/lib/pricing";
 import { checkBlocked, checkDesires, checkDetails } from "@/lib/safety";
 import { Area, Desires, Details, People, intentionFrom } from "@/lib/api-schemas";
 import { inferArea } from "@/lib/script-engine";
@@ -111,8 +111,8 @@ export async function POST(request: Request) {
       ? preview
       : undefined;
 
-  const priceCents = priceUsd(input.tier) * 100;
-  const charge = await chargeForVideo(user.id, priceCents);
+  const charge = await chargeForVideo(user.id, input.tier);
+  const priceCents = charge.priceCents;
   // Sin vídeo gratis y con pagos activos: se crea el proyecto en borrador y se cobra en Stripe.
   const needsCheckout = !charge.ok && charge.reason === "paymentRequired" && stripeEnabled();
   if (!charge.ok && !needsCheckout) {

@@ -13,7 +13,7 @@ import type {
   VisualStyle,
   VoiceTone,
 } from "@/lib/types";
-import { PRODUCTS, formatUsd, priceUsd } from "@/lib/pricing";
+import { formatUsd } from "@/lib/pricing";
 import { fill, type Dictionary, type Locale } from "@/lib/i18n";
 import { Icon } from "./Icon";
 
@@ -65,12 +65,26 @@ type Props = {
   template?: Template;
   /** Vídeos gratis que le quedan. El primero lo invita la casa. */
   freeLeft: number;
+  /** Precio por producto para este usuario (de socio si lo es). */
+  prices: Record<Tier, number>;
+  member: boolean;
+  /** Vídeos de Imágenes incluidos en el plan de socio que le quedan. */
+  includedLeft: number;
   /** El diccionario llega por prop: este componente corre en el cliente. */
   t: Dictionary;
   locale: Locale;
 };
 
-export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Props) {
+export function CreateWizard({
+  initialArea,
+  template,
+  freeLeft,
+  prices,
+  member,
+  includedLeft,
+  t,
+  locale,
+}: Props) {
   const router = useRouter();
 
   const [step, setStep] = useState<number>(STEP.desires);
@@ -113,8 +127,9 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
   const [fix, setFix] = useState("");
   const [corrections, setCorrections] = useState<string[]>([]);
 
-  const price = priceUsd(tier);
-  const isFree = freeLeft > 0;
+  const price = prices[tier];
+  const isIncluded = member && tier === "vision" && includedLeft > 0;
+  const isFree = !isIncluded && freeLeft > 0;
 
   const canContinue = useMemo(() => {
     if (step === STEP.desires) {
@@ -683,7 +698,7 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
                   onClick={() => setTier(id)}
                   title={t.products[id].name}
                   sub={t.products[id].tagline}
-                  price={formatUsd(PRODUCTS[id].priceUsd)}
+                  price={formatUsd(prices[id])}
                 />
               ))}
             </div>
@@ -757,10 +772,16 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
           <div className="card mt-9 flex items-center justify-between gap-4 rounded-[var(--radius-md)] p-5">
             <div>
               <p className="t-caption text-[var(--color-label-2)]">
-                {isFree ? t.create.firstVideo : t.create.price}
+                {isIncluded
+                  ? t.membership.included
+                  : isFree
+                    ? t.create.firstVideo
+                    : member
+                      ? t.membership.memberPrice
+                      : t.create.price}
               </p>
               <p className="mt-1 text-[1.75rem] font-semibold leading-none tracking-[-0.03em] tabular-nums">
-                {isFree ? (
+                {isFree || isIncluded ? (
                   <>
                     {t.common.free}{" "}
                     <span className="t-sub font-normal text-[var(--color-label-3)] line-through">
