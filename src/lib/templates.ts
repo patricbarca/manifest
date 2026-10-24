@@ -705,6 +705,7 @@ const PREVIEWED = new Set([
   "el-ascenso",
   "primer-millon",
   "las-llaves-de-mi-casa",
+  "cerrar-el-ano",
 ]);
 
 /**
