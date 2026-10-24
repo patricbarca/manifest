@@ -14,14 +14,14 @@ export function TemplateCard({
   title,
   summary,
   by,
-  seconds,
+  referenceLabel,
   options,
 }: {
-  template: Pick<Template, "slug" | "tier" | "cover" | "author" | "durationSec">;
+  template: Pick<Template, "slug" | "tier" | "cover" | "author">;
   title: string;
   summary: string;
   by: string;
-  seconds: string;
+  referenceLabel: string;
   options: { variant: PreviewVariant; label: string; price: string }[];
 }) {
   const [variant, setVariant] = useState<PreviewVariant>(
@@ -47,7 +47,7 @@ export function TemplateCard({
           <div className="mt-5 flex items-center justify-between">
             <span className="t-sub font-medium tabular-nums">{current.price}</span>
             <span className="t-caption tabular-nums text-[var(--color-label-3)]">
-              {template.durationSec} {seconds}
+              {referenceLabel}
             </span>
           </div>
         </div>

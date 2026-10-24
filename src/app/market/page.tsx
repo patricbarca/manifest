@@ -62,7 +62,7 @@ export default async function MarketPage({
             title={bp.title[locale]}
             summary={bp.summary[locale]}
             by={t.market.by}
-            seconds={t.common.seconds}
+            referenceLabel={t.market.referenceShort}
             options={[
               { variant: "stills", label: t.products.vision.name, price: formatUsd(PRODUCTS.vision.priceUsd) },
               { variant: "animated", label: t.products.cinematic.name, price: formatUsd(PRODUCTS.cinematic.priceUsd) },
