@@ -65,12 +65,14 @@ type Props = {
   template?: Template;
   /** Vídeos gratis que le quedan. El primero lo invita la casa. */
   freeLeft: number;
+  /** Producto elegido antes de entrar (desde la ficha de una plantilla). */
+  initialTier?: Tier;
   /** El diccionario llega por prop: este componente corre en el cliente. */
   t: Dictionary;
   locale: Locale;
 };
 
-export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Props) {
+export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, locale }: Props) {
   const router = useRouter();
 
   const [step, setStep] = useState<number>(STEP.desires);
@@ -90,7 +92,7 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
   const [peopleConsent, setPeopleConsent] = useState(false);
   const [uploadingPerson, setUploadingPerson] = useState<number>();
   const [uploading, setUploading] = useState(false);
-  const [tier, setTier] = useState<Tier>(template?.tier ?? "vision");
+  const [tier, setTier] = useState<Tier>(initialTier ?? template?.tier ?? "vision");
   // Estilo, tono y duración ya no se preguntan: el vídeo nuevo tiene una
   // sola voz y dura lo que piden las frases. Se mandan con su valor fijo.
   const style: VisualStyle = template?.style ?? "cinematic";

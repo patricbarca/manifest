@@ -33,20 +33,49 @@ export default async function TemplatePage({
         {t.nav.market}
       </Link>
 
-      <div className="mt-8 grid gap-12 lg:grid-cols-[320px_1fr] lg:items-start">
-        <div className="relative">
-          <TemplateMedia
-            template={bp}
-            className="aspect-[9/16] w-full rounded-[var(--radius-xl)] ring-1 ring-[var(--color-hairline)]"
-          />
+      <div className="mt-8 grid gap-12 lg:grid-cols-[minmax(0,500px)_1fr] lg:items-start">
+        {/* El mismo ejemplo en las dos versiones, lado a lado. */}
+        <div>
+          <div className="grid grid-cols-2 gap-3">
+            {(
+              [
+                { variant: "stills", tier: "vision" },
+                { variant: "animated", tier: "cinematic" },
+              ] as const
+            ).map(({ variant, tier }) => (
+              <div key={variant}>
+                <div className="mb-2 flex items-baseline justify-between gap-2">
+                  <span className="t-sub font-medium">{t.products[tier].name}</span>
+                  <span className="t-sub tabular-nums text-[var(--color-label-2)]">
+                    {formatUsd(PRODUCTS[tier].priceUsd)}
+                  </span>
+                </div>
+                <TemplateMedia
+                  template={bp}
+                  variant={variant}
+                  className="aspect-[9/16] w-full rounded-[var(--radius-lg)] ring-1 ring-[var(--color-hairline)]"
+                />
+                <Link
+                  href={`/crear?template=${bp.slug}&tier=${tier}`}
+                  className={`interactive mt-3 block rounded-full px-4 py-2 text-center text-[14px] font-medium ${
+                    tier === bp.tier
+                      ? "bg-white text-black hover:bg-white/90"
+                      : "border border-[var(--color-hairline)] text-[var(--color-label-1)]"
+                  }`}
+                >
+                  {fill(t.market.useWith, { name: t.products[tier].name })}
+                </Link>
+              </div>
+            ))}
+          </div>
           {templatePreview(bp.slug).video && (
-            <p className="t-caption mt-3 text-center text-[var(--color-label-3)]">{t.market.previewNote}</p>
+            <p className="t-caption mt-4 text-center text-[var(--color-label-3)]">{t.market.previewNote}</p>
           )}
         </div>
 
         <div>
           <p className="t-eyebrow text-[var(--color-label-3)]">
-            {t.areas[bp.area].label} · {t.products[bp.tier].name} · {t.home.durationBoth}
+            {t.areas[bp.area].label} · {t.home.durationBoth}
           </p>
           <h1 className="t-title mt-3 text-balance">{bp.title[locale]}</h1>
           <p className="t-caption mt-2.5 text-[var(--color-label-3)]">
@@ -58,22 +87,9 @@ export default async function TemplatePage({
           </p>
           <p className="t-body mt-6 text-[var(--color-label-2)]">{bp.summary[locale]}</p>
 
-          <div className="card mt-9 flex flex-wrap items-center justify-between gap-5 rounded-[var(--radius-lg)] p-6">
-            <div>
-              <p className="text-[2rem] font-semibold leading-none tracking-[-0.03em] tabular-nums">
-                {formatUsd(PRODUCTS[bp.tier].priceUsd)}
-              </p>
-              <p className="t-caption mt-2 text-[var(--color-label-2)]">
-                {t.market.priceNote}
-              </p>
-            </div>
-            <Link
-              href={`/crear?template=${bp.slug}`}
-              className="interactive rounded-full bg-white px-6 py-2.5 text-[15px] font-medium text-black hover:bg-white/90"
-            >
-              {t.market.useTemplate}
-            </Link>
-          </div>
+          <p className="t-sub mt-8 text-[var(--color-label-2)]">
+            {fill(t.market.compareNote, { elevated: formatUsd(PRODUCTS.elevated.priceUsd) })}
+          </p>
 
           {bp.protocol && (
             <section className="mt-12">
