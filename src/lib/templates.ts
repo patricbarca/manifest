@@ -701,6 +701,10 @@ const PREVIEWED = new Set([
   "amor-tranquilo",
   "fundadora-en-lisboa",
   "un-ano-sin-oficina",
+  "despegar",
+  "el-ascenso",
+  "primer-millon",
+  "las-llaves-de-mi-casa",
 ]);
 
 /**

@@ -52,9 +52,10 @@ export type VisualStyle =
   | "dream";
 
 /** El prompt de estilo va siempre en inglés: es lo que entiende el modelo. */
+// "editorial" no dice "magazine cover": Seedream lo leía literal y pintaba el titular de una revista.
 export const VISUAL_STYLES: { id: VisualStyle; prompt: string }[] = [
   { id: "cinematic", prompt: "cinematic film still, 35mm, shallow depth of field, moody volumetric light, anamorphic" },
-  { id: "editorial", prompt: "high-end editorial photography, clean composition, natural light, magazine cover quality" },
+  { id: "editorial", prompt: "high-end editorial photography, clean composition, natural light, premium commercial look" },
   { id: "golden", prompt: "golden hour photography, warm sunlight, lens flare, soft glow, aspirational" },
   { id: "minimal", prompt: "minimal modern photography, neutral palette, architectural negative space, calm" },
   { id: "dream", prompt: "dreamlike ethereal photography, soft focus, pastel haze, surreal serenity" },
