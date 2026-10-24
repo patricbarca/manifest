@@ -150,7 +150,7 @@ export const en = {
     scenesNote:
       "Descriptions in English: it's the language image models respond to best. {style} style.",
     useWith: "Use with {name}",
-    compareNote: "The same example as Stills and as Animated, so you can see the difference. When creating you can also pick Elevated ({elevated}). Using the template costs the same as creating from scratch.",
+    compareNote: "The same example as Stills, Animated and Elevated (high definition), so you can see the difference. Using the template costs the same as creating from scratch.",
     useTemplate: "Use this template",
     priceNote: "The same as creating one from scratch. No separate template fee.",
     usedBySingular: "person has used it",

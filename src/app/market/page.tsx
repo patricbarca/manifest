@@ -66,6 +66,7 @@ export default async function MarketPage({
             options={[
               { variant: "stills", label: t.products.vision.name, price: formatUsd(PRODUCTS.vision.priceUsd) },
               { variant: "animated", label: t.products.cinematic.name, price: formatUsd(PRODUCTS.cinematic.priceUsd) },
+              { variant: "elevated", label: t.products.elevated.name, price: formatUsd(PRODUCTS.elevated.priceUsd) },
             ]}
           />
         ))}

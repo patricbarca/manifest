@@ -33,14 +33,15 @@ export default async function TemplatePage({
         {t.nav.market}
       </Link>
 
-      <div className="mt-8 grid gap-12 lg:grid-cols-[minmax(0,500px)_1fr] lg:items-start">
+      <div className="mt-8 grid gap-12 lg:grid-cols-[minmax(0,640px)_1fr] lg:items-start">
         {/* El mismo ejemplo en las dos versiones, lado a lado. */}
         <div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             {(
               [
                 { variant: "stills", tier: "vision" },
                 { variant: "animated", tier: "cinematic" },
+                { variant: "elevated", tier: "elevated" },
               ] as const
             ).map(({ variant, tier }) => (
               <div key={variant}>
@@ -88,7 +89,7 @@ export default async function TemplatePage({
           <p className="t-body mt-6 text-[var(--color-label-2)]">{bp.summary[locale]}</p>
 
           <p className="t-sub mt-8 text-[var(--color-label-2)]">
-            {fill(t.market.compareNote, { elevated: formatUsd(PRODUCTS.elevated.priceUsd) })}
+            {t.market.compareNote}
           </p>
 
           {bp.protocol && (
