@@ -205,6 +205,8 @@ export interface Project {
   stripeSessionId?: string;
   /** Frase de apertura elegida para este vídeo (id de lib/quotes). */
   quoteId?: string;
+  /** Veces que se relanzó tras un reinicio del servidor. */
+  attempts?: number;
   palette?: Palette;
   status: ProjectStatus;
   steps: PipelineStep[];

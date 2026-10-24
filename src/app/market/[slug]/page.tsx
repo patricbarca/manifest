@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { templatePreview } from "@/lib/templates";
 import { notFound } from "next/navigation";
 import { TEMPLATES, templateBySlug } from "@/lib/templates";
 import { PRODUCTS, formatUsd } from "@/lib/pricing";
@@ -32,15 +33,23 @@ export default async function TemplatePage({
       </Link>
 
       <div className="mt-8 grid gap-12 lg:grid-cols-[320px_1fr] lg:items-start">
-        <div
-          className="aspect-[9/16] rounded-[var(--radius-xl)] ring-1 ring-[var(--color-hairline)]"
-          style={{ background: `linear-gradient(150deg, ${bp.cover.from}, ${bp.cover.to})` }}
-        />
+        <div className="relative">
+          <video
+            src={templatePreview(bp.slug).video}
+            poster={templatePreview(bp.slug).poster}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="aspect-[9/16] w-full rounded-[var(--radius-xl)] object-cover ring-1 ring-[var(--color-hairline)]"
+            style={{ background: `linear-gradient(150deg, ${bp.cover.from}, ${bp.cover.to})` }}
+          />
+          <p className="t-caption mt-3 text-center text-[var(--color-label-3)]">{t.market.previewNote}</p>
+        </div>
 
         <div>
           <p className="t-eyebrow text-[var(--color-label-3)]">
-            {t.areas[bp.area].label} · {t.products[bp.tier].name} · {bp.durationSec}{" "}
-            {t.common.seconds}
+            {t.areas[bp.area].label} · {t.products[bp.tier].name} · {t.home.durationBoth}
           </p>
           <h1 className="t-title mt-3 text-balance">{bp.title[locale]}</h1>
           <p className="t-caption mt-2.5 text-[var(--color-label-3)]">

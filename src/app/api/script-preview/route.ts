@@ -1,3 +1,4 @@
+import { isSignedIn } from "@/lib/db/session";
 import { NextResponse } from "next/server";
 import { hasAccess } from "@/lib/access";
 import { z } from "zod";
@@ -37,6 +38,10 @@ const Body = z.object({
  * crea después con su id, nunca con un guion que mande el cliente.
  */
 export async function POST(request: Request) {
+  if (!(await isSignedIn())) {
+    const { t } = await getDictionary();
+    return NextResponse.json({ error: t.errors.signInRequired }, { status: 401 });
+  }
   if (!(await hasAccess())) {
     const { t } = await getDictionary();
     return NextResponse.json({ error: t.errors.betaOnly }, { status: 403 });

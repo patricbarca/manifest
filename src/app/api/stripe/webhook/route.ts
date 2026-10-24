@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { runPipeline } from "@/lib/pipeline";
+import { enqueue } from "@/lib/queue";
 import { verifyWebhook } from "@/lib/stripe";
 
 export const runtime = "nodejs";
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
         return { ...p, status: "queued", paidCents: session.amount_total ?? p.paidCents, stripeSessionId: session.id };
       });
       if (start) {
-        void runPipeline(id).catch((err) => console.error("[pipeline]", id, err));
+        enqueue(id);
       }
     }
   }

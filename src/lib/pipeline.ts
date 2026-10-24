@@ -8,6 +8,7 @@ import { localPathForMediaUrl } from "./paths";
 import { rm } from "node:fs/promises";
 import { dropIntermediates, sweepStorage } from "./cleanup";
 import { nextQuoteId } from "./quotes";
+import { sendVideoReady } from "./email";
 import type { Person, PipelineStep, Project, Scene, StepId } from "./types";
 
 /**
@@ -313,6 +314,16 @@ export async function runPipeline(projectId: string): Promise<void> {
       status: "ready",
       costCents: +spentCents.toFixed(2),
     }));
+    // Aviso por email (si hay cuenta con email y Resend configurado).
+    const owner = await db.getUser(start.ownerId);
+    if (owner?.email) {
+      void sendVideoReady({
+        to: owner.email,
+        locale: start.locale,
+        title: script.title || start.title,
+        url: `${process.env.SITE_URL ?? ""}/video/${projectId}`,
+      });
+    }
     // Las fotos de otras personas solo hacían falta para las escenas.
     await deletePeoplePhotos(people);
     // Con el vídeo montado, los clips sueltos sobran y ocupan mucho.

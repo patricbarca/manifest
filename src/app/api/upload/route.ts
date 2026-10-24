@@ -1,3 +1,4 @@
+import { isSignedIn } from "@/lib/db/session";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
@@ -19,6 +20,10 @@ const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
  * borrado automático, porque es un dato biométrico (ver docs/business-model.md).
  */
 export async function POST(request: Request) {
+  if (!(await isSignedIn())) {
+    const { t } = await getDictionary();
+    return NextResponse.json({ error: t.errors.signInRequired }, { status: 401 });
+  }
   // Cualquier subida es buen momento para borrar fotos caducadas (como mucho una vez por hora).
   void sweepStorage();
   const user = await currentUser();

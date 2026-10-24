@@ -77,7 +77,10 @@ export function CreateWizard({ initialArea, template, freeLeft, t, locale }: Pro
   // El área ya no se pregunta: llega de la plantilla o de la portada, o la
   // deduce el servidor a partir de los deseos.
   const area: LifeArea | undefined = template?.area ?? initialArea;
-  const [desires, setDesires] = useState<string[]>([""]);
+  // Con plantilla, sus frases son el punto de partida: se pueden editar.
+  const [desires, setDesires] = useState<string[]>(
+    template ? template.affirmations[locale].slice(0, MAX_DESIRES) : [""],
+  );
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [palette, setPalette] = useState<Palette>("dusk");
   const [videoLocale, setVideoLocale] = useState<VideoLocale>(locale as VideoLocale);

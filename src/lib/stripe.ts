@@ -16,7 +16,7 @@ export function stripeEnabled(): boolean {
 }
 
 export function siteOrigin(request: Request): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
+  return process.env.SITE_URL ?? new URL(request.url).origin;
 }
 
 export async function createCheckout(opts: {
