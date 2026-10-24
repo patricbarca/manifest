@@ -50,7 +50,6 @@ export default async function HomePage() {
               <Icon name="arrow-right" size={15} />
             </Link>
           </div>
-          <p className="t-caption mt-4 text-[var(--color-label-3)]">{t.home.freeNote}</p>
         </div>
 
         {/* El reproductor, centrado y grande: es el producto. */}
