@@ -36,7 +36,6 @@ export const en = {
     lede: "Upload a selfie, write your desires and get a video of about 2 minutes where you see yourself living them. A voice guides you: you breathe, watch each scene with you in it, and repeat your affirmations out loud.",
     ctaPrimary: "Create my video",
     ctaSecondary: "See the market",
-    freeNote: "Your first video is free. No card.",
     previewLine: "I run my own studio.",
     previewCue: "your turn — say it out loud",
     steps: [
@@ -60,7 +59,7 @@ export const en = {
     productsLede:
       "Still images with camera movement, animated scenes, or animated with our premium model in high definition. All three work for visualizing.",
     freeAfterProducts:
-      "Your first video is free. After that you only pay when you create — no subscription.",
+      "You only pay when you create — no subscription.",
     areasTitle: "What do you want to see?",
     marketTitle: "From the market",
     marketLede:
@@ -89,11 +88,11 @@ export const en = {
   },
   pricing: {
     title: "Three prices, that's it",
-    lede: "You pay per video. No subscription, no credits, no bundles. The first one is free so you can see if it resonates.",
+    lede: "You pay per video. No subscription, no credits, no bundles.",
     sameDuration: "per video · about 2 minutes",
     create: "Create",
     freeNote:
-      "Your first video is free. After that you only pay when you create.",
+      "You only pay when you create. Before paying you review and fix the scenes.",
     marketTitle: "And if you use someone's template",
     marketLede:
       "You pay exactly the same. There's no separate template fee: {share}% of the video price goes to whoever created it.",

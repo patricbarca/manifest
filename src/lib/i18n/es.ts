@@ -35,7 +35,6 @@ export const es: Dictionary = {
     lede: "Sube un selfie, escribe tus deseos y recibe un vídeo de unos 2 minutos donde te ves viviéndolos. Una voz te guía: respiras, ves cada escena contigo dentro y repites tus afirmaciones en voz alta.",
     ctaPrimary: "Crear mi vídeo",
     ctaSecondary: "Ver el market",
-    freeNote: "Tu primer vídeo es gratis. Sin tarjeta.",
     previewLine: "Dirijo mi propio estudio.",
     previewCue: "ahora tú — dilo en voz alta",
     steps: [
@@ -59,7 +58,7 @@ export const es: Dictionary = {
     productsLede:
       "Imágenes fijas con movimiento de cámara, escenas animadas, o animadas con nuestro modelo premium en alta definición. Las tres funcionan para visualizar.",
     freeAfterProducts:
-      "Tu primer vídeo es gratis. Después pagas solo cuando creas — sin suscripción.",
+      "Pagas solo cuando creas — sin suscripción.",
     areasTitle: "¿Qué quieres ver?",
     marketTitle: "Del market",
     marketLede:
@@ -88,11 +87,11 @@ export const es: Dictionary = {
   },
   pricing: {
     title: "Tres precios, y ya",
-    lede: "Pagas por vídeo. Sin suscripción, sin créditos, sin paquetes. El primero es gratis para que veas si te resuena.",
+    lede: "Pagas por vídeo. Sin suscripción, sin créditos, sin paquetes.",
     sameDuration: "por vídeo · unos 2 minutos",
     create: "Crear",
     freeNote:
-      "Tu primer vídeo es gratis. A partir de ahí pagas solo cuando creas.",
+      "Pagas solo cuando creas. Antes de pagar revisas y corriges las escenas.",
     marketTitle: "Y si usas la plantilla de alguien",
     marketLede:
       "Pagas exactamente lo mismo. No hay tarifa aparte por la plantilla: del precio del vídeo, un {share} % va a quien la creó.",

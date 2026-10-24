@@ -39,8 +39,8 @@ Con `VOICE_PROVIDER=fal` y Python en el contenedor, el vídeo final lo monta
 
 ## Qué hay dentro
 
-- **Dos productos y dos precios.** *Imágenes* (9 $) y *Animado* (29 $). Sin
-  suscripción, sin créditos. El primero es gratis. El porqué de cada número
+- **Tres productos y tres precios.** *Imágenes* (9 $), *Animado* (29 $) y
+  *Elevado* (49 $). Sin créditos ni vídeo gratis. El porqué de cada número
   está en [`docs/business-model.md`](docs/business-model.md).
 - **Un reproductor que es el producto.** Cada afirmación aparece grande, la voz
   la dice, y después se calla para que la repitas. Ese hueco es la mitad del
