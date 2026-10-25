@@ -279,4 +279,4 @@ export function postsFor(locale: Locale): Post[] {
   return POSTS.filter((p) => p.locale === locale).sort((a, b) => b.date.localeCompare(a.date));
 }
 
-export const SITE_URL = process.env.SITE_URL ?? "https://manifest-production-7582.up.railway.app";
+export const SITE_URL = process.env.SITE_URL ?? "https://manifestlife.ai";
