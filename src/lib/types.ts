@@ -101,6 +101,16 @@ export interface Affirmation {
   endSec: number;
 }
 
+/** Una escena animada en pequeño, para el perfil. */
+export interface Highlight {
+  videoUrl: string;
+  posterUrl: string;
+  /** La persona la ocultó de su perfil. */
+  hidden?: boolean;
+  /** Nombre que le puso la persona (se ve bajo el círculo). */
+  label?: string;
+}
+
 export interface Scene {
   id: string;
   /** Prompt enviado al modelo de imagen, ya con el estilo y la identidad. */
@@ -244,7 +254,7 @@ export interface Project {
   voiceMode: "file" | "browser";
   musicKey?: string;
   /** Escenas animadas en pequeño (sin voz), para el perfil. Nunca el vídeo entero. */
-  highlights?: { videoUrl: string; posterUrl: string }[];
+  highlights?: Highlight[];
   /** La persona eligió mostrar los highlights de este vídeo en su perfil. */
   showOnProfile?: boolean;
   /** MP4 final, si el ensamblado corrio. Si no, el player web es la entrega. */

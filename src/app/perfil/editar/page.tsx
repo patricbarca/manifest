@@ -2,7 +2,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { ProfileSettings } from "@/components/ProfileSettings";
-import { HighlightToggle } from "@/components/HighlightToggle";
+import { ShowcaseEditor } from "@/components/ShowcaseEditor";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { fill } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n/locale";
@@ -37,24 +37,25 @@ export default async function EditarPerfilPage() {
         {ready.length === 0 ? (
           <p className="t-sub text-[var(--color-label-2)]">{t.aura.noManifestations}</p>
         ) : (
-          <ul className="divide-y divide-[var(--color-hairline)]">
-            {ready.map((p) => (
-              <li key={p.id} className="flex items-center gap-3 py-3">
-                {p.highlights?.[0] ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.highlights[0].posterUrl} alt="" className="h-14 w-10 shrink-0 rounded object-cover" />
-                ) : (
-                  <span className="h-14 w-10 shrink-0 rounded bg-white/10" />
-                )}
-                <span className="t-sub min-w-0 flex-1 truncate">{p.script?.title || p.title}</span>
-                {p.highlights?.length ? (
-                  <HighlightToggle projectId={p.id} initial={!!p.showOnProfile} label={t.aura.showOnProfile} />
-                ) : (
+          <div className="divide-y divide-[var(--color-hairline)]">
+            {ready.map((p) =>
+              p.highlights?.length ? (
+                <ShowcaseEditor
+                  key={p.id}
+                  projectId={p.id}
+                  title={p.script?.title || p.title}
+                  initialShow={!!p.showOnProfile}
+                  initialItems={p.highlights}
+                  t={{ showOnProfile: t.aura.showOnProfile, hiddenScene: t.aura.hiddenScene, labelPlaceholder: t.aura.labelPlaceholder, tapToHide: t.aura.tapToHide }}
+                />
+              ) : (
+                <div key={p.id} className="flex items-center justify-between gap-3 py-4">
+                  <span className="t-sub min-w-0 truncate">{p.script?.title || p.title}</span>
                   <span className="t-caption text-[var(--color-label-3)]">{t.aura.noHighlights}</span>
-                )}
-              </li>
-            ))}
-          </ul>
+                </div>
+              ),
+            )}
+          </div>
         )}
       </section>
 

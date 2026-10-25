@@ -2,26 +2,33 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export type HighlightGroup = { id: string; title: string; items: { videoUrl: string; posterUrl: string }[] };
+export type HighlightItem = { videoUrl: string; posterUrl: string; label?: string; caption?: string };
+export type HighlightGroup = { id: string; title: string; items: HighlightItem[] };
 
 /**
- * Highlights como en Instagram: un círculo por vídeo. Al tocar se ven sus
- * escenas animadas a pantalla completa, sin sonido, una detrás de otra.
+ * Highlights como en Instagram: un círculo por escena (cada deseo animado).
+ * Al tocar se ven a pantalla completa, sin sonido, y siguen con las demás.
  */
 export function Highlights({ groups, closeLabel }: { groups: HighlightGroup[]; closeLabel: string }) {
   const [open, setOpen] = useState<number | null>(null);
+  // Todas las escenas visibles, en orden, como una sola secuencia de historias.
+  const all: HighlightGroup = {
+    id: "all",
+    title: "",
+    items: groups.flatMap((g) => g.items.map((it) => ({ ...it, caption: it.label, label: it.label || g.title }))),
+  };
   return (
     <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-1">
-      {groups.map((group, g) => (
-        <button key={group.id} type="button" onClick={() => setOpen(g)} className="interactive flex w-[76px] shrink-0 flex-col items-center gap-1.5">
+      {all.items.map((it, i) => (
+        <button key={it.posterUrl} type="button" onClick={() => setOpen(i)} className="interactive flex w-[76px] shrink-0 flex-col items-center gap-1.5">
           <span className="rounded-full bg-gradient-to-tr from-amber-300 via-rose-400 to-fuchsia-500 p-[2px]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={group.items[0].posterUrl} alt="" className="h-[68px] w-[68px] rounded-full border-2 border-[var(--color-bg,#000)] object-cover" />
+            <img src={it.posterUrl} alt="" className="h-[68px] w-[68px] rounded-full border-2 border-[var(--color-bg,#000)] object-cover" />
           </span>
-          <span className="t-caption w-full truncate text-center text-[var(--color-label-2)]">{group.title}</span>
+          <span className="t-caption w-full truncate text-center text-[var(--color-label-2)]">{it.caption ?? "\u00a0"}</span>
         </button>
       ))}
-      {open !== null && <Viewer group={groups[open]} start={0} onClose={() => setOpen(null)} closeLabel={closeLabel} />}
+      {open !== null && <Viewer group={all} start={open} onClose={() => setOpen(null)} closeLabel={closeLabel} />}
     </div>
   );
 }
@@ -66,7 +73,7 @@ export function Viewer({ group, start, onClose, closeLabel }: { group: Highlight
             </span>
           ))}
         </div>
-        <p className="t-caption absolute left-3 top-6 max-w-[75%] truncate text-white/90">{group.title}</p>
+        <p className="t-caption absolute left-3 top-6 max-w-[75%] truncate text-white/90">{item.label || group.title}</p>
         <button type="button" onClick={prev} className="absolute inset-y-0 left-0 w-1/3" aria-label="←" />
         <button type="button" onClick={next} className="absolute inset-y-0 right-0 w-2/3" aria-label="→" />
         <button type="button" onClick={onClose} className="absolute right-3 top-5 rounded-full bg-black/40 px-3 py-1 text-[13px] text-white">

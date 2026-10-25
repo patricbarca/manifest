@@ -64,7 +64,7 @@ export async function GET(
       parts.length === 2 &&
       isHighlightFile(parts[1]) &&
       project.showOnProfile === true &&
-      !!project.highlights?.some((h) => h.videoUrl.endsWith(`/${parts[1]}`) || h.posterUrl.endsWith(`/${parts[1]}`)) &&
+      !!project.highlights?.some((h) => !h.hidden && (h.videoUrl.endsWith(`/${parts[1]}`) || h.posterUrl.endsWith(`/${parts[1]}`))) &&
       (await social.getProfile(project.ownerId).then((pr) => (pr ? canSee(pr, user.id) : false)));
     if (!project || (project.ownerId !== user.id && !shared)) {
       return NextResponse.json({ error: "No es tuyo" }, { status: 403 });
