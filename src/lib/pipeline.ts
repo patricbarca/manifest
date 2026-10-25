@@ -316,6 +316,7 @@ export async function runPipeline(projectId: string): Promise<void> {
     await db.patchProject(projectId, (p) => ({
       ...p,
       exportUrl: assembled.exportUrl,
+      videoDurationSec: (assembled as { durationSec?: number }).durationSec || p.videoDurationSec,
       status: "ready",
       costCents: +spentCents.toFixed(2),
     }));

@@ -22,12 +22,12 @@ export async function supabaseServer() {
 }
 
 /** El usuario con sesión iniciada, o null. */
-export async function authUser(): Promise<{ id: string; email: string; name?: string } | null> {
+export async function authUser(): Promise<{ id: string; email: string; name?: string; avatarUrl?: string } | null> {
   const sb = await supabaseServer();
   if (!sb) return null;
   const { data } = await sb.auth.getUser();
   const u = data.user;
   if (!u) return null;
-  const meta = (u.user_metadata ?? {}) as { full_name?: string; name?: string };
-  return { id: u.id, email: u.email ?? "", name: meta.full_name ?? meta.name };
+  const meta = (u.user_metadata ?? {}) as { full_name?: string; name?: string; avatar_url?: string; picture?: string };
+  return { id: u.id, email: u.email ?? "", name: meta.full_name ?? meta.name, avatarUrl: meta.avatar_url ?? meta.picture };
 }

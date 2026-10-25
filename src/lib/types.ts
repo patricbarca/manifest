@@ -220,6 +220,8 @@ export interface Project {
   quoteId?: string;
   /** Veces que se relanzó tras un reinicio del servidor. */
   attempts?: number;
+  /** Duración real del vídeo final, en segundos. */
+  videoDurationSec?: number;
   palette?: Palette;
   status: ProjectStatus;
   steps: PipelineStep[];
