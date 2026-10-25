@@ -8,6 +8,7 @@ export const en = {
     market: "Market",
     pricing: "Pricing",
     library: "Library",
+    blog: "Blog",
     start: "Get started",
   },
   footer: {
@@ -114,6 +115,18 @@ export const en = {
     memberPrice: "Member price",
     signInFirst: "Sign in to become a member.",
     processing: "We're confirming your payment with Stripe. Reload the page in a few seconds.",
+  },
+  blog: {
+    title: "Blog",
+    lede: "Practical guides to visualizing your goals, writing affirmations and turning it into a daily habit.",
+    minRead: "{n} min read",
+    otherLanguage: "En español",
+    ctaTitle: "See yourself living it",
+    ctaBody: "Upload a selfie, write your desires and get a video of about 2 minutes with your face, your script and a voice that guides you.",
+    ctaButton: "Create my video",
+    relatedTemplate: "Related template",
+    back: "Blog",
+    readIn: "Leer en español",
   },
   pricing: {
     title: "Three prices, that's it",

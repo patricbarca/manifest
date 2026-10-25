@@ -7,6 +7,7 @@ export const es: Dictionary = {
     market: "Market",
     pricing: "Precios",
     library: "Biblioteca",
+    blog: "Blog",
     start: "Empezar",
   },
   footer: {
@@ -113,6 +114,18 @@ export const es: Dictionary = {
     memberPrice: "Precio de socio",
     signInFirst: "Entra en tu cuenta para hacerte socio.",
     processing: "Estamos confirmando tu pago con Stripe. Recarga la página en unos segundos.",
+  },
+  blog: {
+    title: "Blog",
+    lede: "Guías prácticas para visualizar tus metas, escribir afirmaciones y convertirlo en un hábito diario.",
+    minRead: "{n} min de lectura",
+    otherLanguage: "In English",
+    ctaTitle: "Mírate viviéndolo",
+    ctaBody: "Sube un selfie, escribe tus deseos y recibe un vídeo de unos 2 minutos con tu cara, tu guion y una voz que te guía.",
+    ctaButton: "Crear mi vídeo",
+    relatedTemplate: "Plantilla relacionada",
+    back: "Blog",
+    readIn: "Leer en inglés",
   },
   pricing: {
     title: "Tres precios, y ya",
