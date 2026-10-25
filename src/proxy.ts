@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { requestOrigin } from "@/lib/request-origin";
 
 /**
  * Refresca la sesión de Supabase en cada visita, para que los Server
@@ -21,6 +22,15 @@ export async function proxy(request: NextRequest) {
   ) {
     const target = new URL(request.nextUrl.pathname + request.nextUrl.search, `https://${canonical}`);
     return NextResponse.redirect(target, 301);
+  }
+
+  // Si Supabase no acepta la URL de vuelta, devuelve el código a la Site URL
+  // (la portada). Lo pasamos al retorno del login para no perder la sesión.
+  const code = request.nextUrl.searchParams.get("code");
+  if (code && !path.startsWith("/auth/") && !path.startsWith("/api/")) {
+    const target = new URL("/auth/callback", requestOrigin(request));
+    target.searchParams.set("code", code);
+    return NextResponse.redirect(target, 307);
   }
 
   const url = process.env.SUPABASE_URL;
