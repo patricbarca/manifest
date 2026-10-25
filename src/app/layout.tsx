@@ -10,7 +10,7 @@ import { getDictionary } from "@/lib/i18n/server";
 
 /** Correo de contacto público: solo se muestra si está configurado. */
 const CONTACT = process.env.CONTACT_EMAIL;
-const SITE_URL = process.env.SITE_URL ?? "https://manifest-production-7582.up.railway.app";
+const SITE_URL = process.env.SITE_URL ?? "https://manifestlife.ai";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

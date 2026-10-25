@@ -13,11 +13,10 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
   if (!cfg) redirect(next);
   if (await authUser()) redirect(next);
   const { t } = await getDictionary();
-  const origin = process.env.SITE_URL ?? "";
   return (
     <>
       {error && <p className="t-caption mt-8 text-center text-red-300">{t.auth.error}</p>}
-      <SignIn url={cfg.url} anonKey={cfg.key} next={next} origin={origin} t={t.auth} />
+      <SignIn url={cfg.url} anonKey={cfg.key} next={next} t={t.auth} />
     </>
   );
 }

@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { supabaseServer } from "@/lib/supabase/server";
 import { linkAnonymousData } from "@/lib/db/session";
+import { requestOrigin } from "@/lib/request-origin";
 
 export const runtime = "nodejs";
 
 /** Vuelta del enlace del email o de Google: abre la sesión y vuelve a donde estaba. */
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const origin = process.env.SITE_URL ?? url.origin;
+  const origin = requestOrigin(request);
   const next = safeNext(url.searchParams.get("next"));
   const sb = await supabaseServer();
   if (!sb) return NextResponse.redirect(`${origin}/`);
