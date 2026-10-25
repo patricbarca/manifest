@@ -5,38 +5,28 @@ import { useEffect, useRef, useState } from "react";
 export type HighlightGroup = { id: string; title: string; items: { videoUrl: string; posterUrl: string }[] };
 
 /**
- * Highlights como en Instagram: un círculo por escena animada. Al tocar se
- * ven en pantalla completa, sin sonido, una detrás de otra.
+ * Highlights como en Instagram: un círculo por vídeo. Al tocar se ven sus
+ * escenas animadas a pantalla completa, sin sonido, una detrás de otra.
  */
 export function Highlights({ groups, closeLabel }: { groups: HighlightGroup[]; closeLabel: string }) {
-  const [open, setOpen] = useState<{ g: number; i: number } | null>(null);
+  const [open, setOpen] = useState<number | null>(null);
   return (
-    <div className="space-y-5">
+    <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-1">
       {groups.map((group, g) => (
-        <div key={group.id}>
-          <p className="t-caption mb-2 truncate text-[var(--color-label-2)]">{group.title}</p>
-          <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
-            {group.items.map((h, i) => (
-              <button
-                key={h.posterUrl}
-                type="button"
-                onClick={() => setOpen({ g, i })}
-                className="interactive shrink-0 rounded-full bg-gradient-to-tr from-amber-300 via-rose-400 to-fuchsia-500 p-[2px]"
-                aria-label={`${group.title} ${i + 1}`}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={h.posterUrl} alt="" className="h-16 w-16 rounded-full border-2 border-[var(--color-bg,#000)] object-cover" />
-              </button>
-            ))}
-          </div>
-        </div>
+        <button key={group.id} type="button" onClick={() => setOpen(g)} className="interactive flex w-[76px] shrink-0 flex-col items-center gap-1.5">
+          <span className="rounded-full bg-gradient-to-tr from-amber-300 via-rose-400 to-fuchsia-500 p-[2px]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={group.items[0].posterUrl} alt="" className="h-[68px] w-[68px] rounded-full border-2 border-[var(--color-bg,#000)] object-cover" />
+          </span>
+          <span className="t-caption w-full truncate text-center text-[var(--color-label-2)]">{group.title}</span>
+        </button>
       ))}
-      {open && <Viewer group={groups[open.g]} start={open.i} onClose={() => setOpen(null)} closeLabel={closeLabel} />}
+      {open !== null && <Viewer group={groups[open]} start={0} onClose={() => setOpen(null)} closeLabel={closeLabel} />}
     </div>
   );
 }
 
-function Viewer({ group, start, onClose, closeLabel }: { group: HighlightGroup; start: number; onClose: () => void; closeLabel: string }) {
+export function Viewer({ group, start, onClose, closeLabel }: { group: HighlightGroup; start: number; onClose: () => void; closeLabel: string }) {
   const [i, setI] = useState(start);
   const [progress, setProgress] = useState(0);
   const ref = useRef<HTMLVideoElement>(null);
