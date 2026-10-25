@@ -10,7 +10,7 @@ import { getDictionary } from "@/lib/i18n/server";
 
 /** Correo de contacto público: solo se muestra si está configurado. */
 const CONTACT = process.env.CONTACT_EMAIL;
-const SITE_URL = process.env.SITE_URL ?? "https://manifest-production-7582.up.railway.app";
+const SITE_URL = process.env.SITE_URL ?? "https://manifestlife.ai";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -60,9 +60,11 @@ export default async function RootLayout({
 
             <div className="flex items-center gap-2.5">
               <LocaleToggle current={locale} />
-              {authEnabled() &&
-                (auth ? (
-                  <>
+              {/* Sin sesión no hay "Entrar" aparte: "Empezar" ya pide entrar
+                  (/crear redirige a /entrar y vuelve), y dos botones al mismo
+                  sitio confunden. */}
+              {authEnabled() && auth && (
+                <>
                   <Link href="/perfil" className="t-sub text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">
                     {t.aura.nav}
                   </Link>
@@ -71,12 +73,8 @@ export default async function RootLayout({
                       {t.auth.signOut}
                     </button>
                   </form>
-                  </>
-                ) : (
-                  <Link href="/entrar" className="t-sub text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">
-                    {t.auth.signIn}
-                  </Link>
-                ))}
+                </>
+              )}
               <Link
                 href="/crear"
                 className="interactive rounded-full bg-white px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-black hover:bg-white/90"
