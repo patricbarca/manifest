@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { isAnimated, type Project } from "@/lib/types";
 import { VisualizationPlayer } from "./VisualizationPlayer";
+import { AuraVideo } from "./AuraVideo";
 import { Icon } from "./Icon";
 import { formatUsd } from "@/lib/pricing";
 import { fill, type Dictionary } from "@/lib/i18n";
@@ -97,13 +98,7 @@ export function VideoStage({
         {/* Con el montaje nuevo el MP4 es el producto: voz, música y frases ya
             van dentro. El reproductor web queda para los vídeos antiguos. */}
         {project.voiceLines && project.exportUrl ? (
-          <video
-            src={project.exportUrl}
-            controls
-            playsInline
-            onPlay={onPlay}
-            className="aspect-[9/16] w-full rounded-[var(--radius-lg)] bg-black"
-          />
+          <AuraVideo projectId={project.id} src={project.exportUrl} labels={t.aura.toast} />
         ) : (
           <VisualizationPlayer project={project} t={t} onPlay={onPlay} />
         )}

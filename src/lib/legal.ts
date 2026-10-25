@@ -6,7 +6,7 @@ import type { Locale } from "./i18n/locale";
  * Borrador: debe revisarlo un abogado antes de cobrar.
  */
 
-export const LEGAL_UPDATED = "2026-10-23";
+export const LEGAL_UPDATED = "2026-10-25";
 
 
 const UPLOAD_DAYS = Number(process.env.UPLOAD_TTL_DAYS ?? 30);
@@ -42,6 +42,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
               "Lo que generamos para ti: guion, imágenes, clips, voz y el vídeo final.",
               "Un identificador anónimo en una cookie, para saber qué vídeos son tuyos. No usamos cookies de publicidad ni de analítica de terceros.",
               "Si pagas, los datos de pago los procesa Stripe; nosotros no vemos ni guardamos el número de tu tarjeta.",
+              "Si tienes cuenta: tu perfil (nombre visible, nombre de usuario), los días en que ves tus vídeos (para calcular tu aura, nivel y racha) y las personas de tu círculo. Tu perfil es privado salvo que elijas mostrarlo a tu círculo o a todo el mundo; aun así, los demás solo ven tu nombre, aura, nivel, racha y logros, nunca tus vídeos ni tus deseos.",
             ] },
             { h: "Para qué", p: [
               "Solo para crear tu vídeo y mostrártelo. Tus fotos se usan como referencia para que las escenas se parezcan a ti (y a las personas que añadas).",
@@ -69,6 +70,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
               "What we generate for you: script, images, clips, voice and the final video.",
               "An anonymous identifier in a cookie, so we know which videos are yours. We don't use third-party advertising or analytics cookies.",
               "If you pay, payment details are processed by Stripe; we never see or store your card number.",
+              "If you have an account: your profile (display name, username), the days you watch your videos (to calculate your aura, level and streak) and the people in your circle. Your profile is private unless you choose to show it to your circle or to everyone; even then, others only see your name, aura, level, streak and achievements, never your videos or your desires.",
             ] },
             { h: "What for", p: [
               "Only to create your video and show it to you. Your photos are used as a reference so the scenes look like you (and the people you add).",
