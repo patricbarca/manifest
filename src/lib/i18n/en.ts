@@ -10,6 +10,8 @@ export const en = {
     library: "Library",
     blog: "Blog",
     start: "Get started",
+    newVisualization: "New visualization",
+    newShort: "Create",
   },
   footer: {
     disclaimer:
@@ -511,6 +513,9 @@ export const en = {
     pendingRequests: "{n} request(s) to join your circle",
     showcaseTitle: "Videos on your profile",
     viewProfile: "View my profile",
+    account: "Account",
+    language: "Site language",
+    signedInAs: "Signed in as {email}",
     onlyYou: "Only you",
     scenes: "scenes",
     noPosts: "No posts yet.",

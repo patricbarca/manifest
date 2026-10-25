@@ -3,6 +3,9 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { HighlightToggle } from "@/components/HighlightToggle";
+import { LocaleToggle } from "@/components/LocaleToggle";
+import { fill } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n/locale";
 import { db } from "@/lib/db/store";
 import { me } from "@/lib/social/me";
 import { getDictionary } from "@/lib/i18n/server";
@@ -13,7 +16,7 @@ export const dynamic = "force-dynamic";
 export default async function EditarPerfilPage() {
   const who = await me();
   if (!who) redirect("/entrar?next=/perfil/editar");
-  const { t } = await getDictionary();
+  const { t, locale } = await getDictionary();
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
   const ready = (await db.listProjects(who.user.id)).filter((p) => p.status === "ready");
@@ -53,6 +56,22 @@ export default async function EditarPerfilPage() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="card rounded-[var(--radius-lg)] p-7">
+        <h2 className="t-headline">{t.aura.account}</h2>
+        <div className="mt-4 flex items-center justify-between gap-4">
+          <span className="t-sub text-[var(--color-label-2)]">{t.aura.language}</span>
+          <LocaleToggle current={locale as Locale} />
+        </div>
+        <div className="mt-5 flex items-center justify-between gap-4 border-t border-[var(--color-hairline)] pt-5">
+          <span className="t-caption min-w-0 truncate text-[var(--color-label-3)]">{who.user.email ? fill(t.aura.signedInAs, { email: who.user.email }) : ""}</span>
+          <form action="/auth/salir" method="post">
+            <button type="submit" className="t-sub shrink-0 rounded-full border border-[var(--color-hairline-strong)] px-4 py-1.5 hover:bg-white/5">
+              {t.auth.signOut}
+            </button>
+          </form>
+        </div>
       </section>
     </div>
   );

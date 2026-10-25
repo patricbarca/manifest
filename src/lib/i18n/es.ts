@@ -9,6 +9,8 @@ export const es: Dictionary = {
     library: "Biblioteca",
     blog: "Blog",
     start: "Empezar",
+    newVisualization: "Nueva visualización",
+    newShort: "Crear",
   },
   footer: {
     disclaimer:
@@ -510,6 +512,9 @@ export const es: Dictionary = {
     pendingRequests: "{n} solicitud(es) para unirse a tu círculo",
     showcaseTitle: "Vídeos en tu perfil",
     viewProfile: "Ver mi perfil",
+    account: "Cuenta",
+    language: "Idioma de la web",
+    signedInAs: "Has entrado como {email}",
     onlyYou: "Solo tú",
     scenes: "escenas",
     noPosts: "Aún no hay publicaciones.",
