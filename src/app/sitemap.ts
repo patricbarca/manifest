@@ -2,6 +2,9 @@ import type { MetadataRoute } from "next";
 import { POSTS, SITE_URL } from "@/lib/blog";
 import { TEMPLATES } from "@/lib/templates";
 
+// Se genera en cada petición: SITE_URL llega en tiempo de ejecución, no al compilar.
+export const dynamic = "force-dynamic";
+
 /** Mapa del sitio: solo páginas públicas e indexables. */
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
