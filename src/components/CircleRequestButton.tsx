@@ -2,16 +2,33 @@
 
 import { useState } from "react";
 
-export function CircleRequestButton({ handle, initial, t }: { handle: string; initial: "none" | "pending"; t: { requestJoin: string; requested: string } }) {
-  const [state, setState] = useState(initial);
+type State = "none" | "pending" | "member";
+
+export function CircleRequestButton({
+  handle,
+  initial,
+  t,
+  className,
+}: {
+  handle: string;
+  initial: State;
+  t: { requestJoin: string; requested: string; inCircle: string };
+  className?: string;
+}) {
+  const [state, setState] = useState<State>(initial);
+  const [busy, setBusy] = useState(false);
   async function request() {
+    setBusy(true);
     const res = await fetch("/api/circle", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "request", handle }) });
+    setBusy(false);
     if (res.ok) setState("pending");
   }
-  return state === "pending" ? (
-    <p className="t-sub text-[var(--color-label-2)]">{t.requested}</p>
-  ) : (
-    <button type="button" onClick={request} className="interactive rounded-full bg-white px-6 py-2.5 text-[15px] font-medium text-black">
+  const cls = className ?? "interactive rounded-full bg-white px-6 py-2.5 text-[15px] font-medium text-black";
+  if (state !== "none") {
+    return <span className={`${cls} cursor-default opacity-70`}>{state === "member" ? `✓ ${t.inCircle}` : t.requested}</span>;
+  }
+  return (
+    <button type="button" onClick={request} disabled={busy} className={cls}>
       {t.requestJoin}
     </button>
   );
