@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Viewer, type HighlightGroup } from "./Highlights";
 
-export type FeedPost = HighlightGroup & { shared: boolean };
+export type FeedPost = HighlightGroup & { shared: boolean; createdAt?: number };
 
 /**
  * Feed del perfil, en rejilla como Instagram. Quien visita solo ve las escenas

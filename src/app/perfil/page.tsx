@@ -133,7 +133,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
                     )}
                     <span className="min-w-0 flex-1">
                       <span className="t-sub block truncate">{p.script?.title || p.title}</span>
-                      <span className="t-caption text-[var(--color-label-3)]">{fill(t.aura.viewedDays, { n: stats.daysByProject[p.id] ?? 0 })}</span>
+                      <span className="t-caption text-[var(--color-label-3)]">{(stats.daysByProject[p.id] ?? 0) === 1 ? t.aura.viewedOneDay : fill(t.aura.viewedDays, { n: stats.daysByProject[p.id] ?? 0 })}</span>
                     </span>
                     <span className={`t-caption shrink-0 ${stats.viewedToday.includes(p.id) ? "text-emerald-300" : "text-[var(--color-label-3)]"}`}>
                       {stats.viewedToday.includes(p.id) ? t.aura.viewedToday : t.aura.notToday}
