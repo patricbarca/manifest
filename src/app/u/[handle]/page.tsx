@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AuraSummary } from "@/components/AuraSummary";
+import { ProfileHeader } from "@/components/ProfileHeader";
 import { CircleRequestButton } from "@/components/CircleRequestButton";
 import { Highlights } from "@/components/Highlights";
 import { ProfileFeed } from "@/components/ProfileFeed";
@@ -13,7 +13,10 @@ import type { Locale } from "@/lib/i18n/locale";
 
 export const dynamic = "force-dynamic";
 
-/** Perfil de otra persona: datos del perfil, aura y highlights, si su visibilidad lo permite. */
+/**
+ * Perfil público de alguien. Los visitantes ven sus datos, aura y solo los
+ * highlights de los vídeos que activó. Si eres tú, ves esa misma vista previa.
+ */
 export default async function UserPage({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;
   const [{ t, locale }, profile, who] = await Promise.all([getDictionary(), social.getProfileByHandle(handle), me()]);
@@ -21,45 +24,72 @@ export default async function UserPage({ params }: { params: Promise<{ handle: s
     return <p className="t-body mx-auto max-w-md px-6 py-28 text-center text-[var(--color-label-2)]">{t.aura.notFound}</p>;
   }
   const viewerId = who?.user.id;
-  if (await canSee(profile, viewerId)) {
-    const [views, projects] = await Promise.all([social.listViews(profile.userId), db.listProjects(profile.userId)]);
-    const stats = statsFrom(views, localDay("UTC"));
-    // Visitantes: solo highlights (escenas animadas sin sonido) de los vídeos que la persona eligió mostrar.
-    // Dueño: todos sus vídeos, y al tocar abre el vídeo completo.
-    const owner = viewerId === profile.userId;
-    const posts = feedPosts(projects, owner);
-    const groups = posts.filter((p) => p.shared);
+  const owner = viewerId === profile.userId;
+  const link = viewerId && !owner ? await social.getLink(profile.userId, viewerId) : undefined;
+  const circleState = link?.status === "accepted" ? "member" : link ? "pending" : "none";
+  const btn = "interactive t-sub flex-1 rounded-[var(--radius-md)] bg-white/10 px-4 py-2 text-center font-medium hover:bg-white/15";
+  const requestBtn = viewerId ? (
+    <CircleRequestButton handle={profile.handle} initial={circleState} t={t.aura} className={btn} />
+  ) : (
+    <Link href={`/entrar?next=/u/${profile.handle}`} className={btn}>{t.aura.requestJoin}</Link>
+  );
+
+  if (!(await canSee(profile, viewerId))) {
     return (
-      <div className="mx-auto max-w-2xl space-y-6 px-6 py-14">
-        <AuraSummary profile={profile} stats={stats} t={t} locale={locale as Locale} />
-        <section className="card rounded-[var(--radius-lg)] p-5 sm:p-7">
-          {groups.length > 0 && (
-            <>
-              <h2 className="t-headline mb-4">{t.aura.highlights}</h2>
-              <Highlights groups={groups} closeLabel={t.aura.close} />
-            </>
-          )}
-          <h2 className={`t-headline mb-4 ${groups.length ? "mt-7" : ""}`}>{t.aura.posts}</h2>
-          {posts.length ? (
-            <ProfileFeed posts={posts} owner={owner} labels={{ close: t.aura.close, onlyYou: t.aura.onlyYou, scenes: t.aura.scenes }} />
-          ) : (
-            <p className="t-sub text-[var(--color-label-2)]">{t.aura.noPosts}</p>
-          )}
-        </section>
+      <div className="mx-auto max-w-md space-y-5 px-6 py-24 text-center">
+        <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-white/10 text-3xl">{(profile.displayName || "?")[0].toUpperCase()}</span>
+        <p className="t-headline">{profile.displayName} <span className="text-[var(--color-label-3)]">@{profile.handle}</span></p>
+        <p className="t-sub text-[var(--color-label-2)]">🔒 {profile.visibility === "circle" ? t.aura.circleOnly : t.aura.privateProfile}</p>
+        {profile.visibility === "circle" && <div className="flex justify-center">{requestBtn}</div>}
       </div>
     );
   }
-  const link = viewerId ? await social.getLink(profile.userId, viewerId) : undefined;
+
+  const [views, projects, circle] = await Promise.all([
+    social.listViews(profile.userId),
+    db.listProjects(profile.userId),
+    social.listCircle(profile.userId),
+  ]);
+  const stats = statsFrom(views, localDay("UTC"));
+  // Siempre la vista de visitante: solo highlights de los vídeos activados.
+  const posts = feedPosts(projects, false);
+
   return (
-    <div className="mx-auto max-w-md space-y-5 px-6 py-24 text-center">
-      <p className="t-headline">{profile.displayName} <span className="text-[var(--color-label-3)]">@{profile.handle}</span></p>
-      <p className="t-sub text-[var(--color-label-2)]">{profile.visibility === "circle" ? t.aura.circleOnly : t.aura.privateProfile}</p>
-      {profile.visibility === "circle" &&
-        (viewerId ? (
-          <CircleRequestButton handle={profile.handle} initial={link ? "pending" : "none"} t={t.aura} />
-        ) : (
-          <Link href={`/entrar?next=/u/${profile.handle}`} className="t-sub underline">{t.aura.signInToRequest}</Link>
-        ))}
+    <div className="mx-auto max-w-2xl space-y-6 px-4 py-10 sm:px-6">
+      {owner && (
+        <p className="t-caption rounded-[var(--radius-md)] bg-white/[0.04] px-4 py-3 text-[var(--color-label-2)]">
+          👀 {t.aura.previewBanner}
+        </p>
+      )}
+      <ProfileHeader
+        profile={profile}
+        stats={stats}
+        posts={posts.length}
+        circle={circle.filter((c) => c.status === "accepted").length}
+        t={t}
+        locale={locale as Locale}
+        actions={
+          owner ? (
+            <>
+              <Link href="/perfil" className={btn}>← {t.aura.nav}</Link>
+              <Link href="/perfil/editar" className={btn}>{t.aura.editProfile}</Link>
+            </>
+          ) : (
+            requestBtn
+          )
+        }
+      />
+      {posts.length > 0 && <Highlights groups={posts} closeLabel={t.aura.close} />}
+      <div>
+        <p className="t-sub border-b border-[var(--color-hairline)] pb-3 text-center font-medium">{t.aura.posts}</p>
+        <div className="mt-4">
+          {posts.length ? (
+            <ProfileFeed posts={posts} owner={false} labels={{ close: t.aura.close, onlyYou: t.aura.onlyYou, scenes: t.aura.scenes }} />
+          ) : (
+            <p className="t-sub py-8 text-center text-[var(--color-label-2)]">{t.aura.noPosts}</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

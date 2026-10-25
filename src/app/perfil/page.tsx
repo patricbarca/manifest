@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { AuraSummary } from "@/components/AuraSummary";
-import { ProfileSettings } from "@/components/ProfileSettings";
+import { ProfileHeader } from "@/components/ProfileHeader";
+import { ShareProfileButton } from "@/components/ShareProfileButton";
 import { CirclePanel } from "@/components/CirclePanel";
 import { Highlights } from "@/components/Highlights";
-import { HighlightToggle } from "@/components/HighlightToggle";
 import { ProfileFeed } from "@/components/ProfileFeed";
 import { feedPosts } from "@/lib/social/feed";
 import { db } from "@/lib/db/store";
@@ -18,9 +17,15 @@ import type { Locale } from "@/lib/i18n/locale";
 
 export const dynamic = "force-dynamic";
 
-export default async function PerfilPage() {
+type Tab = "posts" | "today" | "circle";
+const TABS: Tab[] = ["posts", "today", "circle"];
+
+/** Tu perfil: cabecera, highlights y pestañas (publicaciones, hoy, círculo). Los ajustes están en /perfil/editar. */
+export default async function PerfilPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const who = await me();
   if (!who) redirect("/entrar?next=/perfil");
+  const { tab: rawTab } = await searchParams;
+  const tab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : "posts";
   const { t, locale } = await getDictionary();
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
@@ -39,78 +44,119 @@ export default async function PerfilPage() {
     return { userId: id, handle: p?.handle ?? "", displayName: p?.displayName ?? "", avatarUrl: p?.avatarUrl };
   };
   const ready = projects.filter((p) => p.status === "ready");
-  // Lo mismo que verán los demás: solo los vídeos que elegiste mostrar.
-  const groups = ready
-    .filter((p) => p.showOnProfile && p.highlights?.length)
-    .map((p) => ({ id: p.id, title: p.script?.title || p.title, items: p.highlights! }));
   const posts = feedPosts(ready, true);
+  const groups = posts.filter((p) => p.shared);
+  const members = circle.filter((c) => c.status === "accepted");
+  const pending = circle.filter((c) => c.status === "pending");
+  const btn = "interactive t-sub flex-1 rounded-[var(--radius-md)] bg-white/10 px-4 py-2 text-center font-medium hover:bg-white/15";
+  const tabLabel: Record<Tab, string> = { posts: t.aura.posts, today: t.aura.tabToday, circle: t.aura.circleShort };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-6 py-14">
-      <h1 className="t-title">{t.aura.title}</h1>
-      <AuraSummary profile={who.profile} stats={stats} t={t} locale={locale as Locale} />
+    <div className="mx-auto max-w-2xl space-y-6 px-4 py-10 sm:px-6">
+      <ProfileHeader
+        profile={who.profile}
+        stats={stats}
+        posts={posts.length}
+        circle={members.length}
+        t={t}
+        locale={locale as Locale}
+        actions={
+          <>
+            <Link href="/perfil/editar" className={btn}>{t.aura.editProfile}</Link>
+            {who.profile.visibility === "private" ? (
+              <Link href={`/u/${who.profile.handle}`} className={btn}>{t.aura.viewAsVisitor}</Link>
+            ) : (
+              <ShareProfileButton url={`${origin}/u/${who.profile.handle}`} label={t.aura.shareProfile} copied={t.aura.copied} className={btn} />
+            )}
+          </>
+        }
+      />
 
-      <section className="card rounded-[var(--radius-lg)] p-7">
-        <h2 className="t-headline">{t.aura.manifestations}</h2>
-        {ready.length === 0 ? (
-          <div className="mt-3">
+      {who.profile.visibility === "private" && (
+        <p className="t-caption rounded-[var(--radius-md)] bg-white/[0.04] px-4 py-3 text-[var(--color-label-2)]">
+          🔒 {t.aura.privateNote}{" "}
+          <Link href="/perfil/editar" className="underline">{t.aura.change}</Link>
+        </p>
+      )}
+
+      {pending.length > 0 && tab !== "circle" && (
+        <Link href="/perfil?tab=circle" className="t-sub block rounded-[var(--radius-md)] border border-[var(--color-hairline-strong)] px-4 py-3">
+          👋 {fill(t.aura.pendingRequests, { n: pending.length })}
+        </Link>
+      )}
+
+      {groups.length > 0 && <Highlights groups={groups} closeLabel={t.aura.close} />}
+
+      <nav className="flex border-b border-[var(--color-hairline)]">
+        {TABS.map((k) => (
+          <Link
+            key={k}
+            href={k === "posts" ? "/perfil" : `/perfil?tab=${k}`}
+            scroll={false}
+            className={`t-sub flex-1 border-b-2 pb-3 text-center ${tab === k ? "border-white font-medium text-[var(--color-label-1)]" : "border-transparent text-[var(--color-label-3)]"}`}
+          >
+            {tabLabel[k]}
+            {k === "circle" && pending.length > 0 && <span className="ml-1.5 rounded-full bg-rose-400 px-1.5 text-[11px] text-black">{pending.length}</span>}
+          </Link>
+        ))}
+      </nav>
+
+      {tab === "posts" &&
+        (posts.length ? (
+          <div>
+            <ProfileFeed posts={posts} owner labels={{ close: t.aura.close, onlyYou: t.aura.onlyYou, scenes: t.aura.scenes }} />
+            <p className="t-caption mt-3 text-[var(--color-label-3)]">{t.aura.feedHintOwner}</p>
+          </div>
+        ) : (
+          <div className="py-8 text-center">
             <p className="t-sub text-[var(--color-label-2)]">{t.aura.noManifestations}</p>
             <Link href="/crear" className="interactive mt-4 inline-block rounded-full bg-white px-5 py-2 text-[14px] font-medium text-black">
               {t.aura.createFirst}
             </Link>
           </div>
-        ) : (
-          <ul className="mt-3 divide-y divide-[var(--color-hairline)]">
-            {ready.map((p) => (
-              <li key={p.id} className="py-3">
-                <Link href={`/video/${p.id}`} className="flex items-center justify-between gap-4">
-                  <span>
-                    <span className="t-sub block">{p.script?.title || p.title}</span>
-                    <span className="t-caption text-[var(--color-label-3)]">{fill(t.aura.viewedDays, { n: stats.daysByProject[p.id] ?? 0 })}</span>
-                  </span>
-                  <span className={`t-caption shrink-0 ${stats.viewedToday.includes(p.id) ? "text-emerald-300" : "text-[var(--color-label-3)]"}`}>
-                    {stats.viewedToday.includes(p.id) ? t.aura.viewedToday : t.aura.notToday}
-                  </span>
-                </Link>
-                <div className="mt-2">
-                  {p.highlights?.length ? (
-                    <HighlightToggle projectId={p.id} initial={!!p.showOnProfile} label={t.aura.showOnProfile} />
-                  ) : (
-                    <span className="t-caption text-[var(--color-label-3)]">{t.aura.noHighlights}</span>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-        <p className="t-caption mt-4 border-t border-[var(--color-hairline)] pt-4 text-[var(--color-label-3)]">
-          <strong className="text-[var(--color-label-2)]">{t.aura.howTitle}:</strong> {t.aura.how}
-        </p>
-      </section>
+        ))}
 
-      {posts.length > 0 && (
-        <section className="card rounded-[var(--radius-lg)] p-5 sm:p-7">
-          {groups.length > 0 && (
-            <>
-              <h2 className="t-headline">{t.aura.highlights}</h2>
-              <p className="t-caption mb-4 mt-1 text-[var(--color-label-3)]">{t.aura.highlightsHint}</p>
-              <Highlights groups={groups} closeLabel={t.aura.close} />
-            </>
+      {tab === "today" && (
+        <section>
+          {ready.length === 0 ? (
+            <p className="t-sub text-[var(--color-label-2)]">{t.aura.noManifestations}</p>
+          ) : (
+            <ul className="divide-y divide-[var(--color-hairline)]">
+              {ready.map((p) => (
+                <li key={p.id}>
+                  <Link href={`/video/${p.id}`} className="flex items-center gap-3 py-3">
+                    {p.highlights?.[0] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.highlights[0].posterUrl} alt="" className="h-14 w-10 shrink-0 rounded object-cover" />
+                    ) : (
+                      <span className="h-14 w-10 shrink-0 rounded bg-white/10" />
+                    )}
+                    <span className="min-w-0 flex-1">
+                      <span className="t-sub block truncate">{p.script?.title || p.title}</span>
+                      <span className="t-caption text-[var(--color-label-3)]">{fill(t.aura.viewedDays, { n: stats.daysByProject[p.id] ?? 0 })}</span>
+                    </span>
+                    <span className={`t-caption shrink-0 ${stats.viewedToday.includes(p.id) ? "text-emerald-300" : "text-[var(--color-label-3)]"}`}>
+                      {stats.viewedToday.includes(p.id) ? t.aura.viewedToday : t.aura.notToday}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           )}
-          <h2 className={`t-headline ${groups.length ? "mt-7" : ""}`}>{t.aura.posts}</h2>
-          <p className="t-caption mb-4 mt-1 text-[var(--color-label-3)]">{t.aura.feedHintOwner}</p>
-          <ProfileFeed posts={posts} owner labels={{ close: t.aura.close, onlyYou: t.aura.onlyYou, scenes: t.aura.scenes }} />
+          <p className="t-caption mt-4 border-t border-[var(--color-hairline)] pt-4 text-[var(--color-label-3)]">
+            <strong className="text-[var(--color-label-2)]">{t.aura.howTitle}:</strong> {t.aura.how}
+          </p>
         </section>
       )}
 
-      <ProfileSettings initial={who.profile} origin={origin} t={t.aura} />
-
-      <CirclePanel
-        requests={circle.filter((c) => c.status === "pending").map((c) => person(c.memberId))}
-        members={circle.filter((c) => c.status === "accepted").map((c) => person(c.memberId))}
-        memberOf={memberships.filter((m) => m.status === "accepted").map((m) => person(m.ownerId))}
-        t={t.aura}
-      />
+      {tab === "circle" && (
+        <CirclePanel
+          requests={pending.map((c) => person(c.memberId))}
+          members={members.map((c) => person(c.memberId))}
+          memberOf={memberships.filter((m) => m.status === "accepted").map((m) => person(m.ownerId))}
+          t={t.aura}
+        />
+      )}
     </div>
   );
 }

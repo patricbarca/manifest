@@ -8,7 +8,7 @@ type Labels = {
   visibilityOptions: Record<Visibility, string>; visibilityHint: string; save: string; saved: string;
   errors: Record<string, string>; shareLink: string; copy: string; copied: string;
   photo: string; changePhoto: string; uploading: string; bio: string; bioHint: string; mantra: string; mantraPlaceholder: string;
-  link: string; linkPlaceholder: string; location: string; locationPlaceholder: string;
+  link: string; linkPlaceholder: string; location: string; locationPlaceholder: string; viewProfile: string;
 };
 
 export function ProfileSettings({ initial, origin, t }: { initial: Profile; origin: string; t: Labels }) {
@@ -58,8 +58,7 @@ export function ProfileSettings({ initial, origin, t }: { initial: Profile; orig
 
   return (
     <section className="card rounded-[var(--radius-lg)] p-7">
-      <h2 className="t-headline">{t.settings}</h2>
-      <div className="mt-5 flex items-center gap-4">
+      <div className="flex items-center gap-4">
         {p.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={p.avatarUrl} alt="" referrerPolicy="no-referrer" className="h-16 w-16 rounded-full object-cover" />
@@ -146,6 +145,7 @@ export function ProfileSettings({ initial, origin, t }: { initial: Profile; orig
           {t.save}
         </button>
         {msg && <span className="t-caption text-[var(--color-label-2)]">{msg}</span>}
+        <a href="/perfil" className="t-caption ml-auto underline">{t.viewProfile}</a>
       </div>
     </section>
   );
