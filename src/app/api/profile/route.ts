@@ -11,6 +11,15 @@ const Patch = z.object({
   displayName: z.string().trim().min(1).max(40).optional(),
   handle: z.string().trim().toLowerCase().regex(HANDLE_RE).optional(),
   visibility: z.enum(["private", "circle", "public"]).optional(),
+  bio: z.string().trim().max(160).optional(),
+  mantra: z.string().trim().max(80).optional(),
+  location: z.string().trim().max(40).optional(),
+  link: z
+    .string()
+    .trim()
+    .max(200)
+    .refine((v) => v === "" || /^https?:\/\/[^\s]+\.[^\s]+$/i.test(v), "link")
+    .optional(),
 });
 
 export async function GET() {
@@ -35,6 +44,13 @@ export async function PATCH(request: Request) {
     next.handle = body.data.handle;
   }
   if (body.data.visibility) next.visibility = body.data.visibility;
+  // Textos libres: vacío borra el campo.
+  for (const k of ["bio", "mantra", "location", "link"] as const) {
+    const v = body.data[k];
+    if (v === undefined) continue;
+    if (v && !checkBlocked(v).ok) return NextResponse.json({ error: "text_blocked" }, { status: 422 });
+    next[k] = v || undefined;
+  }
   await social.putProfile(next);
   return NextResponse.json({ profile: next });
 }

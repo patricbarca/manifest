@@ -243,6 +243,10 @@ export interface Project {
   voiceLines?: Record<string, string>;
   voiceMode: "file" | "browser";
   musicKey?: string;
+  /** Escenas animadas en pequeño (sin voz), para el perfil. Nunca el vídeo entero. */
+  highlights?: { videoUrl: string; posterUrl: string }[];
+  /** La persona eligió mostrar los highlights de este vídeo en su perfil. */
+  showOnProfile?: boolean;
   /** MP4 final, si el ensamblado corrio. Si no, el player web es la entrega. */
   exportUrl?: string;
   /** Lo que pagó el usuario, en centavos de USD. 0 si fue el vídeo gratis. */

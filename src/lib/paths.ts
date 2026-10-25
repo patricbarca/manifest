@@ -22,7 +22,7 @@ export const DATA_DIR = process.env.DATA_DIR
   ? path.resolve(process.env.DATA_DIR)
   : path.join(process.cwd(), ".data");
 
-export type MediaKind = "uploads" | "generated";
+export type MediaKind = "uploads" | "generated" | "avatars";
 
 /** Los JSON del store. Se va cuando entre Postgres. */
 export function dbDir(): string {
@@ -86,7 +86,7 @@ export function resolveMediaPath(
   segments: string[],
 ): { kind: MediaKind; abs: string } | null {
   const [rawKind, ...rest] = segments;
-  if (rawKind !== "uploads" && rawKind !== "generated") return null;
+  if (rawKind !== "uploads" && rawKind !== "generated" && rawKind !== "avatars") return null;
   if (rest.length === 0 || rest.length > 3) return null;
 
   const parts: string[] = [];

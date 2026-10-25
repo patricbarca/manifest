@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { AuraSummary } from "@/components/AuraSummary";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { CirclePanel } from "@/components/CirclePanel";
+import { Highlights } from "@/components/Highlights";
+import { HighlightToggle } from "@/components/HighlightToggle";
 import { db } from "@/lib/db/store";
 import { me } from "@/lib/social/me";
 import { social } from "@/lib/social/store";
@@ -35,6 +37,10 @@ export default async function PerfilPage() {
     return { userId: id, handle: p?.handle ?? "", displayName: p?.displayName ?? "", avatarUrl: p?.avatarUrl };
   };
   const ready = projects.filter((p) => p.status === "ready");
+  // Lo mismo que verán los demás: solo los vídeos que elegiste mostrar.
+  const groups = ready
+    .filter((p) => p.showOnProfile && p.highlights?.length)
+    .map((p) => ({ id: p.id, title: p.script?.title || p.title, items: p.highlights! }));
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 px-6 py-14">
@@ -53,8 +59,8 @@ export default async function PerfilPage() {
         ) : (
           <ul className="mt-3 divide-y divide-[var(--color-hairline)]">
             {ready.map((p) => (
-              <li key={p.id}>
-                <Link href={`/video/${p.id}`} className="flex items-center justify-between gap-4 py-3">
+              <li key={p.id} className="py-3">
+                <Link href={`/video/${p.id}`} className="flex items-center justify-between gap-4">
                   <span>
                     <span className="t-sub block">{p.script?.title || p.title}</span>
                     <span className="t-caption text-[var(--color-label-3)]">{fill(t.aura.viewedDays, { n: stats.daysByProject[p.id] ?? 0 })}</span>
@@ -63,6 +69,13 @@ export default async function PerfilPage() {
                     {stats.viewedToday.includes(p.id) ? t.aura.viewedToday : t.aura.notToday}
                   </span>
                 </Link>
+                <div className="mt-2">
+                  {p.highlights?.length ? (
+                    <HighlightToggle projectId={p.id} initial={!!p.showOnProfile} label={t.aura.showOnProfile} />
+                  ) : (
+                    <span className="t-caption text-[var(--color-label-3)]">{t.aura.noHighlights}</span>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
@@ -71,6 +84,14 @@ export default async function PerfilPage() {
           <strong className="text-[var(--color-label-2)]">{t.aura.howTitle}:</strong> {t.aura.how}
         </p>
       </section>
+
+      {groups.length > 0 && (
+        <section className="card rounded-[var(--radius-lg)] p-7">
+          <h2 className="t-headline">{t.aura.highlights}</h2>
+          <p className="t-caption mb-4 mt-1 text-[var(--color-label-3)]">{t.aura.highlightsHint}</p>
+          <Highlights groups={groups} closeLabel={t.aura.close} />
+        </section>
+      )}
 
       <ProfileSettings initial={who.profile} origin={origin} t={t.aura} />
 

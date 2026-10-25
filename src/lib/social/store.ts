@@ -40,12 +40,16 @@ function ok<T>(r: { data: T; error: { message: string; code?: string } | null },
   return r.data;
 }
 
-type ProfileRow = { user_id: string; handle: string; display_name: string; avatar_url: string | null; visibility: Visibility; created_at: string };
+type ProfileRow = { user_id: string; handle: string; display_name: string; avatar_url: string | null; visibility: Visibility; created_at: string; bio?: string | null; mantra?: string | null; link?: string | null; location?: string | null };
 const toProfile = (r: ProfileRow): Profile => ({
   userId: r.user_id,
   handle: r.handle,
   displayName: r.display_name,
   avatarUrl: r.avatar_url ?? undefined,
+  bio: r.bio ?? undefined,
+  mantra: r.mantra ?? undefined,
+  link: r.link ?? undefined,
+  location: r.location ?? undefined,
   visibility: r.visibility,
   createdAt: Date.parse(r.created_at),
 });
@@ -68,6 +72,10 @@ const supabaseSocial: SocialStore = {
         handle: p.handle,
         display_name: p.displayName,
         avatar_url: p.avatarUrl ?? null,
+        bio: p.bio ?? null,
+        mantra: p.mantra ?? null,
+        link: p.link ?? null,
+        location: p.location ?? null,
         visibility: p.visibility,
         created_at: new Date(p.createdAt).toISOString(),
       }),

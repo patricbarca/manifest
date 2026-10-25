@@ -5,6 +5,10 @@ export interface Profile {
   handle: string;
   displayName: string;
   avatarUrl?: string;
+  bio?: string;
+  mantra?: string;
+  link?: string;
+  location?: string;
   visibility: Visibility;
   createdAt: number;
 }
