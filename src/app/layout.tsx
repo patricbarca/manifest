@@ -60,18 +60,16 @@ export default async function RootLayout({
 
             <div className="flex items-center gap-2.5">
               <LocaleToggle current={locale} />
-              {authEnabled() &&
-                (auth ? (
-                  <form action="/auth/salir" method="post">
-                    <button type="submit" className="t-sub hidden text-[var(--color-label-2)] hover:text-[var(--color-label-1)] sm:block" title={auth.email}>
-                      {t.auth.signOut}
-                    </button>
-                  </form>
-                ) : (
-                  <Link href="/entrar" className="t-sub text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">
-                    {t.auth.signIn}
-                  </Link>
-                ))}
+              {/* Sin sesión no hay "Entrar" aparte: "Empezar" ya pide entrar
+                  (/crear redirige a /entrar y vuelve), y dos botones al mismo
+                  sitio confunden. */}
+              {authEnabled() && auth && (
+                <form action="/auth/salir" method="post">
+                  <button type="submit" className="t-sub hidden text-[var(--color-label-2)] hover:text-[var(--color-label-1)] sm:block" title={auth.email}>
+                    {t.auth.signOut}
+                  </button>
+                </form>
+              )}
               <Link
                 href="/crear"
                 className="interactive rounded-full bg-white px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-black hover:bg-white/90"
