@@ -7,6 +7,7 @@ export const es: Dictionary = {
     market: "Market",
     pricing: "Precios",
     library: "Biblioteca",
+    blog: "Blog",
     start: "Empezar",
   },
   footer: {
@@ -84,6 +85,18 @@ export const es: Dictionary = {
       { q: "¿En qué idiomas está?", a: "En español e inglés. Eliges el idioma del vídeo y la voz que te guía." },
       { q: "¿Funciona la manifestación?", a: "ManifestLifeAI es una herramienta de visualización y enfoque: te ayuda a ver con claridad lo que quieres y a repetirlo cada día. No garantiza resultados ni sustituye ayuda médica, psicológica o financiera." },
     ],
+  },
+  blog: {
+    title: "Blog",
+    lede: "Guías prácticas para visualizar tus metas, escribir afirmaciones y convertirlo en un hábito diario.",
+    minRead: "{n} min de lectura",
+    otherLanguage: "In English",
+    ctaTitle: "Mírate viviéndolo",
+    ctaBody: "Sube un selfie, escribe tus deseos y recibe un vídeo de unos 2 minutos con tu cara, tu guion y una voz que te guía.",
+    ctaButton: "Crear mi vídeo",
+    relatedTemplate: "Plantilla relacionada",
+    back: "Blog",
+    readIn: "Leer en inglés",
   },
   pricing: {
     title: "Tres precios, y ya",

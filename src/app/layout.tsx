@@ -33,6 +33,7 @@ export default async function RootLayout({
     { href: "/crear", label: t.nav.create },
     { href: "/market", label: t.nav.market },
     { href: "/precios", label: t.nav.pricing },
+    { href: "/blog", label: t.nav.blog },
     { href: "/biblioteca", label: t.nav.library },
   ];
 
@@ -89,6 +90,7 @@ export default async function RootLayout({
               <Logo size={22} />
               <nav className="flex flex-wrap gap-x-5 gap-y-2">
                 {[
+                  { href: "/blog", label: t.nav.blog },
                   { href: "/privacidad", label: t.footer.privacy },
                   { href: "/terminos", label: t.footer.terms },
                   { href: "/reembolsos", label: t.footer.refunds },

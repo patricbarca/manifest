@@ -8,6 +8,7 @@ export const en = {
     market: "Market",
     pricing: "Pricing",
     library: "Library",
+    blog: "Blog",
     start: "Get started",
   },
   footer: {
@@ -85,6 +86,18 @@ export const en = {
       { q: "Which languages?", a: "Spanish and English. You choose the language of the video and the voice that guides you." },
       { q: "Does manifesting work?", a: "ManifestLifeAI is a visualization and focus tool: it helps you see clearly what you want and repeat it daily. It doesn't guarantee results or replace medical, psychological or financial help." },
     ],
+  },
+  blog: {
+    title: "Blog",
+    lede: "Practical guides to visualizing your goals, writing affirmations and turning it into a daily habit.",
+    minRead: "{n} min read",
+    otherLanguage: "En español",
+    ctaTitle: "See yourself living it",
+    ctaBody: "Upload a selfie, write your desires and get a video of about 2 minutes with your face, your script and a voice that guides you.",
+    ctaButton: "Create my video",
+    relatedTemplate: "Related template",
+    back: "Blog",
+    readIn: "Leer en español",
   },
   pricing: {
     title: "Three prices, that's it",
