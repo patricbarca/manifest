@@ -5,9 +5,13 @@ import { TEMPLATES } from "@/lib/templates";
 // Se genera en cada petición: SITE_URL llega en tiempo de ejecución, no al compilar.
 export const dynamic = "force-dynamic";
 
+const PAGES_UPDATED = "2026-10-25";
+
 /** Mapa del sitio: solo páginas públicas e indexables. */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
+  // Fecha real del último cambio de esas páginas. Si cada lectura dijera
+  // "hoy", Google dejaría de fiarse del lastmod. Actualízala al cambiarlas.
+  const now = new Date(PAGES_UPDATED);
   const pages = ["", "/market", "/precios", "/blog", "/privacidad", "/terminos", "/reembolsos"].map((path) => ({
     url: `${SITE_URL}${path}`,
     lastModified: now,
