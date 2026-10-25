@@ -62,11 +62,16 @@ export default async function RootLayout({
               <LocaleToggle current={locale} />
               {authEnabled() &&
                 (auth ? (
+                  <>
+                  <Link href="/perfil" className="t-sub text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">
+                    {t.aura.nav}
+                  </Link>
                   <form action="/auth/salir" method="post">
                     <button type="submit" className="t-sub hidden text-[var(--color-label-2)] hover:text-[var(--color-label-1)] sm:block" title={auth.email}>
                       {t.auth.signOut}
                     </button>
                   </form>
+                  </>
                 ) : (
                   <Link href="/entrar" className="t-sub text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">
                     {t.auth.signIn}
