@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { PAYMENTS_ENABLED } from "./pricing";
+import { requestOrigin } from "./request-origin";
 
 /**
  * Stripe Checkout por vídeo, con la API REST (sin SDK).
@@ -16,7 +17,7 @@ export function stripeEnabled(): boolean {
 }
 
 export function siteOrigin(request: Request): string {
-  return process.env.SITE_URL ?? new URL(request.url).origin;
+  return requestOrigin(request);
 }
 
 export async function createCheckout(opts: {

@@ -19,20 +19,22 @@ type Labels = {
 };
 
 /** Entrar con un código o enlace por email, o con Google. */
-export function SignIn({ url, anonKey, next, origin, t }: { url: string; anonKey: string; next: string; origin: string; t: Labels }) {
+export function SignIn({ url, anonKey, next, t }: { url: string; anonKey: string; next: string; t: Labels }) {
   const sb = useMemo(() => createBrowserClient(url, anonKey), [url, anonKey]);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"email" | "code">("email");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
-  const callback = `${origin}/auth/callback?next=${encodeURIComponent(next)}`;
+  // La vuelta va al mismo dominio en el que está la persona: si no, la sesión
+  // (que se guarda por dominio) se pierde por el camino.
+  const callback = () => `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
 
   async function sendCode(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError(undefined);
-    const { error } = await sb.auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo: callback } });
+    const { error } = await sb.auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo: callback() } });
     setBusy(false);
     if (error) return setError(error.message || t.error);
     setStep("code");
@@ -53,7 +55,7 @@ export function SignIn({ url, anonKey, next, origin, t }: { url: string; anonKey
 
   async function google() {
     setError(undefined);
-    const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: callback } });
+    const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: callback() } });
     if (error) setError(error.message || t.error);
   }
 
