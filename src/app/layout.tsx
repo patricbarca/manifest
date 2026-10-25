@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import { NavPills } from "@/components/NavPills";
 import "@fontsource-variable/inter";
 import "./globals.css";
 import { LocaleToggle } from "@/components/LocaleToggle";
@@ -44,7 +45,7 @@ export default async function RootLayout({
         <header className="material-chrome sticky top-0 z-40 border-b border-[var(--color-hairline)]">
           <div className="mx-auto flex h-14 max-w-[1120px] items-center justify-between gap-4 px-6">
             <Link href="/" aria-label="ManifestLifeAI">
-              <Logo size={26} />
+              <Logo size={26} compact={signedIn} />
             </Link>
 
             <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
@@ -63,12 +64,7 @@ export default async function RootLayout({
               {signedIn ? (
                 // Con sesión: perfil y crear otra visualización. Idioma y salir están en Editar perfil.
                 <>
-                  <Link href="/feed" className="t-sub text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">
-                    {t.nav.feed}
-                  </Link>
-                  <Link href="/perfil" className="t-sub text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">
-                    {t.aura.nav}
-                  </Link>
+                  <NavPills feed={t.nav.feed} profile={t.aura.nav} />
                   <Link
                     href="/crear"
                     className="interactive rounded-full bg-white px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-black hover:bg-white/90"

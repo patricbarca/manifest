@@ -443,6 +443,9 @@ export const en = {
     makeIt: "Make mine",
     you: "You",
     more: "See the whole market",
+    all: "All",
+    circle: "Circle",
+    market: "Market",
   },
   aura: {
     toast: { earned: "+{n} aura", already: "You already earned today's aura for this video", streak: "{n}-day streak", streakOne: "1-day streak" },
