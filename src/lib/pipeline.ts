@@ -7,6 +7,7 @@ import { sceneLength, voiceLines } from "./experience";
 import { localPathForMediaUrl } from "./paths";
 import { rm } from "node:fs/promises";
 import { dropIntermediates, offloadProject, sweepStorage } from "./cleanup";
+import { makeHighlights } from "./highlights";
 import { nextQuoteId } from "./quotes";
 import { sendVideoReady } from "./email";
 import { isAnimated, type Person, type PipelineStep, type Project, type Scene, type StepId } from "./types";
@@ -313,8 +314,11 @@ export async function runPipeline(projectId: string): Promise<void> {
       error: assembled.reason,
     });
 
+    // Highlights para el perfil, antes de tirar los clips de escena.
+    const highlights = await makeHighlights((await db.getProject(projectId))!).catch(() => undefined);
     await db.patchProject(projectId, (p) => ({
       ...p,
+      highlights,
       exportUrl: assembled.exportUrl,
       videoDurationSec: (assembled as { durationSec?: number }).durationSec || p.videoDurationSec,
       status: "ready",

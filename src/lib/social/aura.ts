@@ -109,7 +109,7 @@ export const HANDLE_RE = /^[a-z0-9_]{3,24}$/;
 export async function ensureProfile(user: { id: string; name: string; email: string; avatarUrl?: string }): Promise<Profile> {
   const existing = await social.getProfile(user.id);
   if (existing) {
-    if (user.avatarUrl && existing.avatarUrl !== user.avatarUrl) {
+    if (user.avatarUrl && existing.avatarUrl !== user.avatarUrl && !existing.avatarUrl?.startsWith("/media/")) {
       const updated = { ...existing, avatarUrl: user.avatarUrl };
       await social.putProfile(updated);
       return updated;

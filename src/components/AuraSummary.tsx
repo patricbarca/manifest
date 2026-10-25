@@ -13,15 +13,25 @@ export function AuraSummary({ profile, stats, t, locale }: { profile: Profile; s
       <div className="flex items-center gap-4">
         {profile.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={profile.avatarUrl} alt="" referrerPolicy="no-referrer" className="h-14 w-14 rounded-full object-cover" />
+          <img src={profile.avatarUrl} alt="" referrerPolicy="no-referrer" className="h-20 w-20 rounded-full object-cover" />
         ) : (
-          <span className="grid h-14 w-14 place-items-center rounded-full bg-white/10 text-xl">{(profile.displayName || "?")[0].toUpperCase()}</span>
+          <span className="grid h-20 w-20 place-items-center rounded-full bg-white/10 text-2xl">{(profile.displayName || "?")[0].toUpperCase()}</span>
         )}
-        <div>
+        <div className="min-w-0">
           <p className="t-headline">{profile.displayName}</p>
-          <p className="t-caption text-[var(--color-label-3)]">@{profile.handle}</p>
+          <p className="t-caption text-[var(--color-label-3)]">
+            @{profile.handle}
+            {profile.location && <> · {profile.location}</>}
+          </p>
         </div>
       </div>
+      {profile.mantra && <p className="t-body mt-5 italic text-[var(--color-label-1)]">“{profile.mantra}”</p>}
+      {profile.bio && <p className="t-sub mt-3 whitespace-pre-line text-[var(--color-label-2)]">{profile.bio}</p>}
+      {profile.link && (
+        <a href={profile.link} target="_blank" rel="noopener noreferrer nofollow ugc" className="t-sub mt-2 inline-block text-sky-300 underline-offset-2 hover:underline">
+          {linkLabel(profile.link)}
+        </a>
+      )}
 
       <div className="mt-7 grid grid-cols-3 gap-3 text-center">
         <div className="rounded-[var(--radius-md)] bg-white/[0.04] p-4">
@@ -61,4 +71,13 @@ export function AuraSummary({ profile, stats, t, locale }: { profile: Profile; s
       )}
     </section>
   );
+}
+
+function linkLabel(url: string): string {
+  try {
+    const u = new URL(url);
+    return (u.host + u.pathname).replace(/^www\./, "").replace(/\/$/, "");
+  } catch {
+    return url;
+  }
 }

@@ -6,6 +6,9 @@ import { currentUser } from "@/lib/db/session";
 import { db } from "@/lib/db/store";
 import { contentTypeFor, resolveMediaPath } from "@/lib/paths";
 import { objectStorageEnabled, signedUrl } from "@/lib/object-storage";
+import { social } from "@/lib/social/store";
+import { canSee } from "@/lib/social/aura";
+import { isHighlightFile } from "@/lib/highlights";
 
 export const runtime = "nodejs";
 
@@ -45,9 +48,25 @@ export async function GET(
     if (!parts[0].startsWith(`${user.id}_`)) {
       return NextResponse.json({ error: "No es tuyo" }, { status: 403 });
     }
+  } else if (kind === "avatars") {
+    // Foto de perfil: la ve quien pueda ver ese perfil.
+    const ownerId = parts[0].slice(0, Math.max(0, parts[0].lastIndexOf("_")));
+    const profile = ownerId ? await social.getProfile(ownerId) : undefined;
+    if (!profile || profile.avatarUrl !== `/media/avatars/${parts[0]}` || !(await canSee(profile, user.id))) {
+      return NextResponse.json({ error: "No es tuyo" }, { status: 403 });
+    }
   } else {
     const project = await db.getProject(parts[0]);
-    if (!project || project.ownerId !== user.id) {
+    // Otras personas solo ven los highlights, si el dueño los publicó y su perfil se lo permite.
+    const shared =
+      !!project &&
+      project.ownerId !== user.id &&
+      parts.length === 2 &&
+      isHighlightFile(parts[1]) &&
+      project.showOnProfile === true &&
+      !!project.highlights?.some((h) => h.videoUrl.endsWith(`/${parts[1]}`) || h.posterUrl.endsWith(`/${parts[1]}`)) &&
+      (await social.getProfile(project.ownerId).then((pr) => (pr ? canSee(pr, user.id) : false)));
+    if (!project || (project.ownerId !== user.id && !shared)) {
       return NextResponse.json({ error: "No es tuyo" }, { status: 403 });
     }
   }
