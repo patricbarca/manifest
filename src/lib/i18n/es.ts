@@ -442,6 +442,9 @@ export const es: Dictionary = {
     makeIt: "Crear la mía",
     you: "Tú",
     more: "Ver todo el market",
+    all: "Todo",
+    circle: "Círculo",
+    market: "Market",
   },
   aura: {
     toast: { earned: "+{n} aura", already: "Ya sumaste el aura de este vídeo hoy", streak: "racha de {n} días", streakOne: "racha de 1 día" },

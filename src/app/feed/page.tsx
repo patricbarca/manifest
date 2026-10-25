@@ -22,11 +22,16 @@ const MARKET_MAX = 8;
  * Feed: lo que comparten las personas de cuyos círculos formas parte (y lo
  * tuyo), mezclado con plantillas del market para hacerlas.
  */
-export default async function FeedPage() {
+type Filter = "all" | "circle" | "market";
+const FILTERS: Filter[] = ["all", "circle", "market"];
+
+export default async function FeedPage({ searchParams }: { searchParams: Promise<{ f?: string }> }) {
   const who = await me();
   if (!who) redirect("/entrar?next=/feed");
   const { t, locale } = await getDictionary();
   const loc = locale as Locale;
+  const { f } = await searchParams;
+  const filter: Filter = FILTERS.includes(f as Filter) ? (f as Filter) : "all";
 
   const memberships = (await social.listMemberships(who.user.id)).filter((m) => m.status === "accepted");
   const authors = [who.profile, ...(await social.getProfiles(memberships.map((m) => m.ownerId)))];
@@ -43,16 +48,23 @@ export default async function FeedPage() {
   const market = TEMPLATES.filter((tpl) => templatePreview(tpl.slug).video)
     .map((tpl, i) => ({ tpl, k: (i * 7919 + day * 104729) % 1009 }))
     .sort((a, b) => a.k - b.k)
-    .slice(0, MARKET_MAX)
+    .slice(0, filter === "market" ? undefined : MARKET_MAX)
     .map((x) => x.tpl.slug);
 
   const items: Item[] = [];
-  let m = 0;
-  posts.forEach((p, i) => {
-    items.push({ kind: "post", ...p });
-    if ((i + 1) % MARKET_EVERY === 0 && m < market.length) items.push({ kind: "market", slug: market[m++] });
-  });
-  while (m < market.length) items.push({ kind: "market", slug: market[m++] });
+  if (filter === "circle") {
+    posts.forEach((p) => items.push({ kind: "post", ...p }));
+  } else if (filter === "market") {
+    market.forEach((slug) => items.push({ kind: "market", slug }));
+  } else {
+    let m = 0;
+    posts.forEach((p, i) => {
+      items.push({ kind: "post", ...p });
+      if ((i + 1) % MARKET_EVERY === 0 && m < market.length) items.push({ kind: "market", slug: market[m++] });
+    });
+    while (m < market.length) items.push({ kind: "market", slug: market[m++] });
+  }
+  const filterLabel: Record<Filter, string> = { all: t.feed.all, circle: t.feed.circle, market: t.feed.market };
 
   return (
     <div className="mx-auto max-w-md space-y-5 px-4 py-10">
@@ -60,7 +72,19 @@ export default async function FeedPage() {
         <h1 className="t-title">{t.feed.title}</h1>
         <p className="t-sub mt-1 text-[var(--color-label-2)]">{t.feed.subtitle}</p>
       </div>
-      {posts.length === 0 && (
+      <nav className="flex gap-2">
+        {FILTERS.map((k) => (
+          <Link
+            key={k}
+            href={k === "all" ? "/feed" : `/feed?f=${k}`}
+            scroll={false}
+            className={`t-sub rounded-full px-4 py-1.5 ${filter === k ? "bg-white font-medium text-black" : "border border-[var(--color-hairline)] text-[var(--color-label-2)]"}`}
+          >
+            {filterLabel[k]}
+          </Link>
+        ))}
+      </nav>
+      {posts.length === 0 && filter !== "market" && (
         <p className="t-caption rounded-[var(--radius-md)] bg-white/[0.04] px-4 py-3 text-[var(--color-label-2)]">{t.feed.empty}</p>
       )}
       {items.map((it) => {
@@ -91,7 +115,7 @@ export default async function FeedPage() {
           />
         );
       })}
-      <Link href="/market" className="t-sub block text-center underline">{t.feed.more}</Link>
+      {filter !== "circle" && <Link href="/market" className="t-sub block text-center underline">{t.feed.more}</Link>}
     </div>
   );
 }
