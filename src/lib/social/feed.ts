@@ -11,7 +11,7 @@ export function feedPosts(projects: Project[], owner: boolean): FeedPost[] {
     .map((p) => {
       const visible = (p.highlights ?? []).filter((h) => !h.hidden);
       const shared = !!p.showOnProfile && visible.length > 0;
-      return { id: p.id, title: p.script?.title || p.title, items: owner ? (shared ? visible : p.highlights ?? []) : visible, shared };
+      return { id: p.id, createdAt: p.createdAt, title: p.script?.title || p.title, items: owner ? (shared ? visible : p.highlights ?? []) : visible, shared };
     })
     .filter((post) => owner || post.shared);
 }

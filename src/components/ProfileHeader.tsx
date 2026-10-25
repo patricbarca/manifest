@@ -73,7 +73,7 @@ export function ProfileHeader({
         <p className="t-caption mt-1.5 text-[var(--color-label-3)]">
           {next ? fill(t.aura.toNext, { n: next.min - stats.aura, level: next.name[locale] }) : t.aura.maxLevel}
           {" · "}
-          {fill(t.aura.best, { n: stats.bestStreak })}
+          {stats.bestStreak === 1 ? t.aura.bestOne : fill(t.aura.best, { n: stats.bestStreak })}
         </p>
       </div>
 

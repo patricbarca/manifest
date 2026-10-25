@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 
-type Labels = { earned: string; already: string; streak: string };
+type Labels = { earned: string; already: string; streak: string; streakOne: string };
 
 /**
  * El vídeo final con seguimiento de aura: al empezar avisa al servidor y al
@@ -41,7 +41,7 @@ export function AuraVideo({ projectId, src, labels }: { projectId: string; src: 
       }
       setToast(
         data.awarded
-          ? `${labels.earned.replace("{n}", String(data.points ?? 10))} · ${labels.streak.replace("{n}", String(data.streak ?? 1))}`
+          ? `${labels.earned.replace("{n}", String(data.points ?? 10))} · ${(data.streak ?? 1) === 1 ? labels.streakOne : labels.streak.replace("{n}", String(data.streak))}`
           : labels.already,
       );
       setTimeout(() => setToast(undefined), 6000);

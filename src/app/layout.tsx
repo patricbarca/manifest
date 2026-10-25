@@ -63,6 +63,9 @@ export default async function RootLayout({
               {signedIn ? (
                 // Con sesión: perfil y crear otra visualización. Idioma y salir están en Editar perfil.
                 <>
+                  <Link href="/feed" className="t-sub text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">
+                    {t.nav.feed}
+                  </Link>
                   <Link href="/perfil" className="t-sub text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">
                     {t.aura.nav}
                   </Link>

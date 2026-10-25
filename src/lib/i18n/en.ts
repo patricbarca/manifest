@@ -12,6 +12,7 @@ export const en = {
     start: "Get started",
     newVisualization: "New visualization",
     newShort: "Create",
+    feed: "Feed",
   },
   footer: {
     disclaimer:
@@ -434,8 +435,17 @@ export const en = {
     signIn: "Sign in",
     signOut: "Sign out",
   },
+  feed: {
+    title: "Your feed",
+    subtitle: "Manifestations from your circle and market templates to inspire you.",
+    empty: "No manifestations from your circle yet. When someone accepts you into their circle and shares their videos, they'll show up here.",
+    fromMarket: "From the market",
+    makeIt: "Make mine",
+    you: "You",
+    more: "See the whole market",
+  },
   aura: {
-    toast: { earned: "+{n} aura", already: "You already earned today's aura for this video", streak: "{n}-day streak" },
+    toast: { earned: "+{n} aura", already: "You already earned today's aura for this video", streak: "{n}-day streak", streakOne: "1-day streak" },
     nav: "Profile",
     title: "Your profile",
     aura: "Aura",
@@ -445,6 +455,7 @@ export const en = {
     streak: "Streak",
     days: "days",
     best: "Best streak: {n} days",
+    bestOne: "Best streak: 1 day",
     howTitle: "How you earn aura",
     how: "+10 aura each day you watch each of your videos to the end. Watching all your videos every day adds more and keeps your streak.",
     achievements: "Achievements",
@@ -454,6 +465,7 @@ export const en = {
     viewedToday: "Watched today ✓",
     notToday: "Not yet today",
     viewedDays: "Watched {n} days",
+    viewedOneDay: "Watched 1 day",
     settings: "Profile settings",
     displayName: "Name",
     handle: "Username",
