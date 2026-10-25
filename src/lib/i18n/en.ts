@@ -499,6 +499,11 @@ export const en = {
     noHighlights: "No animated scenes",
     noPublicHighlights: "No highlights shared yet.",
     close: "Close",
+    posts: "Posts",
+    onlyYou: "Only you",
+    scenes: "scenes",
+    noPosts: "No posts yet.",
+    feedHintOwner: "You open your full videos. Others only see the muted animated scenes of the videos you switch on.",
   },
   errors: {
     signInRequired: "Sign in to create your video.",

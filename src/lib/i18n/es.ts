@@ -498,6 +498,11 @@ export const es: Dictionary = {
     noHighlights: "Sin escenas animadas",
     noPublicHighlights: "Aún no ha compartido highlights.",
     close: "Cerrar",
+    posts: "Publicaciones",
+    onlyYou: "Solo tú",
+    scenes: "escenas",
+    noPosts: "Aún no hay publicaciones.",
+    feedHintOwner: "Tú abres tus vídeos completos. Los demás solo ven las escenas animadas, sin sonido, de los vídeos que actives.",
   },
   errors: {
     signInRequired: "Entra en tu cuenta para crear tu vídeo.",

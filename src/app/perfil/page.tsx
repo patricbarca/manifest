@@ -6,6 +6,8 @@ import { ProfileSettings } from "@/components/ProfileSettings";
 import { CirclePanel } from "@/components/CirclePanel";
 import { Highlights } from "@/components/Highlights";
 import { HighlightToggle } from "@/components/HighlightToggle";
+import { ProfileFeed } from "@/components/ProfileFeed";
+import { feedPosts } from "@/lib/social/feed";
 import { db } from "@/lib/db/store";
 import { me } from "@/lib/social/me";
 import { social } from "@/lib/social/store";
@@ -41,6 +43,7 @@ export default async function PerfilPage() {
   const groups = ready
     .filter((p) => p.showOnProfile && p.highlights?.length)
     .map((p) => ({ id: p.id, title: p.script?.title || p.title, items: p.highlights! }));
+  const posts = feedPosts(ready, true);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 px-6 py-14">
@@ -85,11 +88,18 @@ export default async function PerfilPage() {
         </p>
       </section>
 
-      {groups.length > 0 && (
-        <section className="card rounded-[var(--radius-lg)] p-7">
-          <h2 className="t-headline">{t.aura.highlights}</h2>
-          <p className="t-caption mb-4 mt-1 text-[var(--color-label-3)]">{t.aura.highlightsHint}</p>
-          <Highlights groups={groups} closeLabel={t.aura.close} />
+      {posts.length > 0 && (
+        <section className="card rounded-[var(--radius-lg)] p-5 sm:p-7">
+          {groups.length > 0 && (
+            <>
+              <h2 className="t-headline">{t.aura.highlights}</h2>
+              <p className="t-caption mb-4 mt-1 text-[var(--color-label-3)]">{t.aura.highlightsHint}</p>
+              <Highlights groups={groups} closeLabel={t.aura.close} />
+            </>
+          )}
+          <h2 className={`t-headline ${groups.length ? "mt-7" : ""}`}>{t.aura.posts}</h2>
+          <p className="t-caption mb-4 mt-1 text-[var(--color-label-3)]">{t.aura.feedHintOwner}</p>
+          <ProfileFeed posts={posts} owner labels={{ close: t.aura.close, onlyYou: t.aura.onlyYou, scenes: t.aura.scenes }} />
         </section>
       )}
 

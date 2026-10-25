@@ -2,6 +2,8 @@ import Link from "next/link";
 import { AuraSummary } from "@/components/AuraSummary";
 import { CircleRequestButton } from "@/components/CircleRequestButton";
 import { Highlights } from "@/components/Highlights";
+import { ProfileFeed } from "@/components/ProfileFeed";
+import { feedPosts } from "@/lib/social/feed";
 import { db } from "@/lib/db/store";
 import { me } from "@/lib/social/me";
 import { social } from "@/lib/social/store";
@@ -22,19 +24,26 @@ export default async function UserPage({ params }: { params: Promise<{ handle: s
   if (await canSee(profile, viewerId)) {
     const [views, projects] = await Promise.all([social.listViews(profile.userId), db.listProjects(profile.userId)]);
     const stats = statsFrom(views, localDay("UTC"));
-    // Solo highlights (escenas animadas sin sonido) de los vídeos que la persona eligió mostrar.
-    const groups = projects
-      .filter((p) => p.status === "ready" && p.showOnProfile && p.highlights?.length)
-      .map((p) => ({ id: p.id, title: p.script?.title || p.title, items: p.highlights! }));
+    // Visitantes: solo highlights (escenas animadas sin sonido) de los vídeos que la persona eligió mostrar.
+    // Dueño: todos sus vídeos, y al tocar abre el vídeo completo.
+    const owner = viewerId === profile.userId;
+    const posts = feedPosts(projects, owner);
+    const groups = posts.filter((p) => p.shared);
     return (
       <div className="mx-auto max-w-2xl space-y-6 px-6 py-14">
         <AuraSummary profile={profile} stats={stats} t={t} locale={locale as Locale} />
-        <section className="card rounded-[var(--radius-lg)] p-7">
-          <h2 className="t-headline mb-4">{t.aura.highlights}</h2>
-          {groups.length ? (
-            <Highlights groups={groups} closeLabel={t.aura.close} />
+        <section className="card rounded-[var(--radius-lg)] p-5 sm:p-7">
+          {groups.length > 0 && (
+            <>
+              <h2 className="t-headline mb-4">{t.aura.highlights}</h2>
+              <Highlights groups={groups} closeLabel={t.aura.close} />
+            </>
+          )}
+          <h2 className={`t-headline mb-4 ${groups.length ? "mt-7" : ""}`}>{t.aura.posts}</h2>
+          {posts.length ? (
+            <ProfileFeed posts={posts} owner={owner} labels={{ close: t.aura.close, onlyYou: t.aura.onlyYou, scenes: t.aura.scenes }} />
           ) : (
-            <p className="t-sub text-[var(--color-label-2)]">{t.aura.noPublicHighlights}</p>
+            <p className="t-sub text-[var(--color-label-2)]">{t.aura.noPosts}</p>
           )}
         </section>
       </div>
