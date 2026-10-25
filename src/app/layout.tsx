@@ -28,6 +28,7 @@ export default async function RootLayout({
 }) {
   const { t, locale } = await getDictionary();
   const auth = authEnabled() ? await authUser() : null;
+  const signedIn = !!auth;
 
   const nav = [
     { href: "/crear", label: t.nav.create },
@@ -59,28 +60,33 @@ export default async function RootLayout({
             </nav>
 
             <div className="flex items-center gap-2.5">
-              <LocaleToggle current={locale} />
-              {/* Sin sesión no hay "Entrar" aparte: "Empezar" ya pide entrar
-                  (/crear redirige a /entrar y vuelve), y dos botones al mismo
-                  sitio confunden. */}
-              {authEnabled() && auth && (
+              {signedIn ? (
+                // Con sesión: perfil y crear otra visualización. Idioma y salir están en Editar perfil.
                 <>
                   <Link href="/perfil" className="t-sub text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">
                     {t.aura.nav}
                   </Link>
-                  <form action="/auth/salir" method="post">
-                    <button type="submit" className="t-sub hidden text-[var(--color-label-2)] hover:text-[var(--color-label-1)] sm:block" title={auth.email}>
-                      {t.auth.signOut}
-                    </button>
-                  </form>
+                  <Link
+                    href="/crear"
+                    className="interactive rounded-full bg-white px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-black hover:bg-white/90"
+                  >
+                    + <span className="sm:hidden">{t.nav.newShort}</span>
+                    <span className="hidden sm:inline">{t.nav.newVisualization}</span>
+                  </Link>
+                </>
+              ) : (
+                // Sin sesión no hay "Entrar" aparte: "Empezar" ya pide entrar
+                // (/crear redirige a /entrar y vuelve), y dos botones al mismo sitio confunden.
+                <>
+                  <LocaleToggle current={locale} />
+                  <Link
+                    href="/crear"
+                    className="interactive rounded-full bg-white px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-black hover:bg-white/90"
+                  >
+                    {t.nav.start}
+                  </Link>
                 </>
               )}
-              <Link
-                href="/crear"
-                className="interactive rounded-full bg-white px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-black hover:bg-white/90"
-              >
-                {t.nav.start}
-              </Link>
             </div>
           </div>
         </header>

@@ -104,7 +104,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
       {tab === "posts" &&
         (posts.length ? (
           <div>
-            <ProfileFeed posts={posts} owner labels={{ close: t.aura.close, onlyYou: t.aura.onlyYou, scenes: t.aura.scenes }} />
+            <ProfileFeed posts={posts} owner labels={{ close: t.aura.close, onlyYou: t.aura.onlyYou, scenes: t.aura.scenes, create: t.nav.newVisualization }} />
             <p className="t-caption mt-3 text-[var(--color-label-3)]">{t.aura.feedHintOwner}</p>
           </div>
         ) : (

@@ -17,12 +17,23 @@ export function ProfileFeed({
 }: {
   posts: FeedPost[];
   owner: boolean;
-  labels: { close: string; onlyYou: string; scenes: string };
+  labels: { close: string; onlyYou: string; scenes: string; create?: string };
 }) {
   const [open, setOpen] = useState<number | null>(null);
   return (
     <>
       <div className="grid grid-cols-3 gap-1">
+        {owner && labels.create && (
+          <Link
+            href="/crear"
+            className="interactive grid aspect-[9/16] place-items-center rounded-sm border border-dashed border-[var(--color-hairline-strong)] text-center hover:bg-white/5"
+          >
+            <span>
+              <span className="block text-3xl leading-none">+</span>
+              <span className="t-caption mt-2 block px-2 text-[var(--color-label-2)]">{labels.create}</span>
+            </span>
+          </Link>
+        )}
         {posts.map((post, i) => {
           const cover = post.items[0]?.posterUrl;
           const tile = (
