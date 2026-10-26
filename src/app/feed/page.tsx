@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CirclePostCard, MarketCard } from "@/components/FeedCards";
+import { PeopleSearch } from "@/components/PeopleSearch";
 import { feedPosts } from "@/lib/social/feed";
 import { db } from "@/lib/db/store";
 import { me } from "@/lib/social/me";
@@ -84,8 +85,14 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
           </Link>
         ))}
       </nav>
+      {filter === "circle" && (
+        <PeopleSearch t={{ placeholder: t.feed.searchPlaceholder, none: t.feed.searchNone, circleOnly: t.feed.searchCircleOnly }} />
+      )}
       {posts.length === 0 && filter !== "market" && (
-        <p className="t-caption rounded-[var(--radius-md)] bg-white/[0.04] px-4 py-3 text-[var(--color-label-2)]">{t.feed.empty}</p>
+        <p className="t-caption rounded-[var(--radius-md)] bg-white/[0.04] px-4 py-3 text-[var(--color-label-2)]">
+          {t.feed.empty}{" "}
+          {filter !== "circle" && <Link href="/feed?f=circle" className="underline">{t.feed.findPeople}</Link>}
+        </p>
       )}
       {items.map((it) => {
         if (it.kind === "post") {

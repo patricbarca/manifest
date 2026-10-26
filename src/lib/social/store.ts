@@ -25,6 +25,8 @@ export interface SocialStore {
   listCircle(ownerId: string): Promise<CircleLink[]>;
   listMemberships(memberId: string): Promise<CircleLink[]>;
   getProfiles(userIds: string[]): Promise<Profile[]>;
+  /** Perfiles no privados cuyo usuario o nombre coincide (para encontrar gente). */
+  searchProfiles(q: string, limit: number): Promise<Profile[]>;
 }
 
 // ── Supabase ────────────────────────────────────────────────────────────────
@@ -117,6 +119,21 @@ const supabaseSocial: SocialStore = {
     const rows = ok(await sb().from("circle").select("*").eq("member_id", memberId), "círculo");
     return (rows ?? []).map((r) => toLink(r as LinkRow));
   },
+  async searchProfiles(q, limit) {
+    // Solo letras, números, espacio y _ (sin comodines ni comas que rompan el filtro).
+    const term = q.replace(/[^\p{L}\p{N}_ ]/gu, "").trim().slice(0, 40);
+    if (term.length < 2) return [];
+    const rows = ok(
+      await sb()
+        .from("profiles")
+        .select("*")
+        .neq("visibility", "private")
+        .or(`handle.ilike.${term.toLowerCase().replace(/ /g, "")}%,display_name.ilike.%${term}%`)
+        .limit(limit),
+      "buscar perfiles",
+    );
+    return (rows ?? []).map((r) => toProfile(r as ProfileRow));
+  },
   async getProfiles(userIds) {
     if (!userIds.length) return [];
     const rows = ok(await sb().from("profiles").select("*").in("user_id", userIds), "perfiles");
@@ -193,6 +210,13 @@ const jsonSocial: SocialStore = {
   },
   async listMemberships(m) {
     return (await load()).circle.filter((l) => l.memberId === m);
+  },
+  async searchProfiles(q, limit) {
+    const term = q.trim().toLowerCase();
+    if (term.length < 2) return [];
+    return (await load()).profiles
+      .filter((p) => p.visibility !== "private" && (p.handle.startsWith(term.replace(/ /g, "")) || p.displayName.toLowerCase().includes(term)))
+      .slice(0, limit);
   },
   async getProfiles(ids) {
     return (await load()).profiles.filter((p) => ids.includes(p.userId));

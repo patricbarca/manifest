@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ProfileHeader } from "@/components/ProfileHeader";
 import { ShareProfileButton } from "@/components/ShareProfileButton";
 import { CirclePanel } from "@/components/CirclePanel";
+import { PeopleSearch } from "@/components/PeopleSearch";
 import { Highlights } from "@/components/Highlights";
 import { ProfileFeed } from "@/components/ProfileFeed";
 import { feedPosts } from "@/lib/social/feed";
@@ -149,6 +150,9 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
         </section>
       )}
 
+      {tab === "circle" && (
+        <PeopleSearch t={{ placeholder: t.feed.searchPlaceholder, none: t.feed.searchNone, circleOnly: t.feed.searchCircleOnly }} />
+      )}
       {tab === "circle" && (
         <CirclePanel
           requests={pending.map((c) => person(c.memberId))}
