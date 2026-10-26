@@ -76,6 +76,7 @@ export async function linkAnonymousData(): Promise<void> {
   const auth = await authUser();
   const jar = await cookies();
   const anonId = jar.get(COOKIE)?.value;
+  if (auth) await recordReferral(auth.id, jar.get("ml_ref")?.value);
   if (!auth || !anonId || anonId === auth.id) return;
   const anon = await db.getUser(anonId);
   const account = await ensureUser(auth.id, auth.email, auth.name ?? auth.email.split("@")[0]);
@@ -141,4 +142,18 @@ export async function chargeForVideo(
 /** Cuántos vídeos gratis le quedan a este usuario. */
 export function freeVideosLeft(user: User): number {
   return Math.max(0, FREE_VIDEOS - user.freeVideosUsed);
+}
+
+/**
+ * Atribuye el registro a quien compartió el enlace (?ref=usuario), solo una
+ * vez y nunca a uno mismo. Sirve para medir qué vídeos compartidos traen gente.
+ */
+async function recordReferral(userId: string, handle: string | undefined): Promise<void> {
+  if (!handle) return;
+  const user = await db.getUser(userId);
+  if (!user || user.referredBy) return;
+  const { social } = await import("../social/store");
+  const inviter = await social.getProfileByHandle(handle);
+  if (!inviter || inviter.userId === userId) return;
+  await db.putUser({ ...user, referredBy: inviter.userId });
 }

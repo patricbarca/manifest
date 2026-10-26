@@ -257,6 +257,8 @@ export interface Project {
   highlights?: Highlight[];
   /** La persona eligió mostrar los highlights de este vídeo en su perfil. */
   showOnProfile?: boolean;
+  /** Tiene enlace público para compartir (/s/<id>): solo highlights, nunca el vídeo entero. */
+  shared?: boolean;
   /** MP4 final, si el ensamblado corrio. Si no, el player web es la entrega. */
   exportUrl?: string;
   /** Lo que pagó el usuario, en centavos de USD. 0 si fue el vídeo gratis. */
@@ -331,4 +333,6 @@ export interface User {
   usedQuotes?: string[];
   /** Cuándo dio el consentimiento expreso para tratar sus fotos de cara, y qué versión del texto. */
   photoConsent?: { at: number; version: string };
+  /** Quién le invitó (userId), si llegó por un enlace compartido. */
+  referredBy?: string;
 }

@@ -440,6 +440,18 @@ export const es: Dictionary = {
     signIn: "Entrar",
     signOut: "Salir",
   },
+  share: {
+    share: "Compartir",
+    copied: "Enlace copiado",
+    stop: "Dejar de compartir",
+    hint: "El enlace solo enseña tus escenas animadas, sin voz ni frases. Quien lo vea puede crear la suya.",
+    pageTitle: "{name} se está viendo vivir su vida soñada",
+    pageSub: "Escenas de su visualización con ManifestLifeAI.",
+    cta: "Crea la tuya",
+    ctaSub: "Sube un selfie, escribe tus deseos y mírate viviéndolos.",
+    seeProfile: "Ver su perfil",
+    notShared: "Este vídeo no está compartido.",
+  },
   feed: {
     title: "Tu feed",
     subtitle: "Las manifestaciones de tu círculo y plantillas del market para inspirarte.",

@@ -1,5 +1,6 @@
 "use client";
 
+import { ShareVideoButton } from "./ShareVideoButton";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { isAnimated, type Project } from "@/lib/types";
@@ -114,6 +115,9 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
             >
               {t.common.createAnother}
             </Link>
+            {!!project.highlights?.some((h) => !h.hidden) && (
+              <ShareVideoButton projectId={project.id} initial={!!project.shared} t={t.share} />
+            )}
           </div>
 
           {/* El guion en texto: mucha gente lo imprime o lo lee sin el vídeo. */}

@@ -2,6 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { requestOrigin } from "@/lib/request-origin";
 
+const REF_COOKIE = "ml_ref";
+
 /**
  * Refresca la sesión de Supabase en cada visita, para que los Server
  * Components la vean al día. Sin auth configurada no hace nada.
@@ -36,7 +38,15 @@ export async function proxy(request: NextRequest) {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_PUBLISHABLE_KEY;
   let response = NextResponse.next({ request });
-  if (!url || !key) return response;
+  // Enlace de invitación (?ref=usuario): se recuerda 30 días para atribuir el registro.
+  const ref = request.nextUrl.searchParams.get("ref")?.toLowerCase();
+  const withRef = (res: NextResponse) => {
+    if (ref && /^[a-z0-9_]{3,24}$/.test(ref) && !request.cookies.get(REF_COOKIE)) {
+      res.cookies.set(REF_COOKIE, ref, { httpOnly: true, sameSite: "lax", maxAge: 60 * 60 * 24 * 30, path: "/" });
+    }
+    return res;
+  };
+  if (!url || !key) return withRef(response);
 
   const sb = createServerClient(url, key, {
     cookies: {
@@ -50,7 +60,7 @@ export async function proxy(request: NextRequest) {
     },
   });
   await sb.auth.getUser();
-  return response;
+  return withRef(response);
 }
 
 function canonicalHost(): string | null {

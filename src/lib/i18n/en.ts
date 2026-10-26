@@ -441,6 +441,18 @@ export const en = {
     signIn: "Sign in",
     signOut: "Sign out",
   },
+  share: {
+    share: "Share",
+    copied: "Link copied",
+    stop: "Stop sharing",
+    hint: "The link only shows your animated scenes, without voice or phrases. Anyone who sees it can create their own.",
+    pageTitle: "{name} is watching themselves live their dream life",
+    pageSub: "Scenes from their visualization with ManifestLifeAI.",
+    cta: "Make yours",
+    ctaSub: "Upload a selfie, write your desires and watch yourself living them.",
+    seeProfile: "See their profile",
+    notShared: "This video isn't shared.",
+  },
   feed: {
     title: "Your feed",
     subtitle: "Manifestations from your circle and market templates to inspire you.",
