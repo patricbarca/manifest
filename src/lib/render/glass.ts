@@ -100,6 +100,7 @@ export async function renderGlass(
       closeLine: x.closeLine,
       seal: x.seal,
       tomorrow: x.tomorrow,
+      endCta: project.locale === "es" ? "Míralo cada día en manifestlife.ai" : "Watch it every day on manifestlife.ai",
       // Aviso de contenido sintético (AI Act art. 50), grabado en el vídeo.
       aiLabel: project.locale === "es" ? "Generado con IA · ManifestLifeAI" : "AI-generated · ManifestLifeAI",
       quote: quoteText(project.locale, project.quoteId, project.id),

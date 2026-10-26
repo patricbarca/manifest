@@ -551,6 +551,7 @@ export const en = {
     showcaseTitle: "Videos on your profile",
     viewProfile: "View my profile",
     account: "Account",
+    checkin: { checkin: "I watched it today outside the app (+5)", done: "+5 aura · streak saved", already: "You already earned aura with this video today", hint: "Watching it fully here gives +10." },
     hiddenScene: "Hidden",
     labelPlaceholder: "Name",
     tapToHide: "Tap to show or hide",

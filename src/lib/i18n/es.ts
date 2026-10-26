@@ -550,6 +550,7 @@ export const es: Dictionary = {
     showcaseTitle: "Vídeos en tu perfil",
     viewProfile: "Ver mi perfil",
     account: "Cuenta",
+    checkin: { checkin: "Lo vi hoy fuera de la app (+5)", done: "+5 aura · racha guardada", already: "Hoy ya sumaste aura con este vídeo", hint: "Verlo aquí completo da +10." },
     hiddenScene: "Oculta",
     labelPlaceholder: "Nombre",
     tapToHide: "Toca para mostrar u ocultar",
