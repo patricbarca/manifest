@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { db } from "./store";
 import type { User } from "../types";
@@ -17,7 +18,8 @@ import { FREE_VIDEOS, PAYMENTS_ENABLED } from "../pricing";
 const COOKIE = "manifest_uid";
 
 function newId(): string {
-  return "u_" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  // Aleatorio criptográfico: el id anónimo es una credencial (no debe poder adivinarse).
+  return "u_" + randomBytes(12).toString("hex");
 }
 
 async function anonymousId(): Promise<string> {
@@ -53,7 +55,11 @@ async function ensureUser(id: string, email = "", name = "Invitado"): Promise<Us
 export async function currentUser(): Promise<User> {
   const auth = await authUser();
   if (auth) return ensureUser(auth.id, auth.email, auth.name ?? auth.email.split("@")[0]);
-  return ensureUser(await anonymousId());
+  const id = await anonymousId();
+  // Con cuentas activas, un visitante sin sesión no puede crear nada: no se guarda
+  // en la base de datos (si no, cada bot que pasa crearía una fila).
+  if (authEnabled()) return (await db.getUser(id)) ?? { id, email: "", name: "Invitado", createdAt: Date.now(), freeVideosUsed: 0 };
+  return ensureUser(id);
 }
 
 /** True si se puede crear: con auth configurada hace falta sesión. */

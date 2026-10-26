@@ -1,6 +1,7 @@
 import { isSignedIn } from "@/lib/db/session";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
 import { currentUser } from "@/lib/db/session";
 import { mediaPath, mediaUrl } from "@/lib/paths";
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
   const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
   // El id del dueño va en el nombre: es lo que luego deja a /media comprobar
   // de quién es la foto sin tener que guardar una tabla aparte.
-  const name = `${user.id}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const name = `${user.id}_${Date.now().toString(36)}_${randomBytes(8).toString("hex")}.${ext}`;
   const abs = mediaPath("uploads", name);
 
   await mkdir(path.dirname(abs), { recursive: true });

@@ -76,7 +76,16 @@ export async function pingBucket(): Promise<boolean> {
  * su URL y la descarga como lo haría el navegador. Devuelve el estado HTTP y,
  * si falla, el código de error del bucket (p. ej. SignatureDoesNotMatch).
  */
+let lastProbe: { at: number; result: { ok: boolean; status?: number; error?: string } } | undefined;
 export async function probeSignedUrl(): Promise<{ ok: boolean; status?: number; error?: string }> {
+  // Es público: como mucho una prueba real cada 10 minutos (cada una escribe en el bucket).
+  if (lastProbe && Date.now() - lastProbe.at < 10 * 60 * 1000) return lastProbe.result;
+  const result = await probeOnce();
+  lastProbe = { at: Date.now(), result };
+  return result;
+}
+
+async function probeOnce(): Promise<{ ok: boolean; status?: number; error?: string }> {
   try {
     const key = "health/probe.txt";
     await s3().send(new PutObjectCommand({ Bucket: BUCKET(), Key: key, Body: "ok", ContentType: "text/plain" }));

@@ -1,5 +1,17 @@
 import type { NextConfig } from "next";
 
+/** Cabeceras de seguridad para todas las respuestas. */
+const securityHeaders = [
+  // Solo HTTPS durante un año (también subdominios).
+  { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
+  // Nadie puede meter la web en un iframe (evita clickjacking en ajustes y pagos).
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+];
+
 const nextConfig: NextConfig = {
   /*
     Empaqueta en .next/standalone solo lo que hace falta para correr, con su
@@ -7,8 +19,11 @@ const nextConfig: NextConfig = {
     llevar node_modules entero: ~1,2 GB contra unos 200 MB.
   */
   output: "standalone",
-  images: { remotePatterns: [{ protocol: "https", hostname: "**" }] },
+  // Sin dominios remotos: el optimizador de imágenes no debe descargar URLs ajenas (era un proxy abierto).
   experimental: { serverActions: { bodySizeLimit: "12mb" } },
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders }];
+  },
 };
 
 export default nextConfig;
