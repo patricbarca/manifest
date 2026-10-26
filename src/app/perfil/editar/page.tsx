@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { ShowcaseEditor } from "@/components/ShowcaseEditor";
 import { LocaleToggle } from "@/components/LocaleToggle";
+import { ReminderToggle } from "@/components/ReminderToggle";
 import { fill } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n/locale";
 import { db } from "@/lib/db/store";
@@ -64,6 +65,14 @@ export default async function EditarPerfilPage() {
         <div className="mt-4 flex items-center justify-between gap-4">
           <span className="t-sub text-[var(--color-label-2)]">{t.aura.language}</span>
           <LocaleToggle current={locale as Locale} />
+        </div>
+        <div className="mt-5 border-t border-[var(--color-hairline)] pt-5">
+          <ReminderToggle initial={who.user.reminders !== false} label={t.aura.reminders} />
+          <p className="t-caption mt-1 text-[var(--color-label-3)]">{t.aura.remindersHint}</p>
+        </div>
+        <div className="mt-5 border-t border-[var(--color-hairline)] pt-5">
+          <p className="t-sub text-[var(--color-label-2)]">{t.aura.installTitle}</p>
+          <p className="t-caption mt-1 text-[var(--color-label-3)]">{t.aura.installHow}</p>
         </div>
         <div className="mt-5 flex items-center justify-between gap-4 border-t border-[var(--color-hairline)] pt-5">
           <span className="t-caption min-w-0 truncate text-[var(--color-label-3)]">{who.user.email ? fill(t.aura.signedInAs, { email: who.user.email }) : ""}</span>

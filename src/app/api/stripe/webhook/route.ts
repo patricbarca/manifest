@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { enqueue } from "@/lib/queue";
 import { verifyWebhook } from "@/lib/stripe";
+import { sendOrderConfirmation } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,7 @@ export async function POST(request: Request) {
       id: string;
       payment_status?: string;
       amount_total?: number;
+      currency?: string;
       metadata?: { projectId?: string };
     };
     const id = session.metadata?.projectId;
@@ -29,6 +31,20 @@ export async function POST(request: Request) {
       });
       if (start) {
         enqueue(id);
+        // Recibo con la renuncia al desistimiento (soporte duradero).
+        const project = await db.getProject(id);
+        const owner = project ? await db.getUser(project.ownerId) : undefined;
+        if (project && owner?.email) {
+          void sendOrderConfirmation({
+            to: owner.email,
+            locale: project.locale,
+            title: project.script?.title || project.title,
+            amountCents: session.amount_total ?? project.paidCents,
+            currency: session.currency ?? "usd",
+            waiverAt: project.waiverAt,
+            url: `${process.env.SITE_URL ?? ""}/video/${id}`,
+          });
+        }
       }
     }
   }

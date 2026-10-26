@@ -8,4 +8,9 @@ export async function register() {
   setTimeout(() => {
     resumeInterrupted().catch((err) => console.error("[queue] al reanudar:", err));
   }, 5000);
+  // Recordatorio diario de racha: se mira cada 15 min (manda a las 19:00 locales, uno al día).
+  const { runReminders } = await import("./lib/reminders");
+  setInterval(() => {
+    runReminders().catch((err) => console.error("[reminders]", err));
+  }, 15 * 60 * 1000);
 }

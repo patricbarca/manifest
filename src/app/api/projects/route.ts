@@ -41,6 +41,8 @@ const CreateProject = z.object({
   templateSlug: z.string().optional(),
   /** Guion aprobado en la revisión. */
   previewId: z.string().startsWith("sp_").optional(),
+  /** Pidió generar ya y aceptó perder el desistimiento (UE). */
+  waiver: z.literal(true),
 });
 
 export async function GET() {
@@ -155,6 +157,7 @@ export async function POST(request: Request) {
     // Marca de agua solo en el vídeo que invita la casa, no en los que
     // pasan gratis por no haber pasarela de pago todavía.
     watermark: charge.ok && charge.kind === "free",
+    waiverAt: Date.now(),
   };
   if (needsCheckout) project.status = "draft";
   await db.putProject(project);

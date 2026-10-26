@@ -257,6 +257,8 @@ export interface Project {
   highlights?: Highlight[];
   /** La persona eligió mostrar los highlights de este vídeo en su perfil. */
   showOnProfile?: boolean;
+  /** Tiene enlace público para compartir (/s/<id>): solo highlights, nunca el vídeo entero. */
+  shared?: boolean;
   /** MP4 final, si el ensamblado corrio. Si no, el player web es la entrega. */
   exportUrl?: string;
   /** Lo que pagó el usuario, en centavos de USD. 0 si fue el vídeo gratis. */
@@ -266,6 +268,8 @@ export interface Project {
   /** Plantilla del market de la que nació, si aplica. */
   templateSlug?: string;
   watermark: boolean;
+  /** Cuándo pidió generar ya y aceptó perder el desistimiento de 14 días (UE). */
+  waiverAt?: number;
   error?: string;
 }
 
@@ -329,4 +333,14 @@ export interface User {
   usedQuotes?: string[];
   /** Cuándo dio el consentimiento expreso para tratar sus fotos de cara, y qué versión del texto. */
   photoConsent?: { at: number; version: string };
+  /** Quién le invitó (userId), si llegó por un enlace compartido. */
+  referredBy?: string;
+  /** Zona horaria del navegador (para recordar a una hora razonable). */
+  tz?: string;
+  /** Idioma de la web la última vez (para escribirle en su idioma). */
+  locale?: Locale;
+  /** Recordatorio diario por email de la racha. Sin valor = activado. */
+  reminders?: boolean;
+  /** Último día (local) en que se le envió el recordatorio. */
+  lastReminder?: string;
 }

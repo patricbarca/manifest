@@ -241,6 +241,9 @@ def logo_png(out, sub=None):
     tl = TextLayer()
     tl.block(BRAND, serif(112, 500), oy + R + 150)
     tl.block(sub or L["tagline"], serif(50, 400, italic=True), oy + R + 255, fill=(255, 240, 230))
+    # En el cierre, invitación a volver a la app (el MP4 descargado también la lleva).
+    if sub and L.get("endCta"):
+        tl.block(L["endCta"], sans(34, 500), oy + R + 360, fill=(255, 255, 255, 200))
     tl.onto(img)
     img.save(out)
 

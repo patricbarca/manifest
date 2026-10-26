@@ -1,5 +1,7 @@
 "use client";
 
+import { CheckinButton } from "./CheckinButton";
+import { ShareVideoButton } from "./ShareVideoButton";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { isAnimated, type Project } from "@/lib/types";
@@ -79,6 +81,7 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
             <VisualizationPlayer project={project} t={t} />
           )}
           <p className="t-caption mt-2 text-center text-[var(--color-label-3)]">✦ {t.aiLabel}</p>
+          {project.status === "ready" && <CheckinButton projectId={project.id} t={t.aura.checkin} />}
         </div>
 
         <div className="space-y-8">
@@ -114,6 +117,9 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
             >
               {t.common.createAnother}
             </Link>
+            {!!project.highlights?.some((h) => !h.hidden) && (
+              <ShareVideoButton projectId={project.id} initial={!!project.shared} t={t.share} />
+            )}
           </div>
 
           {/* El guion en texto: mucha gente lo imprime o lo lee sin el vídeo. */}

@@ -63,9 +63,11 @@ export async function GET(
       project.ownerId !== user.id &&
       parts.length === 2 &&
       isHighlightFile(parts[1]) &&
-      project.showOnProfile === true &&
       !!project.highlights?.some((h) => !h.hidden && (h.videoUrl.endsWith(`/${parts[1]}`) || h.posterUrl.endsWith(`/${parts[1]}`))) &&
-      (await social.getProfile(project.ownerId).then((pr) => (pr ? canSee(pr, user.id) : false)));
+      // Con enlace compartido, cualquiera; si no, solo si lo mostró en su perfil y el perfil se lo permite.
+      (project.shared === true ||
+        (project.showOnProfile === true &&
+          (await social.getProfile(project.ownerId).then((pr) => (pr ? canSee(pr, user.id) : false)))));
     if (!project || (project.ownerId !== user.id && !shared)) {
       return NextResponse.json({ error: "No es tuyo" }, { status: 403 });
     }
