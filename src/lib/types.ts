@@ -266,6 +266,8 @@ export interface Project {
   /** Plantilla del market de la que nació, si aplica. */
   templateSlug?: string;
   watermark: boolean;
+  /** Cuándo pidió generar ya y aceptó perder el desistimiento de 14 días (UE). */
+  waiverAt?: number;
   error?: string;
 }
 

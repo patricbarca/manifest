@@ -144,12 +144,14 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
       ? [
           { h: "Si el vídeo falla", p: ["Si el vídeo no se genera o llega con un fallo técnico (por ejemplo, una escena vacía o sin sonido), te lo volvemos a generar sin coste o te devolvemos el dinero, como prefieras."] },
           { h: "Si no te gusta el resultado", p: ["Antes de pagar revisas y corriges el guion. Una vez generado, el vídeo se crea solo para ti y tiene un coste real de producción, así que no ofrecemos devoluciones por gusto. Escríbenos igualmente: intentaremos arreglarlo."] },
+          { h: "Desistimiento", p: ["Antes de generar nos pides expresamente que empecemos ya y aceptas que, al empezar, pierdes el derecho de desistimiento de 14 días. Te lo confirmamos por email junto con el recibo. Esto no afecta a lo anterior: si el vídeo falla, te lo rehacemos o te devolvemos el dinero."] },
           { h: "Cómo pedirlo", p: [`Escribe a ${c} en los 14 días siguientes con el enlace del vídeo. Respondemos en unos días hábiles.`] },
           { h: "Tus derechos como consumidor", p: ["Nada de esto limita los derechos que te reconozca la ley de consumo de tu país."] },
         ]
       : [
           { h: "If the video fails", p: ["If the video isn't generated or arrives with a technical fault (for example, an empty scene or no sound), we'll regenerate it at no cost or refund you, whichever you prefer."] },
           { h: "If you don't like the result", p: ["Before paying you review and correct the script. Once generated, the video is made just for you and has a real production cost, so we don't offer refunds for taste. Write to us anyway: we'll try to fix it."] },
+          { h: "Right of withdrawal", p: ["Before generating, you expressly ask us to start right away and acknowledge that, once it starts, you lose the 14-day right of withdrawal. We confirm this by email with your receipt. This doesn't change the above: if the video fails, we remake it or refund you."] },
           { h: "How to ask", p: [`Write to ${c} within 14 days with the link to your video. We reply within a few business days.`] },
           { h: "Your consumer rights", p: ["None of this limits the rights your country's consumer law gives you."] },
         ],

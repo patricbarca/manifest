@@ -307,6 +307,8 @@ export const es: Dictionary = {
     reviewScene: "Escena {n}",
     submit: "Crear mi vídeo",
     submitting: "Creando…",
+    waiver: "Quiero que mi vídeo empiece a generarse ahora mismo. Entiendo que, al empezar, pierdo el derecho de desistimiento de 14 días (si el vídeo falla, te lo rehacemos o te devolvemos el dinero).",
+    waiverMore: "Condiciones",
   },
   tones: {
     calma: { label: "Calma", blurb: "Lenta y grave. Para la noche." },

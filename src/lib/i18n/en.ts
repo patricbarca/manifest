@@ -308,6 +308,8 @@ export const en = {
     reviewScene: "Scene {n}",
     submit: "Create my video",
     submitting: "Creating…",
+    waiver: "I want my video to start generating right now. I understand that once it starts I lose the 14-day right of withdrawal (if the video fails, we remake it or refund you).",
+    waiverMore: "Terms",
   },
   tones: {
     calma: { label: "Calm", blurb: "Slow and low. For the evening." },

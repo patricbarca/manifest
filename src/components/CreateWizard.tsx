@@ -90,6 +90,8 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
   const [consent, setConsent] = useState(false);
   // Consentimiento aparte para tratar las fotos de cara (dato biométrico): proveedores, plazo y uso.
   const [bioConsent, setBioConsent] = useState(false);
+  // UE: para generar ya hay que pedirlo expresamente y aceptar perder el desistimiento de 14 días.
+  const [waiver, setWaiver] = useState(false);
   const [people, setPeople] = useState<PersonDraft[]>([]);
   const [peopleConsent, setPeopleConsent] = useState(false);
   const [uploadingPerson, setUploadingPerson] = useState<number>();
@@ -346,6 +348,7 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
           voice,
           templateSlug: template?.slug,
           details,
+          waiver,
           // Solo si la revisión sigue siendo de lo que se va a generar.
           previewId: preview?.key === scriptKey ? preview.previewId : undefined,
         }),
@@ -857,6 +860,16 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
         </p>
       )}
 
+      {step === STEP.review && (
+        <label className="t-caption mt-8 flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
+          <input type="checkbox" checked={waiver} onChange={(e) => setWaiver(e.target.checked)} className="mt-[2px] h-4 w-4 shrink-0 accent-white" />
+          <span>
+            {t.create.waiver}{" "}
+            <a href="/reembolsos" target="_blank" className="underline">{t.create.waiverMore}</a>
+          </span>
+        </label>
+      )}
+
       {/* ── Navegación ─────────────────────────────────────────────────── */}
       <div className="mt-10 flex items-center justify-between">
         <button
@@ -880,7 +893,7 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
         ) : (
           <button
             onClick={submit}
-            disabled={submitting || loadingPreview}
+            disabled={submitting || loadingPreview || !waiver}
             className="interactive rounded-full bg-white px-6 py-2.5 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-30"
           >
             {submitting ? t.create.submitting : t.create.submit}

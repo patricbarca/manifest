@@ -40,6 +40,11 @@ export async function createCheckout(opts: {
     "payment_intent_data[metadata][projectId]": opts.projectId,
     locale: opts.locale === "es" ? "es" : "en",
     allow_promotion_codes: "true",
+    "metadata[waiver]": "accepted",
+    "custom_text[submit][message]":
+      opts.locale === "es"
+        ? "Al pagar, tu vídeo empieza a generarse ya y renuncias al desistimiento de 14 días. Si falla, te lo rehacemos o te devolvemos el dinero."
+        : "When you pay, your video starts generating right away and you waive the 14-day withdrawal right. If it fails, we remake it or refund you.",
   });
   const res = await fetch(`${API}/checkout/sessions`, {
     method: "POST",
