@@ -85,7 +85,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
         </Link>
       )}
 
-      {groups.length > 0 && <Highlights groups={groups} closeLabel={t.aura.close} />}
+      {groups.length > 0 && <Highlights groups={groups} closeLabel={t.aura.close} aiLabel={t.aiLabel} />}
 
       <nav className="flex border-b border-[var(--color-hairline)]">
         {TABS.map((k) => (
@@ -104,7 +104,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
       {tab === "posts" &&
         (posts.length ? (
           <div>
-            <ProfileFeed posts={posts} owner labels={{ close: t.aura.close, onlyYou: t.aura.onlyYou, scenes: t.aura.scenes, create: t.nav.newVisualization }} />
+            <ProfileFeed posts={posts} owner labels={{ close: t.aura.close, onlyYou: t.aura.onlyYou, scenes: t.aura.scenes, create: t.nav.newVisualization, ai: t.aiLabel }} />
             <p className="t-caption mt-3 text-[var(--color-label-3)]">{t.aura.feedHintOwner}</p>
           </div>
         ) : (

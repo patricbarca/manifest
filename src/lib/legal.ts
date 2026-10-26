@@ -6,7 +6,7 @@ import type { Locale } from "./i18n/locale";
  * Borrador: debe revisarlo un abogado antes de cobrar.
  */
 
-export const LEGAL_UPDATED = "2026-10-25";
+export const LEGAL_UPDATED = "2026-10-26";
 
 
 const UPLOAD_DAYS = Number(process.env.UPLOAD_TTL_DAYS ?? 30);
@@ -109,6 +109,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
             { h: "Lo que generamos", p: [
               "El vídeo es para tu uso personal. Puedes compartirlo, pero eres responsable de dónde y cómo lo haces, sobre todo si salen otras personas.",
               "Las imágenes y voces las crea una IA: pueden tener errores o parecidos imperfectos. Revisa el guion antes de generar.",
+              "Cada vídeo lleva el aviso «Generado con IA». No lo quites ni presentes el vídeo como real al compartirlo.",
             ] },
             { h: "Pagos", p: ["Pagas por vídeo, al precio que se muestra antes de confirmar. No hay suscripción. Las condiciones de devolución están en la página de reembolsos."] },
             { h: "Disponibilidad", p: ["Hacemos lo posible por que el servicio funcione, pero puede tener interrupciones. Podemos cambiar o retirar funciones avisando en esta web."] },
@@ -126,6 +127,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
             { h: "What we generate", p: [
               "The video is for your personal use. You can share it, but you're responsible for where and how, especially if other people appear in it.",
               "Images and voices are created by AI: they can contain mistakes or imperfect likeness. Review the script before generating.",
+              "Every video carries an \"AI-generated\" notice. Don't remove it or present the video as real when you share it.",
             ] },
             { h: "Payments", p: ["You pay per video, at the price shown before you confirm. There's no subscription. Refund conditions are on the refunds page."] },
             { h: "Availability", p: ["We do our best to keep the service running, but it can be interrupted. We may change or remove features with notice on this site."] },

@@ -79,12 +79,12 @@ export default async function UserPage({ params }: { params: Promise<{ handle: s
           )
         }
       />
-      {posts.length > 0 && <Highlights groups={posts} closeLabel={t.aura.close} />}
+      {posts.length > 0 && <Highlights groups={posts} closeLabel={t.aura.close} aiLabel={t.aiLabel} />}
       <div>
         <p className="t-sub border-b border-[var(--color-hairline)] pb-3 text-center font-medium">{t.aura.posts}</p>
         <div className="mt-4">
           {posts.length ? (
-            <ProfileFeed posts={posts} owner={false} labels={{ close: t.aura.close, onlyYou: t.aura.onlyYou, scenes: t.aura.scenes }} />
+            <ProfileFeed posts={posts} owner={false} labels={{ close: t.aura.close, onlyYou: t.aura.onlyYou, scenes: t.aura.scenes, ai: t.aiLabel }} />
           ) : (
             <p className="t-sub py-8 text-center text-[var(--color-label-2)]">{t.aura.noPosts}</p>
           )}

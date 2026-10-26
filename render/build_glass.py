@@ -453,11 +453,23 @@ with open(f"{T}/list.txt", "w") as fh:
 subprocess.run([FF, "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", f"{T}/list.txt", "-c", "copy", f"{T}/joined.mp4"], check=True)
 total = dur(f"{T}/joined.mp4")
 subprocess.run([sys.executable, os.path.join(HERE, "music.py"), f"{total + 1:.2f}", f"{T}/music.wav"], check=True)
-subprocess.run([FF, "-y", "-loglevel", "error", "-i", f"{T}/joined.mp4", "-i", f"{T}/music.wav", "-filter_complex",
+
+# Aviso "Generado con IA" pequeño y discreto, abajo a la izquierda, durante todo el vídeo.
+ai = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+ad = ImageDraw.Draw(ai)
+af = sans(26, 500)
+label = L.get("aiLabel", "AI-generated · ManifestLifeAI")
+tw = ad.textlength(label, font=af)
+ad.rounded_rectangle([40, H - 110, 40 + tw + 36, H - 60], radius=25, fill=(0, 0, 0, 110))
+ad.text((58, H - 101), label, font=af, fill=(255, 255, 255, 210))
+ai.save(f"{T}/ailabel.png")
+subprocess.run([FF, "-y", "-loglevel", "error", "-i", f"{T}/joined.mp4", "-i", f"{T}/music.wav",
+                "-loop", "1", "-i", f"{T}/ailabel.png", "-filter_complex",
+                "[0:v][2:v]overlay=0:0:shortest=1,format=yuv420p[vv];"
                 "[0:a]aresample=44100,aformat=channel_layouts=stereo,asplit=2[v1][v2];"
                 "[1:a]volume=0.30[m];"
                 "[m][v1]sidechaincompress=threshold=0.015:ratio=5:attack=40:release=900[md];"
                 f"[v2][md]amix=inputs=2:normalize=0:duration=first,afade=out:st={total - 3:.2f}:d=3[ao]",
-                "-map", "0:v", "-map", "[ao]", "-c:v", "libx264", "-crf", str(JOB.get("crf", 27)), "-preset", "slow",
+                "-map", "[vv]", "-map", "[ao]", "-c:v", "libx264", "-crf", str(JOB.get("crf", 27)), "-preset", "slow",
                 "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", OUT], check=True)
 print(json.dumps({"ok": True, "segments": len(segs), "durationSec": round(dur(OUT), 1)}))

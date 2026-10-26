@@ -327,4 +327,6 @@ export interface User {
   freeVideosUsed: number;
   /** Frases de apertura que ya le salieron, para no repetirlas. */
   usedQuotes?: string[];
+  /** Cuándo dio el consentimiento expreso para tratar sus fotos de cara, y qué versión del texto. */
+  photoConsent?: { at: number; version: string };
 }

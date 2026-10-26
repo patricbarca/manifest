@@ -88,6 +88,8 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
   const [videoLocale, setVideoLocale] = useState<VideoLocale>(locale as VideoLocale);
   const [voice, setVoice] = useState<string>(DEFAULT_VOICE);
   const [consent, setConsent] = useState(false);
+  // Consentimiento aparte para tratar las fotos de cara (dato biométrico): proveedores, plazo y uso.
+  const [bioConsent, setBioConsent] = useState(false);
   const [people, setPeople] = useState<PersonDraft[]>([]);
   const [peopleConsent, setPeopleConsent] = useState(false);
   const [uploadingPerson, setUploadingPerson] = useState<number>();
@@ -289,6 +291,7 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
     const body = new FormData();
     body.append("selfie", file);
     body.append("consent", String(agreed));
+    body.append("biometric", String(bioConsent));
     try {
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json();
@@ -530,12 +533,24 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
               />
               <span>{t.consent}</span>
             </label>
+            <label className="t-sub flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
+              <input
+                type="checkbox"
+                checked={bioConsent}
+                onChange={(e) => setBioConsent(e.target.checked)}
+                className="mt-[3px] h-4 w-4 accent-white"
+              />
+              <span>
+                {t.biometricConsent}{" "}
+                <a href="/privacidad" target="_blank" className="underline">{t.biometricMore}</a>
+              </span>
+            </label>
 
             <input
               type="file"
               multiple
               accept="image/jpeg,image/png,image/webp"
-              disabled={!consent || uploading || photoUrls.length >= 4}
+              disabled={!consent || !bioConsent || uploading || photoUrls.length >= 4}
               onChange={async (e) => {
                 const files = Array.from(e.target.files ?? []).slice(0, 4 - photoUrls.length);
                 e.target.value = "";
