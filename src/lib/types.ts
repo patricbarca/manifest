@@ -335,4 +335,12 @@ export interface User {
   photoConsent?: { at: number; version: string };
   /** Quién le invitó (userId), si llegó por un enlace compartido. */
   referredBy?: string;
+  /** Zona horaria del navegador (para recordar a una hora razonable). */
+  tz?: string;
+  /** Idioma de la web la última vez (para escribirle en su idioma). */
+  locale?: Locale;
+  /** Recordatorio diario por email de la racha. Sin valor = activado. */
+  reminders?: boolean;
+  /** Último día (local) en que se le envió el recordatorio. */
+  lastReminder?: string;
 }

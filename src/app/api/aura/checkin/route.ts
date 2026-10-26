@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db/store";
 import { me } from "@/lib/social/me";
+import { rememberTz } from "@/lib/social/remember-tz";
 import { social } from "@/lib/social/store";
 import { AURA_PER_CHECKIN, levelFor, localDay, statsFrom } from "@/lib/social/aura";
 
@@ -23,6 +24,7 @@ export async function POST(request: Request) {
   if (!project || project.ownerId !== who.user.id || project.status !== "ready") {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
+  await rememberTz(who.user, body.data.tz);
   const day = localDay(body.data.tz);
   const awarded = await social.addView({ userId: who.user.id, projectId: project.id, day, points: AURA_PER_CHECKIN });
   const stats = statsFrom(await social.listViews(who.user.id), day);

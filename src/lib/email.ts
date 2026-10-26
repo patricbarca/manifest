@@ -85,3 +85,31 @@ export async function sendOrderConfirmation(opts: {
     console.error("[email]", err);
   }
 }
+
+/** Recordatorio de racha: aún no ha visto su vídeo hoy. */
+export async function sendStreakReminder(opts: { to: string; locale: Locale; streak: number; url: string; settingsUrl: string }): Promise<boolean> {
+  if (!emailEnabled() || !opts.to) return false;
+  const es = opts.locale === "es";
+  const subject = es ? `Tu racha de ${opts.streak} ${opts.streak === 1 ? "día" : "días"} te espera ✨` : `Your ${opts.streak}-day streak is waiting ✨`;
+  const html = `<!doctype html><html><body style="margin:0;background:#0e0b14;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#fff">
+  <div style="max-width:480px;margin:0 auto;padding:40px 24px;text-align:center">
+    <p style="font-size:15px;color:#d8cfe0;margin:0 0 8px">ManifestLifeAI</p>
+    <h1 style="font-size:24px;font-weight:600;margin:0 0 16px">${es ? "Cinco minutos para ti" : "Five minutes for you"}</h1>
+    <p style="font-size:16px;line-height:1.5;color:#cfc6d8;margin:0 0 28px">${
+      es ? "Hoy aún no has visto tu visualización. Respira, mírate y siente que ya es tuyo." : "You haven't watched your visualization today. Breathe, watch yourself and feel it's already yours."
+    }</p>
+    <a href="${opts.url}" style="display:inline-block;background:#fff;color:#000;text-decoration:none;padding:14px 28px;border-radius:999px;font-weight:600">${
+      es ? "Ver mi vídeo" : "Watch my video"
+    }</a>
+    <p style="font-size:12px;color:#8a8194;margin:32px 0 0"><a href="${opts.settingsUrl}" style="color:#8a8194">${
+      es ? "Dejar de recibir recordatorios" : "Stop receiving reminders"
+    }</a></p>
+  </div></body></html>`;
+  try {
+    await send(opts.to, subject, html);
+    return true;
+  } catch (err) {
+    console.error("[email]", err);
+    return false;
+  }
+}

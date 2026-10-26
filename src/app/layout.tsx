@@ -14,6 +14,7 @@ const CONTACT = process.env.CONTACT_EMAIL;
 const SITE_URL = process.env.SITE_URL ?? "https://manifestlife.ai";
 
 export const metadata: Metadata = {
+  appleWebApp: { capable: true, title: "ManifestLifeAI", statusBarStyle: "black-translucent" },
   metadataBase: new URL(SITE_URL),
   title: "ManifestLifeAI — see yourself living it",
   description:

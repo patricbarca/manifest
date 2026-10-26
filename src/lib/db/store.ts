@@ -68,6 +68,10 @@ const jsonDb = {
     });
   },
 
+  async listUsers(): Promise<User[]> {
+    return Object.values(await readCollection<User>("users")).filter((u) => !!u.email);
+  },
+
   async listAllProjects(): Promise<Project[]> {
     return Object.values(await readCollection<Project>("projects"));
   },

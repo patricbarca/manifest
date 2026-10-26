@@ -74,6 +74,12 @@ export const supabaseDb = {
     await serialize(async () => check(await sb().from("projects").delete().eq("id", id), "borrar proyecto"));
   },
 
+  /** Cuentas con email (para recordatorios). */
+  async listUsers(): Promise<User[]> {
+    const rows = check(await sb().from("app_users").select("data").not("email", "is", null), "listar usuarios");
+    return (rows ?? []).map((r) => r.data as User);
+  },
+
   async listAllProjects(): Promise<Project[]> {
     const rows = check(await sb().from("projects").select("data"), "listar todos");
     return (rows ?? []).map((r) => r.data as Project);
