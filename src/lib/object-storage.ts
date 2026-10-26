@@ -88,3 +88,29 @@ export async function probeSignedUrl(): Promise<{ ok: boolean; status?: number; 
     return { ok: false, error: err instanceof Error ? err.message.slice(0, 120) : "error" };
   }
 }
+
+/**
+ * Lee un fichero del bucket y lo devuelve como stream, respetando `Range`
+ * (Safari no reproduce vídeo sin respuestas 206). Así el navegador nunca
+ * sale de nuestro dominio. Devuelve null si no existe.
+ */
+export async function getObjectStream(
+  key: string,
+  range?: string | null,
+): Promise<{ body: ReadableStream; status: 200 | 206; length?: number; contentRange?: string; contentType?: string } | null> {
+  try {
+    const out = await s3().send(new GetObjectCommand({ Bucket: BUCKET(), Key: key, ...(range ? { Range: range } : {}) }));
+    if (!out.Body) return null;
+    return {
+      body: out.Body.transformToWebStream(),
+      status: out.ContentRange ? 206 : 200,
+      length: out.ContentLength,
+      contentRange: out.ContentRange,
+      contentType: out.ContentType,
+    };
+  } catch (err) {
+    const name = (err as { name?: string }).name;
+    if (name === "NoSuchKey" || name === "NotFound") return null;
+    throw err;
+  }
+}

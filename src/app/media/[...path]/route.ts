@@ -5,7 +5,7 @@ import { Readable } from "node:stream";
 import { currentUser } from "@/lib/db/session";
 import { db } from "@/lib/db/store";
 import { contentTypeFor, resolveMediaPath } from "@/lib/paths";
-import { objectStorageEnabled, signedUrl } from "@/lib/object-storage";
+import { getObjectStream, objectStorageEnabled } from "@/lib/object-storage";
 import { social } from "@/lib/social/store";
 import { canSee } from "@/lib/social/aura";
 import { isHighlightFile } from "@/lib/highlights";
@@ -76,10 +76,22 @@ export async function GET(
     info = await stat(absolute);
   } catch {
     // Ya no está en disco: si es de un vídeo terminado, vive en el bucket.
-    // Se redirige a un enlace firmado que caduca (la descarga no pasa por el servidor).
+    // Se sirve a través del servidor (con Range), sin redirigir al bucket:
+    // el enlace firmado fallaba en algunos navegadores.
     if (kind === "generated" && objectStorageEnabled()) {
-      const url = await signedUrl(`generated/${parts.join("/")}`);
-      return NextResponse.redirect(url, { status: 302, headers: { "Cache-Control": "private, no-store" } });
+      const obj = await getObjectStream(`generated/${parts.join("/")}`, request.headers.get("range"));
+      if (!obj) return NextResponse.json({ error: "No existe" }, { status: 404 });
+      return new NextResponse(obj.body, {
+        status: obj.status,
+        headers: {
+          "Content-Type": contentTypeFor(absolute),
+          "Cache-Control": "private, max-age=3600",
+          "Accept-Ranges": "bytes",
+          "X-Content-Type-Options": "nosniff",
+          ...(obj.length !== undefined ? { "Content-Length": String(obj.length) } : {}),
+          ...(obj.contentRange ? { "Content-Range": obj.contentRange } : {}),
+        },
+      });
     }
     return NextResponse.json({ error: "No existe" }, { status: 404 });
   }
