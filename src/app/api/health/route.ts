@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkStorage } from "@/lib/storage-check";
-import { objectStorageEnabled, pingBucket } from "@/lib/object-storage";
+import { objectStorageEnabled, pingBucket, probeSignedUrl } from "@/lib/object-storage";
 import { supabaseConfigured } from "@/lib/db/supabase-store";
 import { authEnabled } from "@/lib/supabase/config";
 
@@ -20,6 +20,7 @@ export async function GET(request: Request) {
   // Con ?deep=1 también se prueba el bucket (no lo usa la sonda de Railway).
   const deep = new URL(request.url).searchParams.get("deep") === "1";
   const bucket = objectStorageEnabled() ? (deep ? await pingBucket() : "configured") : "off";
+  const signed = deep && objectStorageEnabled() ? await probeSignedUrl() : undefined;
 
   // El healthcheck no falla por no tener volumen: la app sirve igual, y
   // tumbar el servicio no arregla nada. Se informa para poder verlo de un
@@ -40,6 +41,7 @@ export async function GET(request: Request) {
       database: supabaseConfigured() ? "supabase" : "json",
       auth: authEnabled() ? "on" : "off",
       bucket,
+      ...(signed ? { signedUrl: signed } : {}),
     },
   });
 }

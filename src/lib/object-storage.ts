@@ -70,3 +70,21 @@ export async function pingBucket(): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Prueba de punta a punta del enlace firmado: sube un fichero mínimo, firma
+ * su URL y la descarga como lo haría el navegador. Devuelve el estado HTTP y,
+ * si falla, el código de error del bucket (p. ej. SignatureDoesNotMatch).
+ */
+export async function probeSignedUrl(): Promise<{ ok: boolean; status?: number; error?: string }> {
+  try {
+    const key = "health/probe.txt";
+    await s3().send(new PutObjectCommand({ Bucket: BUCKET(), Key: key, Body: "ok", ContentType: "text/plain" }));
+    const url = await signedUrl(key, 120);
+    const res = await fetch(url);
+    const body = await res.text();
+    return { ok: res.ok && body === "ok", status: res.status, error: res.ok ? undefined : body.match(/<Code>([^<]+)<\/Code>/)?.[1] ?? body.slice(0, 80) };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message.slice(0, 120) : "error" };
+  }
+}
