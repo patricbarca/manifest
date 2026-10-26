@@ -100,6 +100,8 @@ export async function renderGlass(
       closeLine: x.closeLine,
       seal: x.seal,
       tomorrow: x.tomorrow,
+      // Aviso de contenido sintético (AI Act art. 50), grabado en el vídeo.
+      aiLabel: project.locale === "es" ? "Generado con IA · ManifestLifeAI" : "AI-generated · ManifestLifeAI",
       quote: quoteText(project.locale, project.quoteId, project.id),
       affirmations,
     },

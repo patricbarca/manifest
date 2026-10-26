@@ -97,6 +97,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
               closeLabel={t.aura.close}
               youLabel={t.feed.you}
               isYou={it.author.userId === who.user.id}
+              aiLabel={t.aiLabel}
             />
           );
         }

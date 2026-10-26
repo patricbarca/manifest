@@ -34,7 +34,7 @@ function useInView<T extends HTMLElement>() {
  * Publicación de alguien de tu círculo: sus escenas animadas, sin sonido,
  * una tras otra. Al tocar se abren a pantalla completa.
  */
-export function CirclePostCard({ author, post, closeLabel, youLabel, isYou }: { author: Author; post: HighlightGroup; closeLabel: string; youLabel: string; isYou: boolean }) {
+export function CirclePostCard({ author, post, closeLabel, youLabel, isYou, aiLabel }: { author: Author; post: HighlightGroup; closeLabel: string; youLabel: string; isYou: boolean; aiLabel: string }) {
   const [i, setI] = useState(0);
   const [open, setOpen] = useState(false);
   const { ref, inView } = useInView<HTMLVideoElement>();
@@ -72,9 +72,10 @@ export function CirclePostCard({ author, post, closeLabel, youLabel, isYou }: { 
           ))}
         </span>
         {item.label && <span className="t-caption absolute bottom-3 left-3 rounded-full bg-black/50 px-2.5 py-1 text-white">{item.label}</span>}
+        <span className="absolute bottom-3 right-3 rounded-full bg-black/45 px-2.5 py-1 text-[11px] text-white/85">✦ {aiLabel}</span>
       </button>
       <p className="t-sub px-4 py-3">{post.title}</p>
-      {open && <Viewer group={post} start={i} onClose={() => setOpen(false)} closeLabel={closeLabel} />}
+      {open && <Viewer group={post} start={i} onClose={() => setOpen(false)} closeLabel={closeLabel} aiLabel={aiLabel} />}
     </article>
   );
 }

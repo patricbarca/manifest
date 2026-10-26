@@ -72,11 +72,14 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
       <div className="grid gap-14 lg:grid-cols-[minmax(0,380px)_1fr] lg:items-start">
         {/* Con el montaje nuevo el MP4 es el producto: voz, música y frases ya
             van dentro. El reproductor web queda para los vídeos antiguos. */}
-        {project.voiceLines && project.exportUrl ? (
-          <AuraVideo projectId={project.id} src={project.exportUrl} labels={t.aura.toast} />
-        ) : (
-          <VisualizationPlayer project={project} t={t} />
-        )}
+        <div>
+          {project.voiceLines && project.exportUrl ? (
+            <AuraVideo projectId={project.id} src={project.exportUrl} labels={t.aura.toast} />
+          ) : (
+            <VisualizationPlayer project={project} t={t} />
+          )}
+          <p className="t-caption mt-2 text-center text-[var(--color-label-3)]">✦ {t.aiLabel}</p>
+        </div>
 
         <div className="space-y-8">
           <div>

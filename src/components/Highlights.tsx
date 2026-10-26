@@ -9,7 +9,7 @@ export type HighlightGroup = { id: string; title: string; items: HighlightItem[]
  * Highlights como en Instagram: un círculo por escena (cada deseo animado).
  * Al tocar se ven a pantalla completa, sin sonido, y siguen con las demás.
  */
-export function Highlights({ groups, closeLabel }: { groups: HighlightGroup[]; closeLabel: string }) {
+export function Highlights({ groups, closeLabel, aiLabel }: { groups: HighlightGroup[]; closeLabel: string; aiLabel: string }) {
   const [open, setOpen] = useState<number | null>(null);
   // Todas las escenas visibles, en orden, como una sola secuencia de historias.
   const all: HighlightGroup = {
@@ -28,12 +28,12 @@ export function Highlights({ groups, closeLabel }: { groups: HighlightGroup[]; c
           <span className="t-caption w-full truncate text-center text-[var(--color-label-2)]">{it.caption ?? "\u00a0"}</span>
         </button>
       ))}
-      {open !== null && <Viewer group={all} start={open} onClose={() => setOpen(null)} closeLabel={closeLabel} />}
+      {open !== null && <Viewer group={all} start={open} onClose={() => setOpen(null)} closeLabel={closeLabel} aiLabel={aiLabel} />}
     </div>
   );
 }
 
-export function Viewer({ group, start, onClose, closeLabel }: { group: HighlightGroup; start: number; onClose: () => void; closeLabel: string }) {
+export function Viewer({ group, start, onClose, closeLabel, aiLabel }: { group: HighlightGroup; start: number; onClose: () => void; closeLabel: string; aiLabel: string }) {
   const [i, setI] = useState(start);
   const [progress, setProgress] = useState(0);
   const ref = useRef<HTMLVideoElement>(null);
@@ -74,6 +74,8 @@ export function Viewer({ group, start, onClose, closeLabel }: { group: Highlight
           ))}
         </div>
         <p className="t-caption absolute left-3 top-6 max-w-[75%] truncate text-white/90">{item.label || group.title}</p>
+        {/* Aviso de contenido generado con IA (AI Act art. 50). */}
+        <span className="pointer-events-none absolute bottom-4 left-3 rounded-full bg-black/45 px-2.5 py-1 text-[11px] text-white/85">✦ {aiLabel}</span>
         <button type="button" onClick={prev} className="absolute inset-y-0 left-0 w-1/3" aria-label="←" />
         <button type="button" onClick={next} className="absolute inset-y-0 right-0 w-2/3" aria-label="→" />
         <button type="button" onClick={onClose} className="absolute right-3 top-5 rounded-full bg-black/40 px-3 py-1 text-[13px] text-white">

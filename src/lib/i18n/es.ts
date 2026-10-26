@@ -402,6 +402,10 @@ export const es: Dictionary = {
   },
   consent:
     "Confirmo que las fotos son mías, que soy mayor de edad y que autorizo a usarlas para generar mi vídeo.",
+  biometricConsent:
+    "Doy mi consentimiento expreso para que mis fotos de cara se procesen con IA solo para crear mis escenas. Se envían a fal.ai y a los modelos que ejecuta (ByteDance, MiniMax, ElevenLabs), con servidores fuera de mi país; no se usan para entrenar modelos ni para identificarme, y se borran como mucho a los 30 días. Puedo retirar el consentimiento borrando mis vídeos.",
+  biometricMore: "Más información",
+  aiLabel: "Generado con IA",
   safety: {
     tooShort: "Cuéntanos un poco más: al menos una frase completa.",
     tooLong: "Demasiado largo. Resúmelo en unas pocas frases.",

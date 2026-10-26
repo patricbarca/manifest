@@ -17,7 +17,7 @@ export function ProfileFeed({
 }: {
   posts: FeedPost[];
   owner: boolean;
-  labels: { close: string; onlyYou: string; scenes: string; create?: string };
+  labels: { close: string; onlyYou: string; scenes: string; create?: string; ai: string };
 }) {
   const [open, setOpen] = useState<number | null>(null);
   return (
@@ -68,7 +68,7 @@ export function ProfileFeed({
           );
         })}
       </div>
-      {open !== null && <Viewer group={posts[open]} start={0} onClose={() => setOpen(null)} closeLabel={labels.close} />}
+      {open !== null && <Viewer group={posts[open]} start={0} onClose={() => setOpen(null)} closeLabel={labels.close} aiLabel={labels.ai} />}
     </>
   );
 }
