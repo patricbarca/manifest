@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { isSignedIn } from "@/lib/db/session";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -122,7 +123,7 @@ export async function POST(request: Request) {
   const template = input.templateSlug ? templateBySlug(input.templateSlug) : undefined;
 
   const project: Project = {
-    id: "p_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    id: "p_" + Date.now().toString(36) + randomBytes(5).toString("hex"),
     ownerId: user.id,
     createdAt: Date.now(),
     updatedAt: Date.now(),
