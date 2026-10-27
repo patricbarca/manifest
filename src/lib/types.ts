@@ -130,6 +130,8 @@ export interface Manifestation {
   /** Voz de la afirmación (con la voz y el idioma de arriba). */
   voiceUrl?: string;
   highlight?: Highlight;
+  /** La muestra en su perfil público (solo el highlight, sin sonido ni el deseo). */
+  onProfile?: boolean;
   /** Cuándo la marcó como cumplida. */
   manifestedAt?: number;
   /** Proyecto del que salió, si nació dentro de un vídeo completo. */

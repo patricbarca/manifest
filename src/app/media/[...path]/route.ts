@@ -57,9 +57,19 @@ export async function GET(
       return NextResponse.json({ error: "No es tuyo" }, { status: 403 });
     }
   } else if (parts[0].startsWith("m_")) {
-    // Ficheros de una manifestación: solo su dueño.
+    // Ficheros de una manifestación: su dueño todo; los demás, solo el
+    // highlight si la mostró en su perfil y el perfil se lo permite.
     const m = await manifests.get(parts[0]);
-    if (!m || m.ownerId !== user.id) {
+    const shared =
+      !!m &&
+      m.ownerId !== user.id &&
+      m.onProfile === true &&
+      parts.length === 2 &&
+      isHighlightFile(parts[1]) &&
+      !!m.highlight &&
+      (m.highlight.videoUrl.endsWith(`/${parts[1]}`) || m.highlight.posterUrl.endsWith(`/${parts[1]}`)) &&
+      (await social.getProfile(m.ownerId).then((pr) => (pr ? canSee(pr, user.id) : false)));
+    if (!m || (m.ownerId !== user.id && !shared)) {
       return NextResponse.json({ error: "No es tuyo" }, { status: 403 });
     }
   } else {

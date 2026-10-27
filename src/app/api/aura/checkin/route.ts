@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 
 /**
  * "Ya lo vi hoy": para quien ve su vídeo descargado, fuera de la app.
- * No se puede comprobar, así que da menos aura (+5) y cuenta una vez por vídeo y día.
+ * No se puede comprobar, así que da menos aura (+5) y cuenta una vez al día.
  * El aura es solo motivación: si alguien hace trampa, solo se engaña a sí mismo.
  */
 export async function POST(request: Request) {
@@ -26,7 +26,8 @@ export async function POST(request: Request) {
   }
   await rememberTz(who.user, body.data.tz);
   const day = localDay(body.data.tz);
-  const awarded = await social.addView({ userId: who.user.id, projectId: project.id, day, points: AURA_PER_CHECKIN });
+  const today = (await social.listViews(who.user.id)).some((v) => v.day === day && v.points === AURA_PER_CHECKIN);
+  const awarded = !today && (await social.addView({ userId: who.user.id, projectId: project.id, day, points: AURA_PER_CHECKIN }));
   const stats = statsFrom(await social.listViews(who.user.id), day);
   return NextResponse.json({ awarded, points: awarded ? AURA_PER_CHECKIN : 0, aura: stats.aura, streak: stats.streak, level: levelFor(stats.aura).index });
 }

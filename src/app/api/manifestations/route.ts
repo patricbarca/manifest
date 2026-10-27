@@ -24,10 +24,11 @@ export async function GET() {
 const Patch = z.object({
   id: z.string().startsWith("m_").max(64),
   manifested: z.boolean().optional(),
+  onProfile: z.boolean().optional(),
   title: z.string().trim().min(1).max(60).optional(),
 });
 
-/** Marcar como cumplida o renombrar. */
+/** Marcar como cumplida, mostrar en el perfil o renombrar. */
 export async function PATCH(request: Request) {
   const who = await me();
   if (!who) return NextResponse.json({ error: "signin" }, { status: 401 });
@@ -39,6 +40,7 @@ export async function PATCH(request: Request) {
   const next = await manifests.patch(cur.id, (m) => ({
     ...m,
     ...(body.data.title ? { title: body.data.title } : {}),
+    ...(body.data.onProfile !== undefined ? { onProfile: body.data.onProfile || undefined } : {}),
     ...(body.data.manifested !== undefined ? { manifestedAt: body.data.manifested ? Date.now() : undefined } : {}),
   }));
   return NextResponse.json({ manifestation: next });
