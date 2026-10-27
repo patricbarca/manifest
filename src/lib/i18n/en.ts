@@ -51,7 +51,7 @@ export const en = {
       {
         n: "02",
         title: "Say what you're building",
-        body: "In your own words. «I run my own studio in Lisbon» works better than «success». Tell it as if it already happened.",
+        body: "In your own words. “I run my own studio in Lisbon” works better than “success”. Tell it as if it already happened.",
       },
       {
         n: "03",
@@ -73,7 +73,7 @@ export const en = {
     durationBoth: "≈ 2 min",
     soundOn: "Turn sound on",
     examplesTitle: "This is what you get",
-    examplesLede: "A fragment of two real videos: the scene for each desire and the close. The full video also includes an opening thought, guided breathing and the «repeat after me».",
+    examplesLede: "A fragment of two real videos: the scene for each desire and the close. The full video also includes an opening thought, guided breathing and the “repeat after me”.",
     examples: {
       woman: "Her own creative studio, a home by the sea and travelling in Japan.",
       man: "Finishing a marathon, celebrating with his team and coming home to his family.",
@@ -340,7 +340,7 @@ export const en = {
     awaitingPaymentTitle: "Confirming your payment",
     awaitingPaymentBody: "As soon as Stripe confirms it we start creating your video. If you left the payment page without finishing, create the video again.",
     failedTitle: "We couldn't finish your video",
-    failedUnknown: "Unknown error",
+    failedUnknown: "Something went wrong while generating your video.",
     failedRefund: "If no scene was generated, you weren't charged.",
     tryAgain: "Try again",
     download: "Download MP4",

@@ -339,7 +339,7 @@ export const es: Dictionary = {
     awaitingPaymentTitle: "Confirmando tu pago",
     awaitingPaymentBody: "En cuanto Stripe lo confirme empezamos a crear tu vídeo. Si cerraste el pago sin terminar, vuelve a crear el vídeo.",
     failedTitle: "No se pudo terminar tu vídeo",
-    failedUnknown: "Error desconocido",
+    failedUnknown: "Algo falló al generar tu vídeo.",
     failedRefund: "Si no llegó a generarse ninguna escena, no se te ha cobrado.",
     tryAgain: "Intentarlo otra vez",
     download: "Descargar MP4",
