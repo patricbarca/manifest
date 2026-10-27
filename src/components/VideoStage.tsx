@@ -52,7 +52,8 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
       <div className="mx-auto max-w-lg px-6 py-28 text-center">
         <h1 className="t-title">{t.video.failedTitle}</h1>
         <p className="t-body mt-4 text-[var(--color-label-2)]">
-          {project.error ?? t.video.failedUnknown}
+          {/* El detalle técnico queda en los logs: aquí, un texto en el idioma de la persona. */}
+          {t.video.failedUnknown}
         </p>
         <p className="t-caption mt-2 text-[var(--color-label-3)]">
           {t.video.failedRefund}
@@ -245,9 +246,6 @@ function GenerationProgress({ project, t }: { project: Project; t: Dictionary })
               >
                 {t.video.steps[step.id]}
               </p>
-              {step.error && (
-                <p className="t-caption mt-0.5 text-[var(--color-label-3)]">{step.error}</p>
-              )}
             </div>
           </li>
         ))}
