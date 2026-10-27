@@ -1,17 +1,14 @@
-import type { Project } from "../types";
-import type { FeedPost } from "@/components/ProfileFeed";
+import type { Manifestation } from "../types";
+import type { HighlightGroup } from "@/components/Highlights";
+
+export type FeedPost = HighlightGroup & { shared: boolean; createdAt?: number };
 
 /**
- * Publicaciones del perfil. El dueño ve todos sus vídeos terminados; los demás
- * solo los que activó, y de ellos solo las escenas que no ocultó.
+ * Lo que se ve de alguien en su perfil y en el feed: un highlight por cada
+ * manifestación que activó (la escena animada, sin el deseo ni su vídeo completo).
  */
-export function feedPosts(projects: Project[], owner: boolean): FeedPost[] {
-  return projects
-    .filter((p) => p.status === "ready")
-    .map((p) => {
-      const visible = (p.highlights ?? []).filter((h) => !h.hidden);
-      const shared = !!p.showOnProfile && visible.length > 0;
-      return { id: p.id, createdAt: p.createdAt, title: p.script?.title || p.title, items: owner ? (shared ? visible : p.highlights ?? []) : visible, shared };
-    })
-    .filter((post) => owner || post.shared);
+export function manifestPosts(list: Manifestation[]): FeedPost[] {
+  return list
+    .filter((m) => m.status === "ready" && m.onProfile && m.highlight)
+    .map((m) => ({ id: m.id, createdAt: m.createdAt, title: m.title, items: [m.highlight!], shared: true }));
 }

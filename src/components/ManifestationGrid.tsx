@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Manifestation } from "@/lib/types";
 
-type Labels = { manifested: string; markManifested: string; unmark: string; generating: string; failed: string; close: string; empty: string };
+type Labels = { manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; failed: string; close: string; empty: string };
 
 /**
  * Tus manifestaciones, una por tarjeta. Al tocar se ve su escena; desde ahí
@@ -24,11 +24,11 @@ export function ManifestationGrid({ initial, t, locale }: { initial: Manifestati
     return () => clearInterval(id);
   }, [pending]);
 
-  async function toggle(m: Manifestation) {
+  async function toggle(m: Manifestation, change: { manifested?: boolean; onProfile?: boolean }) {
     const res = await fetch("/api/manifestations", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: m.id, manifested: !m.manifestedAt }),
+      body: JSON.stringify({ id: m.id, ...change }),
     });
     if (!res.ok) return;
     const { manifestation } = await res.json();
@@ -54,6 +54,9 @@ export function ManifestationGrid({ initial, t, locale }: { initial: Manifestati
                     {m.status === "failed" ? t.failed : t.generating}
                   </span>
                 )}
+                {m.onProfile && (
+                  <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px]" title={t.onProfile}>👁</span>
+                )}
                 {m.manifestedAt && (
                   <span className="absolute left-2 top-2 rounded-full bg-emerald-400 px-2 py-0.5 text-[11px] font-medium text-black">✓ {t.manifested}</span>
                 )}
@@ -73,12 +76,18 @@ export function ManifestationGrid({ initial, t, locale }: { initial: Manifestati
             </div>
             <p className="t-headline mt-3">{open.title}</p>
             {open.affirmation && <p className="t-sub mt-1 italic text-[var(--color-label-2)]">“{open.affirmation}”</p>}
-            <div className="mt-4 flex gap-2">
-              <button type="button" onClick={() => toggle(open)} className={`interactive t-sub flex-1 rounded-full px-4 py-2 font-medium ${open.manifestedAt ? "bg-white/10" : "bg-emerald-400 text-black"}`}>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button type="button" onClick={() => toggle(open, { manifested: !open.manifestedAt })} className={`interactive t-sub flex-1 rounded-full px-4 py-2 font-medium ${open.manifestedAt ? "bg-white/10" : "bg-emerald-400 text-black"}`}>
                 {open.manifestedAt ? t.unmark : `✓ ${t.markManifested}`}
               </button>
+              {open.highlight && (
+                <button type="button" onClick={() => toggle(open, { onProfile: !open.onProfile })} className="interactive t-sub flex-1 rounded-full bg-white/10 px-4 py-2 font-medium">
+                  {open.onProfile ? t.hideFromProfile : t.showOnProfile}
+                </button>
+              )}
               <button type="button" onClick={() => setOpen(null)} className="t-sub rounded-full bg-white/10 px-4 py-2">{t.close}</button>
             </div>
+            {open.highlight && <p className="t-caption mt-2 text-[var(--color-label-3)]">{t.profileHint}</p>}
           </div>
         </div>
       )}
