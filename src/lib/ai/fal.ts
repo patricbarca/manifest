@@ -5,6 +5,7 @@ import type { ImageProvider, VideoProvider, VoiceProvider } from "./contracts";
 import { PROVIDER_COST } from "../pricing";
 import { persistBuffer, persistRemoteAsset } from "./storage";
 import { localPathForMediaUrl } from "../paths";
+import { assertSafePrompt } from "../safety";
 
 /**
  * fal.ai como pasarela única: imagen, animación, voz y LLM con una sola key.
@@ -63,22 +64,31 @@ export function falUpload(absPath: string): Promise<string> {
   return p;
 }
 
+/**
+ * Se añade a todo prompt de imagen y vídeo. En positivo: las negaciones el
+ * modelo las lee al revés.
+ */
+const SAFE_IMAGE = "Tasteful, wholesome, family-friendly photograph, everyone fully and modestly clothed, respectful and positive";
+const SAFE_VIDEO = "Wholesome, family-friendly, everyone stays fully and modestly clothed";
+
 /** Tamaño vertical que acepta Seedream (entre 3,7 y 16,7 Mpx). */
 const IMAGE_SIZE = { width: 1728, height: 3072 };
 
 export const falImage: ImageProvider = {
   name: "fal",
-  async generate({ prompt, referencePath, referencePaths, projectId, sceneId }) {
+  async generate({ prompt: raw, referencePath, referencePaths, projectId, sceneId }) {
+    assertSafePrompt(raw);
+    const prompt = `${raw}. ${SAFE_IMAGE}.`;
     const refs = referencePaths?.length ? referencePaths : referencePath ? [referencePath] : [];
     let model: string;
     let input: Record<string, unknown>;
     if (refs.length) {
       model = process.env.FAL_IMAGE_MODEL ?? "fal-ai/bytedance/seedream/v4.5/edit";
       const urls = await Promise.all(refs.slice(0, 10).map(falUpload));
-      input = { prompt, image_urls: urls, image_size: IMAGE_SIZE, num_images: 1 };
+      input = { prompt, image_urls: urls, image_size: IMAGE_SIZE, num_images: 1, enable_safety_checker: true };
     } else {
       model = process.env.FAL_IMAGE_T2I_MODEL ?? "fal-ai/bytedance/seedream/v4.5/text-to-image";
-      input = { prompt, image_size: IMAGE_SIZE, num_images: 1 };
+      input = { prompt, image_size: IMAGE_SIZE, num_images: 1, enable_safety_checker: true };
     }
     const data = await run<{ images?: { url?: string }[] }>(model, input);
     const remote = data.images?.[0]?.url;
@@ -91,7 +101,9 @@ export const falImage: ImageProvider = {
 
 export const falVideo: VideoProvider = {
   name: "fal",
-  async animate({ imageUrl, prompt, durationSec, projectId, sceneId, quality }) {
+  async animate({ imageUrl, prompt: raw, durationSec, projectId, sceneId, quality }) {
+    assertSafePrompt(raw);
+    const prompt = `${raw} ${SAFE_VIDEO}.`;
     const elevated = quality === "elevated";
     const model = elevated
       ? (process.env.FAL_VIDEO_MODEL_ELEVATED ?? "fal-ai/kling-video/v3/pro/image-to-video")

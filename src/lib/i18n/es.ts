@@ -420,7 +420,11 @@ export const es: Dictionary = {
     finance: "No generamos promesas de rendimiento financiero garantizado.",
     minors:
       "Solo se pueden crear visualizaciones de personas adultas, y solo de uno mismo.",
-    sexual: "No generamos contenido sexual ni desnudos.",
+    sexual: "No generamos contenido sexual, sugerente ni desnudos.",
+    hate: "No generamos contenido de odio ni que discrimine a nadie.",
+    violence: "No generamos violencia, armas ni deseos de dañar a otras personas.",
+    selfHarm: "Esto no lo podemos convertir en un vídeo. Si estás pasando por un momento difícil, habla con alguien de confianza o con la línea de ayuda de tu país.",
+    drugs: "No generamos contenido sobre drogas.",
   },
   deleteVideo: {
     delete: "Borrar este vídeo y sus fotos",

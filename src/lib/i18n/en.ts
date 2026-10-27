@@ -421,7 +421,11 @@ export const en = {
     finance: "We don't generate guaranteed financial return promises.",
     minors:
       "Visualizations can only be created of adults, and only of yourself.",
-    sexual: "We don't generate sexual content or nudity.",
+    sexual: "We don't generate sexual or suggestive content, or nudity.",
+    hate: "We don't generate hateful content or anything that discriminates against anyone.",
+    violence: "We don't generate violence, weapons or wishes to harm others.",
+    selfHarm: "We can't turn this into a video. If you're going through a hard time, talk to someone you trust or a helpline in your country.",
+    drugs: "We don't generate content about drugs.",
   },
   deleteVideo: {
     delete: "Delete this video and its photos",
