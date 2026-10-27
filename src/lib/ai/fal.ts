@@ -204,6 +204,14 @@ export const falVoice: VoiceProvider = {
   },
 };
 
+/** Probabilidad (0–1) de que una foto sea NSFW, con el clasificador de fal (~0,001 $). */
+export async function falNsfwProbability(absPath: string): Promise<number> {
+  const image_url = await falUpload(absPath);
+  const data = await run<{ nsfw_probability?: number }>("fal-ai/imageutils/nsfw", { image_url });
+  if (typeof data.nsfw_probability !== "number") throw new Error("fal nsfw sin respuesta");
+  return data.nsfw_probability;
+}
+
 /** Texto con un LLM a través de fal (OpenRouter). */
 export async function falText(system: string, user: string, maxTokens: number, opts: { temperature?: number; model?: string } = {}): Promise<string> {
   const data = await run<{ output?: string; error?: string | null }>("openrouter/router", {
