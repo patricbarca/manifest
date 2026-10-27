@@ -29,8 +29,18 @@ function fal(): FalClient {
 }
 
 async function run<T>(endpoint: string, input: Record<string, unknown>): Promise<T> {
-  const res = await fal().subscribe(endpoint, { input, logs: false });
-  return res.data as T;
+  try {
+    const res = await fal().subscribe(endpoint, { input, logs: false });
+    return res.data as T;
+  } catch (err) {
+    // fal responde 422 content_policy_violation si su filtro (o el del modelo)
+    // rechaza el prompt o la imagen. Se nombra claro para los logs.
+    const body = JSON.stringify((err as { body?: unknown }).body ?? "");
+    if (/content_policy_violation/.test(body)) {
+      throw new Error(`Contenido no permitido por el filtro de fal (${endpoint}): ${body.slice(0, 200)}`);
+    }
+    throw err;
+  }
 }
 
 const MIME: Record<string, string> = {
@@ -90,7 +100,9 @@ export const falImage: ImageProvider = {
       model = process.env.FAL_IMAGE_T2I_MODEL ?? "fal-ai/bytedance/seedream/v4.5/text-to-image";
       input = { prompt, image_size: IMAGE_SIZE, num_images: 1, enable_safety_checker: true };
     }
-    const data = await run<{ images?: { url?: string }[] }>(model, input);
+    const data = await run<{ images?: { url?: string }[]; has_nsfw_concepts?: boolean[] }>(model, input);
+    // Si el filtro de fal marca la imagen, la sustituye por una negra: no se guarda.
+    if (data.has_nsfw_concepts?.some(Boolean)) throw new Error("Contenido no permitido: el filtro de fal marcó la imagen");
     const remote = data.images?.[0]?.url;
     if (!remote) throw new Error("fal no devolvió ninguna imagen");
     // Se copia a nuestro almacenamiento: las URLs de fal caducan.
@@ -193,13 +205,13 @@ export const falVoice: VoiceProvider = {
 };
 
 /** Texto con un LLM a través de fal (OpenRouter). */
-export async function falText(system: string, user: string, maxTokens: number): Promise<string> {
+export async function falText(system: string, user: string, maxTokens: number, opts: { temperature?: number; model?: string } = {}): Promise<string> {
   const data = await run<{ output?: string; error?: string | null }>("openrouter/router", {
-    model: process.env.FAL_LLM_MODEL ?? "anthropic/claude-sonnet-4.6",
+    model: opts.model ?? process.env.FAL_LLM_MODEL ?? "anthropic/claude-sonnet-4.6",
     system_prompt: system,
     prompt: user,
     max_tokens: maxTokens,
-    temperature: 0.8,
+    temperature: opts.temperature ?? 0.8,
   });
   if (data.error) throw new Error(`LLM vía fal: ${data.error}`);
   if (!data.output) throw new Error("LLM vía fal sin respuesta");
