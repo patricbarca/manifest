@@ -104,7 +104,11 @@ export const es: Dictionary = {
   pricing: {
     title: "Tres precios, y ya",
     lede: "Pagas tu primer vídeo y, después, solo las manifestaciones que añadas. Sin suscripción.",
-    sameDuration: "por vídeo · unos 2 minutos",
+    sameDuration: "tu primer vídeo · 3 deseos",
+    single: "1 deseo",
+    addTitle: "Después, añade deseos cuando quieras",
+    addBody: "Cada deseo nuevo es una escena animada de ti viviéndolo, con su frase. Se guarda en tu perfil y la eliges para tus vídeos.",
+    addNote: "Sin suscripción y sin caducidad. Montar vídeos con tus manifestaciones no cuesta nada.",
     create: "Crear",
     freeNote:
       "Pagas solo cuando creas. Antes de pagar revisas y corriges las escenas.",

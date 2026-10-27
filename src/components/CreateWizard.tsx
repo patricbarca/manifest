@@ -13,7 +13,7 @@ import type {
   VisualStyle,
   VoiceTone,
 } from "@/lib/types";
-import { PRODUCTS, formatUsd, priceUsd } from "@/lib/pricing";
+import { formatUsd } from "@/lib/pricing";
 import { fill, type Dictionary, type Locale } from "@/lib/i18n";
 import { Icon } from "./Icon";
 
@@ -66,6 +66,8 @@ type Props = {
   template?: Template;
   /** Vídeos gratis que le quedan. El primero lo invita la casa. */
   freeLeft: number;
+  /** Precio por calidad, calculado en el servidor (TIER_PRICES). */
+  prices: Record<Tier, number>;
   /** Producto elegido antes de entrar (desde la ficha de una plantilla). */
   initialTier?: Tier;
   /** El diccionario llega por prop: este componente corre en el cliente. */
@@ -73,7 +75,7 @@ type Props = {
   locale: Locale;
 };
 
-export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, locale }: Props) {
+export function CreateWizard({ initialArea, template, freeLeft, prices, initialTier, t, locale }: Props) {
   const router = useRouter();
 
   const [step, setStep] = useState<number>(STEP.desires);
@@ -121,7 +123,7 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
   const [fix, setFix] = useState("");
   const [corrections, setCorrections] = useState<string[]>([]);
 
-  const price = priceUsd(tier);
+  const price = prices[tier];
   const isFree = freeLeft > 0;
 
   const canContinue = useMemo(() => {
@@ -689,7 +691,7 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
                   onClick={() => setTier(id)}
                   title={t.products[id].name}
                   sub={t.products[id].tagline}
-                  price={formatUsd(PRODUCTS[id].priceUsd)}
+                  price={formatUsd(prices[id])}
                 />
               ))}
             </div>

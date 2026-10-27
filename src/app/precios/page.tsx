@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
-import { PRODUCTS, formatUsd } from "@/lib/pricing";
+import { PRODUCTS, creditPacks, formatUsd } from "@/lib/pricing";
 import { TIERS } from "@/lib/types";
 import { getDictionary } from "@/lib/i18n/server";
 
@@ -73,6 +73,21 @@ export default async function PreciosPage() {
       <p className="t-sub mx-auto mt-8 max-w-md text-center text-[var(--color-label-2)]">
         {t.pricing.freeNote}
       </p>
+
+      <section className="card mx-auto mt-14 max-w-2xl rounded-[var(--radius-lg)] p-8 text-center">
+        <h2 className="t-headline">{t.pricing.addTitle}</h2>
+        <p className="t-sub mx-auto mt-2 max-w-md text-pretty text-[var(--color-label-2)]">{t.pricing.addBody}</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          {creditPacks().map((p) => (
+            <div key={p.qty} className="rounded-[var(--radius-md)] border border-[var(--color-hairline)] px-5 py-3">
+              <p className="t-sub font-medium">{p.qty === 1 ? t.pricing.single : t.manifest.buy.replace("{n}", String(p.qty))}</p>
+              <p className="text-[1.5rem] font-semibold tabular-nums">{formatUsd(p.priceUsd)}</p>
+              {p.qty > 1 && <p className="t-caption text-[var(--color-label-3)]">{t.manifest.each.replace("{p}", (p.priceUsd / p.qty).toFixed(2))}</p>}
+            </div>
+          ))}
+        </div>
+        <p className="t-caption mt-5 text-[var(--color-label-3)]">{t.pricing.addNote}</p>
+      </section>
     </div>
   );
 }
