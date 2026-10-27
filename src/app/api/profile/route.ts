@@ -4,6 +4,7 @@ import { me } from "@/lib/social/me";
 import { social } from "@/lib/social/store";
 import { HANDLE_RE } from "@/lib/social/aura";
 import { checkBlocked } from "@/lib/safety";
+import { moderate } from "@/lib/moderation";
 
 export const runtime = "nodejs";
 
@@ -34,6 +35,9 @@ export async function PATCH(request: Request) {
   const body = Patch.safeParse(await request.json().catch(() => ({})));
   if (!body.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
   const next = { ...who.profile };
+  // Todo lo que se verá en público, en una sola llamada de moderación.
+  const publicTexts = [body.data.displayName, body.data.handle, body.data.bio, body.data.mantra, body.data.location];
+  if (!(await moderate(publicTexts)).ok) return NextResponse.json({ error: "text_blocked" }, { status: 422 });
   if (body.data.displayName) {
     if (!checkBlocked(body.data.displayName).ok) return NextResponse.json({ error: "name_blocked" }, { status: 422 });
     next.displayName = body.data.displayName;

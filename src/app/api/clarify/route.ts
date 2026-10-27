@@ -7,6 +7,7 @@ import { Area, Desires, intentionFrom } from "@/lib/api-schemas";
 import { inferArea } from "@/lib/script-engine";
 import { getDictionary } from "@/lib/i18n/server";
 import { checkDesires } from "@/lib/safety";
+import { moderate } from "@/lib/moderation";
 import type { ClarifyQuestion } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -38,7 +39,8 @@ export async function POST(request: Request) {
   const intention = intentionFrom(desires);
   const area = parsed.data.area ?? inferArea(intention);
 
-  const verdict = checkDesires(desires);
+  let verdict = checkDesires(desires);
+  if (verdict.ok) verdict = await moderate(desires);
   if (!verdict.ok) {
     return NextResponse.json({ error: t.safety[verdict.key!] }, { status: 422 });
   }

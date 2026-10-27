@@ -14,7 +14,7 @@
  * ambas cosas estan en el roadmap antes de abrir el registro al publico.
  */
 
-type SafetyKey = "tooShort" | "tooLong" | "health" | "finance" | "minors" | "sexual" | "hate" | "violence" | "selfHarm" | "drugs";
+export type SafetyKey = "tooShort" | "tooLong" | "health" | "finance" | "minors" | "sexual" | "hate" | "violence" | "selfHarm" | "drugs";
 
 /**
  * Los patrones son por idioma: bloquear "curar" no sirve de nada si el
@@ -48,7 +48,7 @@ const BLOCKED_PATTERNS: { re: RegExp; key: SafetyKey }[] = [
     key: "hate",
   },
   {
-    re: /\b(matar a|mato a|asesin|murder|kill (him|her|them|my|people|someone|everyone)|disparar a|shoot (him|her|them|people|someone)|(fabricar|hacer|make|build) (a |una )?(bomb|bomba)|terroris|masacre|massacre|tortur|secuestr|kidnap|vengar|venganza|revenge|sufra\b|sufran\b|muera\b|mueran\b|(make|watch|see) (him|her|them) (suffer|die)|(he|she|they) (dies|suffers)|armas?\b|guns?\b|rifles?\b|pistolas?\b|fusil)/i,
+    re: /\b(matar a|mato a|asesin|murder|kill (him|her|them|my|people|someone|everyone)|disparar a|shoot (him|her|them|people|someone)|(fabricar|hacer|make|build) (a |una )?(bomb|bomba)|terroris|masacre|massacre|tortur|secuestr|kidnap|vengar|venganza|revenge|que (sufra|muera)|(make|watch|see) (him|her|them) (suffer|die)|(he|she|they) (dies|suffers)|armas?\b|guns?\b|rifles?\b|pistolas?\b|fusil)/i,
     key: "violence",
   },
   { re: /\b(suicid|matarme|kill myself|autolesi|self[- ]harm|cortarme|hacerme daño|hurt myself|quiero morir|want to die)/i, key: "selfHarm" },

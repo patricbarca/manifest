@@ -6,6 +6,7 @@ import { db } from "@/lib/db/store";
 import { currentUser, chargeForVideo } from "@/lib/db/session";
 import { estimateCostCents, priceUsd } from "@/lib/pricing";
 import { checkBlocked, checkDesires, checkDetails } from "@/lib/safety";
+import { moderate } from "@/lib/moderation";
 import { Area, Desires, Details, People, intentionFrom } from "@/lib/api-schemas";
 import { inferArea } from "@/lib/script-engine";
 import { initialSteps } from "@/lib/pipeline";
@@ -86,11 +87,9 @@ export async function POST(request: Request) {
   const peopleVerdict = input.people
     .map((p) => checkBlocked(`${p.name} ${p.relation ?? ""}`))
     .find((v) => !v.ok);
-  const blocked = !verdict.ok
-    ? verdict
-    : !detailsVerdict.ok
-      ? detailsVerdict
-      : peopleVerdict;
+  const blocked =
+    (!verdict.ok ? verdict : !detailsVerdict.ok ? detailsVerdict : peopleVerdict) ??
+    (await moderate([...input.desires, ...input.details.map((d) => d.answer), ...input.people.map((p) => `${p.name} ${p.relation ?? ""}`)]).then((v) => (v.ok ? undefined : v)));
   if (blocked) {
     return NextResponse.json({ error: t.safety[blocked.key!] }, { status: 422 });
   }

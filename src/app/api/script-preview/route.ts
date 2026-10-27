@@ -9,6 +9,7 @@ import { currentUser } from "@/lib/db/session";
 import { db } from "@/lib/db/store";
 import { getDictionary } from "@/lib/i18n/server";
 import { checkBlocked, checkDesires, checkDetails } from "@/lib/safety";
+import { moderate } from "@/lib/moderation";
 import type { ScriptPreview } from "@/lib/types";
 import { LOCALES } from "@/lib/i18n/locale";
 
@@ -71,7 +72,9 @@ export async function POST(request: Request) {
   const verdict = checkDesires(input.desires);
   const detailsVerdict = checkDetails(input.details);
   const peopleVerdict = people.map((p) => checkBlocked(`${p.name} ${p.relation ?? ""}`)).find((v) => !v.ok);
-  const blocked = !verdict.ok ? verdict : !detailsVerdict.ok ? detailsVerdict : peopleVerdict;
+  const blocked =
+    (!verdict.ok ? verdict : !detailsVerdict.ok ? detailsVerdict : peopleVerdict) ??
+    (await moderate([...input.desires, ...input.details.map((d) => d.answer), ...people.map((p) => `${p.name} ${p.relation ?? ""}`)]).then((v) => (v.ok ? undefined : v)));
   if (blocked) {
     return NextResponse.json({ error: t.safety[blocked.key!] }, { status: 422 });
   }

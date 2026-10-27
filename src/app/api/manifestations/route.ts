@@ -3,6 +3,7 @@ import { z } from "zod";
 import { me } from "@/lib/social/me";
 import { manifests } from "@/lib/manifest/store";
 import { checkBlocked, checkDesires } from "@/lib/safety";
+import { moderate } from "@/lib/moderation";
 import { hasAccess } from "@/lib/access";
 import { db } from "@/lib/db/store";
 import { PAYMENTS_ENABLED } from "@/lib/pricing";
@@ -36,7 +37,9 @@ export async function PATCH(request: Request) {
   if (!body.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
   const cur = await manifests.get(body.data.id);
   if (!cur || cur.ownerId !== who.user.id) return NextResponse.json({ error: "not_found" }, { status: 404 });
-  if (body.data.title && !checkBlocked(body.data.title).ok) return NextResponse.json({ error: "text_blocked" }, { status: 422 });
+  if (body.data.title && (!checkBlocked(body.data.title).ok || !(await moderate([body.data.title])).ok)) {
+    return NextResponse.json({ error: "text_blocked" }, { status: 422 });
+  }
   const next = await manifests.patch(cur.id, (m) => ({
     ...m,
     ...(body.data.title ? { title: body.data.title } : {}),
@@ -65,7 +68,8 @@ export async function POST(request: Request) {
   if (!(await hasAccess())) return NextResponse.json({ error: "access" }, { status: 403 });
   const body = Create.safeParse(await request.json().catch(() => ({})));
   if (!body.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
-  const verdict = checkDesires([body.data.desire]);
+  let verdict = checkDesires([body.data.desire]);
+  if (verdict.ok) verdict = await moderate([body.data.desire]);
   if (!verdict.ok) return NextResponse.json({ error: "unsafe", key: verdict.key }, { status: 422 });
 
   const user = (await db.getUser(who.user.id)) ?? who.user;
