@@ -105,7 +105,11 @@ export const en = {
   pricing: {
     title: "Three prices, that's it",
     lede: "Pay for your first video, then only for the manifestations you add. No subscription.",
-    sameDuration: "per video · about 2 minutes",
+    sameDuration: "your first video · 3 desires",
+    single: "1 desire",
+    addTitle: "Then add desires whenever you want",
+    addBody: "Each new desire is an animated scene of you living it, with its line. It's saved to your profile and you pick it for your videos.",
+    addNote: "No subscription, no expiry. Building videos from your manifestations is free.",
     create: "Create",
     freeNote:
       "You only pay when you create. Before paying you review and fix the scenes.",
