@@ -80,7 +80,7 @@ export const es: Dictionary = {
     examplesNote: "Personas generadas por IA para estos ejemplos. Tu vídeo se hace con tu cara. Ejemplos en inglés.",
     faqTitle: "Preguntas frecuentes",
     faq: [
-      { q: "¿Qué necesito?", a: "Entre 1 y 4 fotos tuyas con buena luz (de frente y de lado ayudan) y de 1 a 6 deseos escritos con tus palabras. Antes de generar revisas el guion." },
+      { q: "¿Qué necesito?", a: "Entre 1 y 4 fotos tuyas con buena luz (de frente y de lado ayudan) y 3 deseos escritos con tus palabras. Antes de generar revisas el guion." },
       { q: "¿Cuánto dura el vídeo y qué incluye?", a: "Unos 2 minutos: una frase de inspiración, respiración guiada, una escena por deseo con tu afirmación y un cierre donde repites en voz alta. Está pensado para verlo cada día." },
       { q: "¿Cuánto tarda en estar listo?", a: "Normalmente entre 5 y 15 minutos. Puedes cerrar la página: tu vídeo queda en tu biblioteca." },
       { q: "¿Puedo incluir a otras personas?", a: "Sí. Añades su nombre y de 1 a 3 fotos, siempre con su permiso y si son mayores de edad. Sus fotos se borran cuando el vídeo está listo." },
@@ -262,9 +262,9 @@ export const es: Dictionary = {
     firstVideo: "Tu primer vídeo",
     price: "Precio",
     watermarkNote: "",
-    desiresTitle: "¿Qué quieres manifestar?",
+    desiresTitle: "¿Cuáles son tus 3 deseos?",
     desiresHint:
-      "Hasta 6 cosas, una por casilla. Cada una será una imagen tuya viviéndola y una frase para repetir. Cuanto más concreta, mejor.",
+      "Uno por casilla. Cada deseo será una escena animada tuya viviéndolo y una frase para repetir. Cuanto más concreto, mejor. Después puedes añadir más deseos a tu perfil.",
     desirePlaceholders: [
       "Ej.: Vivir en una casa frente al mar",
       "Ej.: Que mi negocio tenga clientes que me buscan",
