@@ -106,6 +106,21 @@ export const mockVoice: VoiceProvider = {
     // peor que ElevenLabs, pero la practica de repetir en voz alta funciona.
     return { result: { mode: "browser" as const }, costCents: 0, provider: "mock" };
   },
+  /** En desarrollo: una pista de silencio por frase (~14 caracteres por segundo), para poder montar sin gastar. */
+  async speakLines({ lines, projectId }) {
+    const { spawnSync } = await import("node:child_process");
+    const { mkdir } = await import("node:fs/promises");
+    const { mediaPath } = await import("../paths");
+    const urls: Record<string, string> = {};
+    await mkdir(mediaPath("generated", projectId, "voz"), { recursive: true });
+    for (const [k, text] of Object.entries(lines)) {
+      const secs = Math.max(1.2, text.length / 14).toFixed(2);
+      const out = mediaPath("generated", projectId, "voz", `${k}.mp3`);
+      spawnSync(process.env.FFMPEG_PATH ?? "ffmpeg", ["-y", "-loglevel", "error", "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono", "-t", secs, "-q:a", "9", out]);
+      urls[k] = `/media/generated/${projectId}/voz/${k}.mp3`;
+    }
+    return { result: urls, costCents: 0, provider: "mock" };
+  },
 };
 
 export const MOCK_REFERENCE_COST = PROVIDER_COST;

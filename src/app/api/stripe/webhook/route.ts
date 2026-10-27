@@ -18,8 +18,17 @@ export async function POST(request: Request) {
       payment_status?: string;
       amount_total?: number;
       currency?: string;
-      metadata?: { projectId?: string };
+      metadata?: { projectId?: string; kind?: string; userId?: string; qty?: string };
     };
+    // Paquete de manifestaciones: suma créditos una sola vez por sesión.
+    if (session.metadata?.kind === "credits" && session.payment_status === "paid" && session.metadata.userId) {
+      const user = await db.getUser(session.metadata.userId);
+      const qty = Math.max(0, Math.min(100, Number(session.metadata.qty) || 0));
+      if (user && qty && !(user.creditSessions ?? []).includes(session.id)) {
+        await db.putUser({ ...user, credits: (user.credits ?? 0) + qty, creditSessions: [...(user.creditSessions ?? []), session.id].slice(-50) });
+      }
+      return NextResponse.json({ received: true });
+    }
     const id = session.metadata?.projectId;
     if (id && session.payment_status === "paid") {
       // Solo una vez: Stripe puede reenviar el mismo evento.

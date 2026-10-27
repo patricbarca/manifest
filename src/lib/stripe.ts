@@ -91,3 +91,37 @@ export function verifyWebhook(payload: string, header: string | null, toleranceS
     return null;
   }
 }
+
+/** Checkout de un paquete de manifestaciones: el webhook suma los créditos. */
+export async function createCreditCheckout(opts: {
+  userId: string;
+  qty: number;
+  priceCents: number;
+  productName: string;
+  locale: string;
+  origin: string;
+}): Promise<{ id: string; url: string }> {
+  const body = new URLSearchParams({
+    mode: "payment",
+    "line_items[0][quantity]": "1",
+    "line_items[0][price_data][currency]": process.env.STRIPE_CURRENCY ?? "usd",
+    "line_items[0][price_data][unit_amount]": String(opts.priceCents),
+    "line_items[0][price_data][product_data][name]": opts.productName,
+    success_url: `${opts.origin}/manifestar?bought=${opts.qty}`,
+    cancel_url: `${opts.origin}/manifestar?cancelled=1`,
+    client_reference_id: opts.userId,
+    "metadata[kind]": "credits",
+    "metadata[userId]": opts.userId,
+    "metadata[qty]": String(opts.qty),
+    locale: opts.locale === "es" ? "es" : "en",
+    allow_promotion_codes: "true",
+  });
+  const res = await fetch(`${API}/checkout/sessions`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`, "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  const data = (await res.json()) as { id?: string; url?: string; error?: { message?: string } };
+  if (!res.ok || !data.id || !data.url) throw new Error(`Stripe: ${data.error?.message ?? res.status}`);
+  return { id: data.id, url: data.url };
+}
