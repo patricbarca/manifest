@@ -30,7 +30,7 @@ const PALETTE_SWATCH: Record<Palette, string> = {
 /**
  * El asistente de creación.
  *
- * Se empieza por lo que la persona quiere manifestar, de 1 a 6 cosas, una por
+ * Se empieza por lo que la persona quiere manifestar, 3 deseos, una por
  * casilla: cada una se convierte en una imagen y una frase.
  *
  * El orden importa: primero se pregunta qué quiere la persona y solo después
@@ -82,7 +82,8 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
   const area: LifeArea | undefined = template?.area ?? initialArea;
   // Con plantilla, sus frases son el punto de partida: se pueden editar.
   const [desires, setDesires] = useState<string[]>(
-    template ? template.affirmations[locale].slice(0, MAX_DESIRES) : [""],
+    // Siempre 3 casillas: el primer vídeo trae 3 escenas, una por deseo.
+    template ? template.affirmations[locale].slice(0, MAX_DESIRES) : Array(MAX_DESIRES).fill(""),
   );
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [palette, setPalette] = useState<Palette>("dusk");
@@ -127,7 +128,7 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
     if (step === STEP.desires) {
       const filled = desires.map((d) => d.trim()).filter(Boolean);
       return (
-        filled.length > 0 &&
+        filled.length === MAX_DESIRES &&
         filled.every((d) => d.length >= 3) &&
         filled.join(" ").length >= 8
       );
@@ -395,31 +396,14 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
                   value={d}
                   onChange={(e) => setDesire(i, e.target.value)}
                   maxLength={200}
-                  autoFocus={i === desires.length - 1 && i > 0}
+                  autoFocus={i === 0}
                   placeholder={t.create.desirePlaceholders[i % t.create.desirePlaceholders.length]}
                   className="t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none transition-colors duration-200 placeholder:text-[var(--color-label-4)] focus:border-[var(--color-hairline-strong)]"
                 />
-                {desires.length > 1 && (
-                  <button
-                    onClick={() => setDesires((prev) => prev.filter((_, k) => k !== i))}
-                    aria-label={t.create.removeDesire}
-                    className="t-sub shrink-0 px-2 text-[var(--color-label-3)] hover:text-[var(--color-label-1)]"
-                  >
-                    ×
-                  </button>
-                )}
               </div>
             ))}
           </div>
 
-          {desires.length < MAX_DESIRES && (
-            <button
-              onClick={() => setDesires((prev) => [...prev, ""])}
-              className="interactive t-sub mt-4 ml-7 rounded-full border border-[var(--color-hairline)] px-4 py-2 text-[var(--color-label-2)] hover:text-[var(--color-label-1)]"
-            >
-              {t.create.addDesire}
-            </button>
-          )}
           <p className="t-caption mt-3 ml-7 text-[var(--color-label-3)]">
             {fill(t.create.desiresCount, { n: cleanDesires.length, max: MAX_DESIRES })}
           </p>

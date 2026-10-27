@@ -81,7 +81,7 @@ export const en = {
     examplesNote: "AI-generated people for these examples. Your video is made with your face.",
     faqTitle: "Questions",
     faq: [
-      { q: "What do I need?", a: "1 to 4 well-lit photos of yourself (front and side help) and 1 to 6 desires in your own words. You review the script before anything is generated." },
+      { q: "What do I need?", a: "1 to 4 well-lit photos of yourself (front and side help) and 3 desires in your own words. You review the script before anything is generated." },
       { q: "How long is the video and what's in it?", a: "About 2 minutes: an opening thought, guided breathing, one scene per desire with your affirmation, and a close where you repeat out loud. It's made to watch every day." },
       { q: "How long does it take?", a: "Usually 5 to 15 minutes. You can close the page: your video stays in your library." },
       { q: "Can I include other people?", a: "Yes. Add their name and 1 to 3 photos, always with their permission and only if they're adults. Their photos are deleted once the video is ready." },
@@ -263,9 +263,9 @@ export const en = {
     firstVideo: "Your first video",
     price: "Price",
     watermarkNote: "",
-    desiresTitle: "What do you want to manifest?",
+    desiresTitle: "What are your 3 desires?",
     desiresHint:
-      "Up to 6 things, one per box. Each one becomes an image of you living it and a line to repeat. The more specific, the better.",
+      "One per box. Each desire becomes an animated scene of you living it and a line to repeat. The more specific, the better. You can add more desires to your profile later.",
     desirePlaceholders: [
       "E.g. Living in a house by the sea",
       "E.g. My business has clients who seek me out",
