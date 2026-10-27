@@ -130,3 +130,25 @@ export const FREE_VIDEOS = Number(process.env.FREE_VIDEOS ?? 0);
  * genera igual. Se activa poniendo PAYMENTS_ENABLED=true cuando entre Stripe.
  */
 export const PAYMENTS_ENABLED = process.env.PAYMENTS_ENABLED === "true";
+
+/**
+ * PAQUETES DE MANIFESTACIONES (añadir deseos de uno en uno)
+ *
+ * Coste real por manifestación ~0,25–0,40 $ (imagen + animación + voz).
+ * Precio por defecto: 1 → 7 $, 5 → 29 $, 12 → 59 $. Se cambian sin tocar
+ * código con PACK_PRICES="1:7,5:29,12:59".
+ */
+export interface CreditPack {
+  qty: number;
+  priceUsd: number;
+}
+
+export function creditPacks(): CreditPack[] {
+  const raw = process.env.PACK_PRICES ?? "1:7,5:29,12:59";
+  const packs = raw
+    .split(",")
+    .map((p) => p.split(":").map(Number))
+    .filter(([q, price]) => q > 0 && price > 0)
+    .map(([qty, priceUsd]) => ({ qty, priceUsd }));
+  return packs.length ? packs : [{ qty: 1, priceUsd: 7 }];
+}

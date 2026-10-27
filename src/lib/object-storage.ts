@@ -123,3 +123,18 @@ export async function getObjectStream(
     throw err;
   }
 }
+
+/** Baja un objeto del bucket a una ruta local (para volver a montar con ficheros ya subidos). */
+export async function downloadToFile(key: string, absPath: string): Promise<boolean> {
+  try {
+    const out = await s3().send(new GetObjectCommand({ Bucket: BUCKET(), Key: key }));
+    if (!out.Body) return false;
+    const { mkdir, writeFile } = await import("node:fs/promises");
+    const path = await import("node:path");
+    await mkdir(path.dirname(absPath), { recursive: true });
+    await writeFile(absPath, Buffer.from(await out.Body.transformToByteArray()));
+    return true;
+  } catch {
+    return false;
+  }
+}

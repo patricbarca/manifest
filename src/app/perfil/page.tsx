@@ -8,6 +8,8 @@ import { PeopleSearch } from "@/components/PeopleSearch";
 import { Highlights } from "@/components/Highlights";
 import { ProfileFeed } from "@/components/ProfileFeed";
 import { feedPosts } from "@/lib/social/feed";
+import { manifests } from "@/lib/manifest/store";
+import { ManifestationGrid } from "@/components/ManifestationGrid";
 import { db } from "@/lib/db/store";
 import { me } from "@/lib/social/me";
 import { social } from "@/lib/social/store";
@@ -18,24 +20,25 @@ import type { Locale } from "@/lib/i18n/locale";
 
 export const dynamic = "force-dynamic";
 
-type Tab = "posts" | "today" | "circle";
-const TABS: Tab[] = ["posts", "today", "circle"];
+type Tab = "manifest" | "posts" | "today" | "circle";
+const TABS: Tab[] = ["manifest", "posts", "today", "circle"];
 
 /** Tu perfil: cabecera, highlights y pestañas (publicaciones, hoy, círculo). Los ajustes están en /perfil/editar. */
 export default async function PerfilPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const who = await me();
   if (!who) redirect("/entrar?next=/perfil");
   const { tab: rawTab } = await searchParams;
-  const tab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : "posts";
+  const tab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : "manifest";
   const { t, locale } = await getDictionary();
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
 
-  const [views, projects, circle, memberships] = await Promise.all([
+  const [views, projects, circle, memberships, mine] = await Promise.all([
     social.listViews(who.user.id),
     db.listProjects(who.user.id),
     social.listCircle(who.user.id),
     social.listMemberships(who.user.id),
+    manifests.list(who.user.id),
   ]);
   // Sin zona horaria del navegador en el servidor: se usa UTC para "hoy" en la página.
   const stats = statsFrom(views, localDay("UTC"));
@@ -50,7 +53,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
   const members = circle.filter((c) => c.status === "accepted");
   const pending = circle.filter((c) => c.status === "pending");
   const btn = "interactive t-sub flex-1 rounded-[var(--radius-md)] bg-white/10 px-4 py-2 text-center font-medium hover:bg-white/15";
-  const tabLabel: Record<Tab, string> = { posts: t.aura.posts, today: t.aura.tabToday, circle: t.aura.circleShort };
+  const tabLabel: Record<Tab, string> = { manifest: t.manifest.tab, posts: t.aura.posts, today: t.aura.tabToday, circle: t.aura.circleShort };
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 px-4 py-10 sm:px-6">
@@ -92,7 +95,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
         {TABS.map((k) => (
           <Link
             key={k}
-            href={k === "posts" ? "/perfil" : `/perfil?tab=${k}`}
+            href={k === "manifest" ? "/perfil" : `/perfil?tab=${k}`}
             scroll={false}
             className={`t-sub flex-1 border-b-2 pb-3 text-center ${tab === k ? "border-white font-medium text-[var(--color-label-1)]" : "border-transparent text-[var(--color-label-3)]"}`}
           >
@@ -101,6 +104,22 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
           </Link>
         ))}
       </nav>
+
+      {tab === "manifest" && (
+        <div className="flex gap-2">
+          <Link href="/manifestar" className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 text-center font-medium text-black">+ {t.manifest.newButton}</Link>
+          {mine.some((x) => x.status === "ready") && (
+            <Link href="/mi-video" className="interactive t-sub flex-1 rounded-full border border-[var(--color-hairline-strong)] px-4 py-2 text-center font-medium">▶ {t.manifest.composeButton}</Link>
+          )}
+        </div>
+      )}
+      {tab === "manifest" && (
+        <ManifestationGrid
+          initial={mine}
+          locale={locale}
+          t={{ manifested: t.manifest.manifested, markManifested: t.manifest.markManifested, unmark: t.manifest.unmark, generating: t.manifest.generating, failed: t.manifest.failed, close: t.aura.close, empty: t.manifest.empty }}
+        />
+      )}
 
       {tab === "posts" &&
         (posts.length ? (

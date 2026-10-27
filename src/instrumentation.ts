@@ -7,6 +7,7 @@ export async function register() {
   // Un poco después de arrancar, para no competir con el primer arranque.
   setTimeout(() => {
     resumeInterrupted().catch((err) => console.error("[queue] al reanudar:", err));
+    import("./lib/queue").then((q) => q.resumeManifestations()).catch((err) => console.error("[queue] manifestaciones:", err));
   }, 5000);
   // Recordatorio diario de racha: se mira cada 15 min (manda a las 19:00 locales, uno al día).
   const { runReminders } = await import("./lib/reminders");

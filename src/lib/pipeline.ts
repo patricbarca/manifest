@@ -8,6 +8,7 @@ import { localPathForMediaUrl } from "./paths";
 import { rm } from "node:fs/promises";
 import { dropIntermediates, offloadProject, sweepStorage } from "./cleanup";
 import { makeHighlights } from "./highlights";
+import { extractManifestations } from "./manifest/extract";
 import { nextQuoteId } from "./quotes";
 import { sendVideoReady } from "./email";
 import { isAnimated, type Person, type PipelineStep, type Project, type Scene, type StepId } from "./types";
@@ -336,6 +337,11 @@ export async function runPipeline(projectId: string): Promise<void> {
     }
     // Las fotos de otras personas solo hacían falta para las escenas.
     await deletePeoplePhotos(people);
+    // Cada escena queda también como manifestación reutilizable (antes de tirar los clips).
+    if (lineUrls) {
+      const done = await db.getProject(projectId);
+      if (done) await extractManifestations(done, lineUrls).catch((err) => console.error("[manifest] extraer", projectId, err));
+    }
     // Con el vídeo montado, los clips sueltos sobran y ocupan mucho.
     if (lineUrls) {
       const done = await db.getProject(projectId);

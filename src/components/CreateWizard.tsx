@@ -53,7 +53,8 @@ const MAX_PERSON_PHOTOS = 3;
 type PersonDraft = { name: string; relation: string; photoUrls: string[] };
 
 /** Cuántas cosas se pueden manifestar en un vídeo: una imagen y una frase por cada una. */
-const MAX_DESIRES = 6;
+// Tres deseos: el vídeo de inicio trae 3 manifestaciones; luego se añaden de una en una.
+const MAX_DESIRES = 3;
 
 /** Correcciones que se arrastran de una reescritura a la siguiente. */
 const MAX_CORRECTIONS = 3;
@@ -288,12 +289,13 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
   }
 
   /** Sube una foto y devuelve su URL, o undefined si falló (el error ya se muestra). */
-  async function sendPhoto(file: File, agreed: boolean): Promise<string | undefined> {
+  async function sendPhoto(file: File, agreed: boolean, self = false): Promise<string | undefined> {
     setError(undefined);
     const body = new FormData();
     body.append("selfie", file);
     body.append("consent", String(agreed));
     body.append("biometric", String(bioConsent));
+    if (self) body.append("kind", "self");
     try {
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json();
@@ -307,7 +309,7 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
 
   async function upload(file: File) {
     setUploading(true);
-    const url = await sendPhoto(file, consent);
+    const url = await sendPhoto(file, consent, true);
     if (url) setPhotoUrls((prev) => [...prev, url].slice(0, 4));
     setUploading(false);
   }
