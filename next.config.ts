@@ -21,6 +21,24 @@ const nextConfig: NextConfig = {
   output: "standalone",
   // Sin dominios remotos: el optimizador de imágenes no debe descargar URLs ajenas (era un proxy abierto).
   experimental: { serverActions: { bodySizeLimit: "12mb" } },
+  // Las direcciones pasaron a inglés: las antiguas redirigen para siempre (308).
+  async redirects() {
+    const moved: [string, string][] = [
+      ["/perfil/editar", "/profile/edit"],
+      ["/perfil", "/profile"],
+      ["/precios", "/pricing"],
+      ["/biblioteca", "/library"],
+      ["/privacidad", "/privacy"],
+      ["/terminos", "/terms"],
+      ["/reembolsos", "/refunds"],
+      ["/crear", "/create"],
+      ["/entrar", "/login"],
+      ["/manifestar", "/new"],
+      ["/mi-video", "/my-video"],
+      ["/auth/salir", "/auth/logout"],
+    ];
+    return moved.map(([source, destination]) => ({ source, destination, permanent: true }));
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

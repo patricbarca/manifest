@@ -56,7 +56,7 @@ export default async function PreciosPage() {
               <p className="t-caption mt-6 text-[var(--color-label-3)]">{copy.waitLabel}</p>
 
               <Link
-                href="/crear"
+                href="/create"
                 className={`interactive mt-7 rounded-full px-5 py-2.5 text-center text-[15px] font-medium tracking-[-0.011em] ${
                   id === "cinematic"
                     ? "bg-white text-black hover:bg-white/90"

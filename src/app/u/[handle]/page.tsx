@@ -30,7 +30,7 @@ export default async function UserPage({ params }: { params: Promise<{ handle: s
   const requestBtn = viewerId ? (
     <CircleRequestButton handle={profile.handle} initial={circleState} t={t.aura} className={btn} />
   ) : (
-    <Link href={`/entrar?next=/u/${profile.handle}`} className={btn}>{t.aura.requestJoin}</Link>
+    <Link href={`/login?next=/u/${profile.handle}`} className={btn}>{t.aura.requestJoin}</Link>
   );
 
   if (!(await canSee(profile, viewerId))) {
@@ -70,8 +70,8 @@ export default async function UserPage({ params }: { params: Promise<{ handle: s
         actions={
           owner ? (
             <>
-              <Link href="/perfil" className={btn}>← {t.aura.nav}</Link>
-              <Link href="/perfil/editar" className={btn}>{t.aura.editProfile}</Link>
+              <Link href="/profile" className={btn}>← {t.aura.nav}</Link>
+              <Link href="/profile/edit" className={btn}>{t.aura.editProfile}</Link>
             </>
           ) : (
             requestBtn

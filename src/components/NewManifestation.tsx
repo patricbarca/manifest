@@ -79,7 +79,7 @@ export function NewManifestation({
     const data = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) return setError(t.errors[data.key ?? data.error] ?? t.errors.invalid);
-    router.push("/perfil");
+    router.push("/profile");
   }
 
   return (

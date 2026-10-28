@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function EntrarPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
   const { next: rawNext, error } = await searchParams;
-  const next = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/biblioteca";
+  const next = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/profile";
   const cfg = authConfig();
   if (!cfg) redirect(next);
   if (await authUser()) redirect(next);

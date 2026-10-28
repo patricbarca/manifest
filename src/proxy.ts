@@ -32,8 +32,8 @@ export async function proxy(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
   if (appHost() && !path.startsWith("/api/") && !path.startsWith("/auth/")) {
     if (onApp && (path === "/" || matches(path, SITE_ONLY))) {
-      // La portada de la app es tu perfil; precios, blog y biblioteca viven en la web.
-      const target = path === "/" ? new URL("/perfil", appBase()) : new URL(path + request.nextUrl.search, process.env.SITE_URL);
+      // La portada de la app es tu perfil; precios y blog viven en la web.
+      const target = path === "/" ? new URL("/profile", appBase()) : new URL(path + request.nextUrl.search, process.env.SITE_URL);
       if (path === "/" && code) return NextResponse.redirect(new URL(`/auth/callback?code=${encodeURIComponent(code)}`, appBase()), 307);
       return NextResponse.redirect(target, 307);
     }

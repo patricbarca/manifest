@@ -57,7 +57,7 @@ export default async function TemplatePage({
                   className="aspect-[9/16] w-full rounded-[var(--radius-lg)] ring-1 ring-[var(--color-hairline)]"
                 />
                 <Link
-                  href={`/crear?template=${bp.slug}&tier=${tier}`}
+                  href={`/create?template=${bp.slug}&tier=${tier}`}
                   className={`interactive mt-3 block rounded-full px-4 py-2 text-center text-[14px] font-medium ${
                     tier === bp.tier
                       ? "bg-white text-black hover:bg-white/90"

@@ -27,12 +27,12 @@ export async function GET(request: Request) {
         ? { error: null }
         : { error: new Error("no session") };
 
-  if (error) return NextResponse.redirect(`${origin}/entrar?error=1&next=${encodeURIComponent(next)}`);
+  if (error) return NextResponse.redirect(`${origin}/login?error=1&next=${encodeURIComponent(next)}`);
   await linkAnonymousData();
   return NextResponse.redirect(`${origin}${next}`);
 }
 
 /** Solo rutas internas: evita redirigir a otra web. */
 function safeNext(n: string | null): string {
-  return n && n.startsWith("/") && !n.startsWith("//") ? n : "/biblioteca";
+  return n && n.startsWith("/") && !n.startsWith("//") ? n : "/profile";
 }

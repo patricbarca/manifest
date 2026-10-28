@@ -145,7 +145,7 @@ export function ProfileSettings({ initial, origin, t }: { initial: Profile; orig
           {t.save}
         </button>
         {msg && <span className="t-caption text-[var(--color-label-2)]">{msg}</span>}
-        <a href="/perfil" className="t-caption ml-auto underline">{t.viewProfile}</a>
+        <a href="/profile" className="t-caption ml-auto underline">{t.viewProfile}</a>
       </div>
     </section>
   );

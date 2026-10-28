@@ -37,7 +37,7 @@ export default async function HomePage() {
 
           <div className="rise mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
-              href="/crear"
+              href="/create"
               className="interactive rounded-full bg-white px-6 py-3 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90"
             >
               {t.home.ctaPrimary}
@@ -123,7 +123,7 @@ export default async function HomePage() {
           {LIFE_AREAS.map((area) => (
             <Link
               key={area.id}
-              href={`/crear?area=${area.id}`}
+              href={`/create?area=${area.id}`}
               className="card interactive group rounded-[var(--radius-md)] p-6"
             >
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.07] text-[var(--color-label-1)]">
@@ -196,7 +196,7 @@ export default async function HomePage() {
       <section className="mx-auto max-w-2xl px-6 py-28 text-center">
         <h2 className="t-title text-balance">{t.home.closingTitle}</h2>
         <Link
-          href="/crear"
+          href="/create"
           className="interactive mt-9 inline-block rounded-full bg-white px-7 py-3 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90"
         >
           {t.home.closingCta}
