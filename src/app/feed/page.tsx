@@ -28,7 +28,7 @@ const FILTERS: Filter[] = ["all", "circle", "market"];
 
 export default async function FeedPage({ searchParams }: { searchParams: Promise<{ f?: string }> }) {
   const who = await me();
-  if (!who) redirect("/entrar?next=/feed");
+  if (!who) redirect("/login?next=/feed");
   const { t, locale } = await getDictionary();
   const loc = locale as Locale;
   const { f } = await searchParams;

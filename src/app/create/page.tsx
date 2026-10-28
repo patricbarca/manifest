@@ -21,8 +21,8 @@ export default async function CrearPage({
     if (area) q.set("area", area);
     if (template) q.set("template", template);
     if (tier) q.set("tier", tier);
-    const back = `/crear${q.size ? `?${q}` : ""}`;
-    redirect(`/entrar?next=${encodeURIComponent(back)}`);
+    const back = `/create${q.size ? `?${q}` : ""}`;
+    redirect(`/login?next=${encodeURIComponent(back)}`);
   }
   const [user, { t, locale }] = await Promise.all([currentUser(), getDictionary()]);
 

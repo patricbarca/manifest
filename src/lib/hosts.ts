@@ -1,6 +1,6 @@
 /**
  * Dos direcciones, un solo servidor:
- * - SITE_URL (manifestlife.ai): la web pública — portada, precios, blog, biblioteca.
+ * - SITE_URL (manifestlife.ai): la web pública — portada, precios, blog.
  * - APP_URL (app.manifestlife.ai): la app — perfil, feed, crear, vídeos.
  * Sin APP_URL todo vive en SITE_URL, como antes.
  */
@@ -27,9 +27,9 @@ export function siteBase(): string {
 }
 
 /** Páginas que solo existen en la web pública (desde la app se redirigen allí). */
-export const SITE_ONLY = ["/precios", "/blog", "/biblioteca"];
+export const SITE_ONLY = ["/pricing", "/blog"];
 /** Páginas de la app (desde la web pública se redirigen a la app). */
-export const APP_ONLY = ["/perfil", "/feed", "/crear", "/manifestar", "/mi-video", "/video", "/entrar"];
+export const APP_ONLY = ["/profile", "/feed", "/create", "/new", "/my-video", "/video", "/login", "/library"];
 
 export const matches = (path: string, list: string[]) => list.some((p) => path === p || path.startsWith(`${p}/`));
 

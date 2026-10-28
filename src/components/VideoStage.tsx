@@ -59,7 +59,7 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
           {t.video.failedRefund}
         </p>
         <Link
-          href="/crear"
+          href="/create"
           className="interactive mt-9 inline-block rounded-full bg-white px-6 py-2.5 text-[15px] font-medium text-black"
         >
           {t.video.tryAgain}
@@ -113,7 +113,7 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
               </span>
             )}
             <Link
-              href="/crear"
+              href="/create"
               className="interactive t-sub rounded-full border border-[var(--color-hairline)] px-5 py-2.5 text-[var(--color-label-1)]"
             >
               {t.common.createAnother}

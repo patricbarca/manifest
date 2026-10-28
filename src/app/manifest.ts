@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "ManifestLifeAI",
     description: "See yourself living it: a daily visualization video with your face.",
     // Al abrir desde el icono: lo de hoy (ver el vídeo y sumar aura).
-    start_url: "/perfil?tab=today",
+    start_url: "/profile?tab=today",
     display: "standalone",
     background_color: "#0a0a0b",
     theme_color: "#0a0a0b",

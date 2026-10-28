@@ -526,7 +526,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
               />
               <span>
                 {t.biometricConsent}{" "}
-                <a href="/privacidad" target="_blank" className="underline">{t.biometricMore}</a>
+                <a href="/privacy" target="_blank" className="underline">{t.biometricMore}</a>
               </span>
             </label>
 
@@ -846,7 +846,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
           <input type="checkbox" checked={waiver} onChange={(e) => setWaiver(e.target.checked)} className="mt-[2px] h-4 w-4 shrink-0 accent-white" />
           <span>
             {t.create.waiver}{" "}
-            <a href="/reembolsos" target="_blank" className="underline">{t.create.waiverMore}</a>
+            <a href="/refunds" target="_blank" className="underline">{t.create.waiverMore}</a>
           </span>
         </label>
       )}

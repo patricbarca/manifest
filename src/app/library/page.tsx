@@ -34,7 +34,7 @@ export default async function BibliotecaPage() {
           </p>
         </div>
         <Link
-          href="/crear"
+          href="/create"
           className="interactive rounded-full bg-white px-5 py-2.5 text-[14px] font-medium text-black hover:bg-white/90"
         >
           {t.library.createBtn}
@@ -48,7 +48,7 @@ export default async function BibliotecaPage() {
             {t.library.emptyBody}
           </p>
           <Link
-            href="/crear"
+            href="/create"
             className="interactive mt-8 inline-block rounded-full bg-white px-6 py-2.5 text-[15px] font-medium text-black hover:bg-white/90"
           >
             {t.library.emptyCta}

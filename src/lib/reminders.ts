@@ -32,8 +32,8 @@ export async function runReminders(): Promise<void> {
       to: user.email,
       locale: user.locale === "es" ? "es" : "en",
       streak: stats.streak,
-      url: `${site}/perfil?tab=today`,
-      settingsUrl: `${site}/perfil/editar`,
+      url: `${site}/profile?tab=today`,
+      settingsUrl: `${site}/profile/edit`,
     });
     if (sent) await db.putUser({ ...user, lastReminder: today });
   }

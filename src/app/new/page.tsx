@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 /** Nueva manifestación: escribe un deseo y se crea una escena animada tuya. */
 export default async function ManifestarPage() {
   const who = await me();
-  if (!who) redirect("/entrar?next=/manifestar");
+  if (!who) redirect("/login?next=/new");
   const { t, locale } = await getDictionary();
   const user = (await db.getUser(who.user.id)) ?? who.user;
   const photos = await livePhotos(user);

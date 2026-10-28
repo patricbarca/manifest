@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 /** Tu vídeo de manifestación: elige tus manifestaciones y se monta con ellas. */
 export default async function MiVideoPage() {
   const who = await me();
-  if (!who) redirect("/entrar?next=/mi-video");
+  if (!who) redirect("/login?next=/my-video");
   const { t, locale } = await getDictionary();
   const m = t.manifest;
   const ready = (await manifests.list(who.user.id)).filter((x) => x.status === "ready" && x.clipUrl);
@@ -24,7 +24,7 @@ export default async function MiVideoPage() {
       </div>
       {ready.length === 0 ? (
         <p className="t-sub text-[var(--color-label-2)]">
-          {m.empty} <Link href="/manifestar" className="underline">{m.newButton}</Link>
+          {m.empty} <Link href="/new" className="underline">{m.newButton}</Link>
         </p>
       ) : (
         <ComposeVideo

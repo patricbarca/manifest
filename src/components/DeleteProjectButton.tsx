@@ -23,7 +23,7 @@ export function DeleteProjectButton({
       const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error ?? labels.failed);
-      router.push("/biblioteca");
+      router.push("/profile?tab=today");
       router.refresh();
     } catch (err) {
       setError((err as Error).message);

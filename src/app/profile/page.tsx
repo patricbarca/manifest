@@ -22,10 +22,10 @@ export const dynamic = "force-dynamic";
 type Tab = "manifest" | "today" | "circle";
 const TABS: Tab[] = ["manifest", "today", "circle"];
 
-/** Tu perfil: cabecera, highlights y pestañas (publicaciones, hoy, círculo). Los ajustes están en /perfil/editar. */
+/** Tu perfil: cabecera, highlights y pestañas (publicaciones, hoy, círculo). Los ajustes están en /profile/edit. */
 export default async function PerfilPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const who = await me();
-  if (!who) redirect("/entrar?next=/perfil");
+  if (!who) redirect("/login?next=/profile");
   const { tab: rawTab } = await searchParams;
   const tab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : "manifest";
   const { t, locale } = await getDictionary();
@@ -65,7 +65,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
         locale={locale as Locale}
         actions={
           <>
-            <Link href="/perfil/editar" className={btn}>{t.aura.editProfile}</Link>
+            <Link href="/profile/edit" className={btn}>{t.aura.editProfile}</Link>
             {who.profile.visibility === "private" ? (
               <Link href={`/u/${who.profile.handle}`} className={btn}>{t.aura.viewAsVisitor}</Link>
             ) : (
@@ -78,12 +78,12 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
       {who.profile.visibility === "private" && (
         <p className="t-caption rounded-[var(--radius-md)] bg-white/[0.04] px-4 py-3 text-[var(--color-label-2)]">
           🔒 {t.aura.privateNote}{" "}
-          <Link href="/perfil/editar" className="underline">{t.aura.change}</Link>
+          <Link href="/profile/edit" className="underline">{t.aura.change}</Link>
         </p>
       )}
 
       {pending.length > 0 && tab !== "circle" && (
-        <Link href="/perfil?tab=circle" className="t-sub block rounded-[var(--radius-md)] border border-[var(--color-hairline-strong)] px-4 py-3">
+        <Link href="/profile?tab=circle" className="t-sub block rounded-[var(--radius-md)] border border-[var(--color-hairline-strong)] px-4 py-3">
           👋 {fill(t.aura.pendingRequests, { n: pending.length })}
         </Link>
       )}
@@ -94,7 +94,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
         {TABS.map((k) => (
           <Link
             key={k}
-            href={k === "manifest" ? "/perfil" : `/perfil?tab=${k}`}
+            href={k === "manifest" ? "/profile" : `/profile?tab=${k}`}
             scroll={false}
             className={`t-sub flex-1 border-b-2 pb-3 text-center ${tab === k ? "border-white font-medium text-[var(--color-label-1)]" : "border-transparent text-[var(--color-label-3)]"}`}
           >
@@ -106,9 +106,9 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
 
       {tab === "manifest" && (
         <div className="flex gap-2">
-          <Link href="/manifestar" className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 text-center font-medium text-black">+ {t.manifest.newButton}</Link>
+          <Link href="/new" className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 text-center font-medium text-black">+ {t.manifest.newButton}</Link>
           {mine.some((x) => x.status === "ready") && (
-            <Link href="/mi-video" className="interactive t-sub flex-1 rounded-full border border-[var(--color-hairline-strong)] px-4 py-2 text-center font-medium">▶ {t.manifest.composeButton}</Link>
+            <Link href="/my-video" className="interactive t-sub flex-1 rounded-full border border-[var(--color-hairline-strong)] px-4 py-2 text-center font-medium">▶ {t.manifest.composeButton}</Link>
           )}
         </div>
       )}
