@@ -33,6 +33,7 @@ export default async function MiVideoPage() {
           locale={locale as Locale}
           max={8}
           t={{
+            palette: t.create.palette, palettes: t.create.palettes,
             pick: m.pick, selected: m.selected, language: m.language, voice: m.voice, titleLabel: m.titleLabel, titleDefault: m.titleDefault,
             create: m.composeCreate, creating: m.creating, max: m.max,
             errors: { invalid: t.aura.errors.invalid, not_ready: m.errNotReady, busy: m.errBusy, mixed_locale: m.errMixed },

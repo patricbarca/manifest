@@ -7,7 +7,7 @@ import { manifests } from "@/lib/manifest/store";
 import { composeProject } from "@/lib/manifest/compose";
 import { enqueueCompose } from "@/lib/queue";
 import { VOICE_IDS } from "@/lib/voices";
-import type { Manifestation } from "@/lib/types";
+import { PALETTES, type Manifestation, type Palette } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -18,6 +18,7 @@ const Body = z.object({
   locale: z.enum(["es", "en"]).optional(),
   voice: z.enum(VOICE_IDS).optional(),
   title: z.string().trim().min(1).max(80).optional(),
+  palette: z.enum(PALETTES as [Palette, ...Palette[]]).optional(),
 });
 
 /**
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
     items,
     locale,
     voice: body.data.voice ?? items[0].voice,
+    palette: body.data.palette,
     title: body.data.title ?? (locale === "es" ? "Mi manifestación" : "My manifestation"),
   });
   await db.putProject(project);

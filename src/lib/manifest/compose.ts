@@ -1,5 +1,5 @@
 import { access, rm } from "node:fs/promises";
-import type { Manifestation, Project, Scene } from "../types";
+import type { Palette, Manifestation, Project, Scene } from "../types";
 import { db } from "../db/store";
 import { providers } from "../ai";
 import { voiceLines } from "../experience";
@@ -33,6 +33,7 @@ export function composeProject(opts: {
   items: Manifestation[];
   locale: Project["locale"];
   voice?: string;
+  palette?: Palette;
   title: string;
 }): Project {
   const now = Date.now();
@@ -60,6 +61,7 @@ export function composeProject(opts: {
     durationSec: 60,
     locale: opts.locale,
     voice: opts.voice,
+    palette: opts.palette ?? "dusk",
     status: "queued",
     steps: [
       { id: "voice", label: "Grabando la voz", status: "pending" },
