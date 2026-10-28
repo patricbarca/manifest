@@ -1,3 +1,4 @@
+import { appBase } from "../hosts";
 import { access, rm } from "node:fs/promises";
 import type { Palette, Manifestation, Project, Scene } from "../types";
 import { db } from "../db/store";
@@ -142,7 +143,7 @@ export async function runCompose(projectId: string): Promise<void> {
       scenes: p.scenes.map((s) => ({ ...s, videoUrl: undefined })),
     }));
     if (user?.email) {
-      void sendVideoReady({ to: user.email, locale: project.locale, title: project.title, url: `${process.env.SITE_URL ?? ""}/video/${projectId}` });
+      void sendVideoReady({ to: user.email, locale: project.locale, title: project.title, url: `${appBase()}/video/${projectId}` });
     }
     await offloadProject(projectId);
     // Las copias locales de las manifestaciones ya están en el bucket: fuera del disco.

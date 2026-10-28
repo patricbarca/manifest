@@ -2,7 +2,8 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { ProfileSettings } from "@/components/ProfileSettings";
-import { ShowcaseEditor } from "@/components/ShowcaseEditor";
+import { MyPhotos } from "@/components/MyPhotos";
+import { livePhotos } from "@/lib/manifest/photos";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { ReminderToggle } from "@/components/ReminderToggle";
 import { fill } from "@/lib/i18n";
@@ -20,7 +21,7 @@ export default async function EditarPerfilPage() {
   const { t, locale } = await getDictionary();
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
-  const ready = (await db.listProjects(who.user.id)).filter((p) => p.status === "ready");
+  const photos = await livePhotos((await db.getUser(who.user.id)) ?? who.user);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 px-4 py-10 sm:px-6">
@@ -32,33 +33,10 @@ export default async function EditarPerfilPage() {
 
       <ProfileSettings initial={who.profile} origin={origin} t={t.aura} />
 
-      <section className="card rounded-[var(--radius-lg)] p-7">
-        <h2 className="t-headline">{t.aura.showcaseTitle}</h2>
-        <p className="t-caption mb-4 mt-1 text-[var(--color-label-3)]">{t.aura.highlightsHint}</p>
-        {ready.length === 0 ? (
-          <p className="t-sub text-[var(--color-label-2)]">{t.aura.noManifestations}</p>
-        ) : (
-          <div className="divide-y divide-[var(--color-hairline)]">
-            {ready.map((p) =>
-              p.highlights?.length ? (
-                <ShowcaseEditor
-                  key={p.id}
-                  projectId={p.id}
-                  title={p.script?.title || p.title}
-                  initialShow={!!p.showOnProfile}
-                  initialItems={p.highlights}
-                  t={{ showOnProfile: t.aura.showOnProfile, hiddenScene: t.aura.hiddenScene, labelPlaceholder: t.aura.labelPlaceholder, tapToHide: t.aura.tapToHide }}
-                />
-              ) : (
-                <div key={p.id} className="flex items-center justify-between gap-3 py-4">
-                  <span className="t-sub min-w-0 truncate">{p.script?.title || p.title}</span>
-                  <span className="t-caption text-[var(--color-label-3)]">{t.aura.noHighlights}</span>
-                </div>
-              ),
-            )}
-          </div>
-        )}
-      </section>
+      <MyPhotos
+        initial={photos}
+        t={{ title: t.manifest.myPhotos, hint: t.manifest.myPhotosHint, empty: t.manifest.noPhotos, remove: t.manifest.removePhoto, upload: t.manifest.upload, uploading: t.manifest.uploading, consent: t.consent, biometric: t.biometricConsent, error: t.aura.errors.invalid }}
+      />
 
       <section className="card rounded-[var(--radius-lg)] p-7">
         <h2 className="t-headline">{t.aura.account}</h2>

@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
+import { appBase, isAppHostHeader, siteBase } from "@/lib/hosts";
 import { NavPills } from "@/components/NavPills";
 import "@fontsource-variable/inter";
 import "./globals.css";
@@ -31,6 +33,12 @@ export default async function RootLayout({
   const { t, locale } = await getDictionary();
   const auth = authEnabled() ? await authUser() : null;
   const signedIn = !!auth;
+  // ¿Dentro de la app (app.manifestlife.ai) o en la web pública?
+  const h = await headers();
+  const inApp = isAppHostHeader(h.get("x-forwarded-host") ?? h.get("host"));
+  const splitHosts = !!process.env.APP_URL;
+  const app = splitHosts && !inApp ? appBase() : ""; // enlaces de la web a la app
+  const site = inApp ? siteBase() : ""; // enlaces de la app a la web
 
   const nav = [
     { href: "/crear", label: t.nav.create },
@@ -45,11 +53,11 @@ export default async function RootLayout({
       <body className="grain min-h-dvh">
         <header className="material-chrome sticky top-0 z-40 border-b border-[var(--color-hairline)]">
           <div className="mx-auto flex h-14 max-w-[1120px] items-center justify-between gap-4 px-6">
-            <Link href="/" aria-label="ManifestLifeAI">
+            <Link href={inApp ? "/perfil" : "/"} aria-label="ManifestLifeAI">
               <Logo size={26} compact={signedIn} />
             </Link>
 
-            <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex">
+            <nav className={`absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 ${inApp ? "" : "md:flex"}`}>
               {nav.map((item) => (
                 <Link
                   key={item.href}
@@ -62,7 +70,18 @@ export default async function RootLayout({
             </nav>
 
             <div className="flex items-center gap-2.5">
-              {signedIn ? (
+              {splitHosts && !inApp ? (
+                // Web pública con la app aparte: un solo botón que lleva a la app.
+                <>
+                  <LocaleToggle current={locale} />
+                  <a
+                    href={`${app}/perfil`}
+                    className="interactive rounded-full bg-white px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-black hover:bg-white/90"
+                  >
+                    {t.nav.openApp}
+                  </a>
+                </>
+              ) : signedIn ? (
                 // Con sesión: perfil y crear otra visualización. Idioma y salir están en Editar perfil.
                 <>
                   <NavPills feed={t.nav.feed} profile={t.aura.nav} />
@@ -93,19 +112,19 @@ export default async function RootLayout({
 
         <main className="relative z-10">{children}</main>
 
-        <footer className="relative z-10 mt-32 border-t border-[var(--color-hairline)]">
+        <footer className={`relative z-10 ${inApp ? "mt-16" : "mt-32"} border-t border-[var(--color-hairline)]`}>
           <div className="mx-auto flex max-w-[1120px] flex-col gap-5 px-6 py-12 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-4">
               <Logo size={22} />
               <nav className="flex flex-wrap gap-x-5 gap-y-2">
                 {[
-                  { href: "/blog", label: t.nav.blog },
+                  ...(inApp ? [] : [{ href: "/blog", label: t.nav.blog }]),
                   { href: "/privacidad", label: t.footer.privacy },
                   { href: "/terminos", label: t.footer.terms },
                   { href: "/reembolsos", label: t.footer.refunds },
                   ...(CONTACT ? [{ href: `mailto:${CONTACT}`, label: t.footer.contact }] : []),
                 ].map((l) => (
-                  <a key={l.href} href={l.href} className="t-caption text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">
+                  <a key={l.href} href={l.href.startsWith("/") ? `${site}${l.href}` : l.href} className="t-caption text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">
                     {l.label}
                   </a>
                 ))}

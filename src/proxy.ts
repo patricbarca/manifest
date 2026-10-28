@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { requestOrigin } from "@/lib/request-origin";
+import { APP_ONLY, SITE_ONLY, appBase, appHost, isAppHostHeader, matches } from "@/lib/hosts";
 
 const REF_COOKIE = "ml_ref";
 
@@ -26,9 +27,25 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(target, 301);
   }
 
+  // Web pública y app en direcciones distintas (solo si APP_URL existe).
+  const onApp = isAppHostHeader(request.headers.get("x-forwarded-host") ?? request.headers.get("host"));
+  const code = request.nextUrl.searchParams.get("code");
+  if (appHost() && !path.startsWith("/api/") && !path.startsWith("/auth/")) {
+    if (onApp && (path === "/" || matches(path, SITE_ONLY))) {
+      // La portada de la app es tu perfil; precios, blog y biblioteca viven en la web.
+      const target = path === "/" ? new URL("/perfil", appBase()) : new URL(path + request.nextUrl.search, process.env.SITE_URL);
+      if (path === "/" && code) return NextResponse.redirect(new URL(`/auth/callback?code=${encodeURIComponent(code)}`, appBase()), 307);
+      return NextResponse.redirect(target, 307);
+    }
+    if (!onApp && (matches(path, APP_ONLY) || code)) {
+      // El login empieza en la app (ahí queda su cookie), así que el código también va allí.
+      if (code) return NextResponse.redirect(new URL(`/auth/callback?code=${encodeURIComponent(code)}`, appBase()), 307);
+      return NextResponse.redirect(new URL(path + request.nextUrl.search, appBase()), 307);
+    }
+  }
+
   // Si Supabase no acepta la URL de vuelta, devuelve el código a la Site URL
   // (la portada). Lo pasamos al retorno del login para no perder la sesión.
-  const code = request.nextUrl.searchParams.get("code");
   if (code && !path.startsWith("/auth/") && !path.startsWith("/api/")) {
     const target = new URL("/auth/callback", requestOrigin(request));
     target.searchParams.set("code", code);
@@ -41,6 +58,8 @@ export async function proxy(request: NextRequest) {
   // Enlace de invitación (?ref=usuario): se recuerda 30 días para atribuir el registro.
   const ref = request.nextUrl.searchParams.get("ref")?.toLowerCase();
   const withRef = (res: NextResponse) => {
+    // La app no se indexa en buscadores: solo la web pública.
+    if (onApp) res.headers.set("X-Robots-Tag", "noindex, nofollow");
     if (ref && /^[a-z0-9_]{3,24}$/.test(ref) && !request.cookies.get(REF_COOKIE)) {
       res.cookies.set(REF_COOKIE, ref, { httpOnly: true, sameSite: "lax", maxAge: 60 * 60 * 24 * 30, path: "/" });
     }
