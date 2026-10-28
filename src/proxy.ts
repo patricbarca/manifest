@@ -84,7 +84,8 @@ export async function proxy(request: NextRequest) {
       },
     },
   });
-  await sb.auth.getUser();
+  // Refresca la sesión si caducó; el token se verifica sin ir a Supabase si sus claves son asimétricas.
+  await sb.auth.getClaims();
   return withRef(response);
 }
 
