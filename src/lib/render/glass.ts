@@ -115,6 +115,8 @@ export async function renderGlass(
     })),
     voices,
     work_dir: work,
+    // Fondo animado ya hecho por paleta: se reutiliza entre vídeos.
+    cache_dir: path.join(DATA_DIR, "cache", "glass"),
     out: tmpOut,
     // Elevado conserva el detalle de los clips 1080p; el resto pesa menos.
     crf: project.tier === "elevated" ? 20 : 27,
