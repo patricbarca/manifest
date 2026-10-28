@@ -27,9 +27,11 @@ const Patch = z.object({
   manifested: z.boolean().optional(),
   onProfile: z.boolean().optional(),
   title: z.string().trim().min(1).max(60).optional(),
+  /** La frase que se dice y se ve sobre la escena. La escena no se regenera. */
+  affirmation: z.string().trim().min(3).max(120).optional(),
 });
 
-/** Marcar como cumplida, mostrar en el perfil o renombrar. */
+/** Marcar como cumplida, mostrar en el perfil, renombrar o cambiar su frase. */
 export async function PATCH(request: Request) {
   const who = await me();
   if (!who) return NextResponse.json({ error: "signin" }, { status: 401 });
@@ -37,12 +39,15 @@ export async function PATCH(request: Request) {
   if (!body.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
   const cur = await manifests.get(body.data.id);
   if (!cur || cur.ownerId !== who.user.id) return NextResponse.json({ error: "not_found" }, { status: 404 });
-  if (body.data.title && (!checkBlocked(body.data.title).ok || !(await moderate([body.data.title])).ok)) {
+  const texts = [body.data.title, body.data.affirmation].filter((x): x is string => !!x);
+  if (texts.length && (texts.some((x) => !checkBlocked(x).ok) || !(await moderate(texts)).ok)) {
     return NextResponse.json({ error: "text_blocked" }, { status: 422 });
   }
   const next = await manifests.patch(cur.id, (m) => ({
     ...m,
     ...(body.data.title ? { title: body.data.title } : {}),
+    // Frase nueva: la voz antigua ya no coincide; se vuelve a grabar al montar el próximo vídeo.
+    ...(body.data.affirmation && body.data.affirmation !== m.affirmation ? { affirmation: body.data.affirmation, voiceUrl: undefined } : {}),
     ...(body.data.onProfile !== undefined ? { onProfile: body.data.onProfile || undefined } : {}),
     ...(body.data.manifested !== undefined ? { manifestedAt: body.data.manifested ? Date.now() : undefined } : {}),
   }));
