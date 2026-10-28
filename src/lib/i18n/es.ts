@@ -11,6 +11,7 @@ export const es: Dictionary = {
     start: "Empezar",
     newVisualization: "Nueva visualización",
     openApp: "Abrir la app",
+    login: "Entrar",
     newShort: "Crear",
     feed: "Feed",
   },

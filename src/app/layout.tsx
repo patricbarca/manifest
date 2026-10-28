@@ -40,8 +40,9 @@ export default async function RootLayout({
   const app = splitHosts && !inApp ? appBase() : ""; // enlaces de la web a la app
   const site = inApp ? siteBase() : ""; // enlaces de la app a la web
 
+  // Menú de la web pública (sin "Crear": ese es el botón de la derecha, que lleva a la app).
   const nav = [
-    { href: "/create", label: t.nav.create },
+    ...(splitHosts ? [] : [{ href: "/create", label: t.nav.create }]),
     { href: "/market", label: t.nav.market },
     { href: "/pricing", label: t.nav.pricing },
     { href: "/blog", label: t.nav.blog },
@@ -70,14 +71,18 @@ export default async function RootLayout({
 
             <div className="flex items-center gap-2.5">
               {splitHosts && !inApp ? (
-                // Web pública con la app aparte: un solo botón que lleva a la app.
+                // Web pública con la app aparte: "Entrar" para quien ya tiene cuenta y
+                // "Crear", que lleva directo al login de la app.
                 <>
-                  <LocaleToggle current={locale} />
+                  <span className="hidden sm:inline-flex"><LocaleToggle current={locale} /></span>
+                  <a href={`${app}/login`} className="t-sub px-1 text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">
+                    {t.nav.login}
+                  </a>
                   <a
-                    href={`${app}/profile`}
+                    href={`${app}/login?next=/create`}
                     className="interactive rounded-full bg-white px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-black hover:bg-white/90"
                   >
-                    {t.nav.openApp}
+                    {t.nav.create}
                   </a>
                 </>
               ) : signedIn ? (
@@ -98,10 +103,10 @@ export default async function RootLayout({
                 <>
                   <LocaleToggle current={locale} />
                   <Link
-                    href="/create"
+                    href={inApp ? "/login" : "/create"}
                     className="interactive rounded-full bg-white px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-black hover:bg-white/90"
                   >
-                    {t.nav.start}
+                    {inApp ? t.nav.login : t.nav.start}
                   </Link>
                 </>
               )}
@@ -115,6 +120,7 @@ export default async function RootLayout({
                   {item.label}
                 </Link>
               ))}
+              {splitHosts && <span className="ml-auto shrink-0"><LocaleToggle current={locale} /></span>}
             </nav>
           )}
         </header>
