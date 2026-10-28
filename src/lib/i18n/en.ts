@@ -11,6 +11,7 @@ export const en = {
     blog: "Blog",
     start: "Get started",
     newVisualization: "New visualization",
+    openApp: "Open the app",
     newShort: "Create",
     feed: "Feed",
   },

@@ -1,3 +1,4 @@
+import { appBase } from "./hosts";
 import { providers } from "./ai";
 import { db } from "./db/store";
 import { applyCast, buildScenes, layoutTimeline, narrationText, sceneCast } from "./script-engine";
@@ -332,7 +333,7 @@ export async function runPipeline(projectId: string): Promise<void> {
         to: owner.email,
         locale: start.locale,
         title: script.title || start.title,
-        url: `${process.env.SITE_URL ?? ""}/video/${projectId}`,
+        url: `${appBase()}/video/${projectId}`,
       });
     }
     // Las fotos de otras personas solo hacían falta para las escenas.

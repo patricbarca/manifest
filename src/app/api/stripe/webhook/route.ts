@@ -1,3 +1,4 @@
+import { appBase } from "@/lib/hosts";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { enqueue } from "@/lib/queue";
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
             amountCents: session.amount_total ?? project.paidCents,
             currency: session.currency ?? "usd",
             waiverAt: project.waiverAt,
-            url: `${process.env.SITE_URL ?? ""}/video/${id}`,
+            url: `${appBase()}/video/${id}`,
           });
         }
       }

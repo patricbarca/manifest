@@ -10,6 +10,7 @@ export const es: Dictionary = {
     blog: "Blog",
     start: "Empezar",
     newVisualization: "Nueva visualización",
+    openApp: "Abrir la app",
     newShort: "Crear",
     feed: "Feed",
   },
