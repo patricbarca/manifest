@@ -1,3 +1,4 @@
+import { speakLinesCached } from "./voice-cache";
 import { appBase } from "./hosts";
 import { providers } from "./ai";
 import { db } from "./db/store";
@@ -225,7 +226,7 @@ export async function runPipeline(projectId: string): Promise<void> {
     const glass = !!providers.voice.speakLines && (await canRenderGlass());
     let lineUrls: Record<string, string> | undefined;
     if (glass) {
-      const out = await providers.voice.speakLines!({
+      const out = await speakLinesCached({
         lines: voiceLines(start.locale, start.id, script.affirmations, quoteId),
         projectId,
         locale: start.locale,
@@ -273,8 +274,8 @@ export async function runPipeline(projectId: string): Promise<void> {
       const withImages = (await db.getProject(projectId))!.scenes;
       let motionCents = 0;
 
-      // Kling tarda minutos por clip: en Elevado se piden más a la vez.
-      const parallel = start.tier === "elevated" ? 5 : 2;
+      // Cada clip tarda minutos: se piden todos a la vez (fal encola si se pasa del límite de la cuenta).
+      const parallel = Number(process.env.FAL_VIDEO_PARALLEL ?? (start.tier === "elevated" ? 5 : 3));
       await mapWithLimit(withImages, parallel, async (scene) => {
         if (!scene.imageUrl) return;
         const brief = plainBrief(script.sceneBriefs[withImages.indexOf(scene)] ?? "");

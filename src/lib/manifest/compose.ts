@@ -1,3 +1,4 @@
+import { speakLinesCached } from "../voice-cache";
 import { appBase } from "../hosts";
 import { access, rm } from "node:fs/promises";
 import type { Palette, Manifestation, Project, Scene } from "../types";
@@ -119,7 +120,7 @@ export async function runCompose(projectId: string): Promise<void> {
     }
     const toSpeak = Object.fromEntries(Object.entries(all).filter(([k]) => !reuse[k]));
     if (!providers.voice.speakLines) throw new Error("La voz por frases no está disponible");
-    const spoken = await providers.voice.speakLines({ lines: toSpeak, projectId, locale: project.locale, voice: project.voice });
+    const spoken = await speakLinesCached({ lines: toSpeak, projectId, locale: project.locale, voice: project.voice });
     cents += spoken.costCents;
     const lineUrls = { ...spoken.result, ...reuse };
     await db.patchProject(projectId, (p) => ({ ...p, quoteId, voiceLines: lineUrls }));
