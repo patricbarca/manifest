@@ -12,6 +12,7 @@ export const en = {
     start: "Get started",
     newVisualization: "New visualization",
     openApp: "Open the app",
+    login: "Log in",
     newShort: "Create",
     feed: "Feed",
   },

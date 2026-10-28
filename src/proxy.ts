@@ -40,6 +40,12 @@ export async function proxy(request: NextRequest) {
     if (!onApp && (matches(path, APP_ONLY) || code)) {
       // El login empieza en la app (ahí queda su cookie), así que el código también va allí.
       if (code) return NextResponse.redirect(new URL(`/auth/callback?code=${encodeURIComponent(code)}`, appBase()), 307);
+      // Crear desde la web lleva directo al login de la app (y de ahí a crear).
+      if (path === "/create" || path.startsWith("/create/")) {
+        const login = new URL("/login", appBase());
+        login.searchParams.set("next", path + request.nextUrl.search);
+        return NextResponse.redirect(login, 307);
+      }
       return NextResponse.redirect(new URL(path + request.nextUrl.search, appBase()), 307);
     }
   }
