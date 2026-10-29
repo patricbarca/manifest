@@ -364,6 +364,14 @@ export function isPovBrief(brief: string): boolean {
   return /^pov:\s*/i.test(brief);
 }
 
+/**
+ * Una sola foto, una sola cara nítida: si hay más gente parecida cerca, el
+ * modelo le copia la cara (caras duplicadas). Con reparto con fotos, applyCast
+ * lo cambia por la versión para varias personas.
+ */
+const ALONE = "One single photograph of one moment, with the main subject as the only sharp face in the foreground; anyone else is a clearly different-looking person, softly out of focus in the background";
+const WITH_CAST = "One single photograph of one moment; the people from the figures are the only sharp faces; anyone else is a clearly different-looking person, softly out of focus in the background";
+
 /** Compone el prompt final de imagen: identidad + escena + estilo + encuadre. */
 export function buildScenePrompt(
   brief: string,
@@ -381,7 +389,7 @@ export function buildScenePrompt(
   const identity = isPovBrief(brief)
     ? "First-person point of view through the person's own eyes, only their hands visible"
     : hasSelfie
-      ? `The person is exactly the person in ${figures}, with their own face, hair and features, natural likeness`
+      ? `The main subject is exactly the person in ${figures}, with their own face, hair and features, natural likeness. ${ALONE}`
       : "A person seen from behind or at a distance";
   // Todo en positivo: las negaciones ("no text") el modelo las lee al revés.
   return [
@@ -453,14 +461,14 @@ export function applyCast(
   prompt: string,
   cast: { name: string; first: number; last: number }[],
 ): string {
-  let out = prompt;
+  let out = cast.length ? prompt.replace(ALONE, WITH_CAST) : prompt;
   const extra: string[] = [];
   for (const c of cast) {
     const figs = c.first === c.last ? `Figure ${c.first}` : `Figures ${c.first} to ${c.last}`;
     const who = `the person in ${figs}`;
     const re = new RegExp(`\\[\\[\\s*${escapeRe(c.name)}\\s*\\]\\]`, "gi");
     if (re.test(out)) out = out.replace(re, who);
-    else extra.push(`Also in the scene, close to the main person: ${who}`);
+    else extra.push(`Also in the scene, close to the main subject: ${who}`);
   }
   // Marcas de personas que no están en el reparto: se quitan los corchetes.
   out = out.replace(/\[\[\s*([^\]]+?)\s*\]\]/g, "a person");
