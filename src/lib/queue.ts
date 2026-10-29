@@ -93,3 +93,17 @@ export async function resumeManifestations(): Promise<void> {
     enqueueManifestation(m.id);
   }
 }
+
+/**
+ * Revisiones de imágenes sin respuesta: pasado un rato se aprueban solas para
+ * que nadie se quede sin vídeo por no volver a la app.
+ */
+export async function approveStaleReviews(maxMinutes = Number(process.env.REVIEW_AUTO_APPROVE_MIN ?? 60)): Promise<void> {
+  const cutoff = Date.now() - maxMinutes * 60_000;
+  for (const p of await db.listAllProjects()) {
+    if (p.status !== "review" || (p.reviewSince ?? 0) > cutoff) continue;
+    await db.patchProject(p.id, (cur) => ({ ...cur, imagesApproved: true, status: "queued" }));
+    console.log("[queue] revisión aprobada sola", p.id);
+    enqueue(p.id);
+  }
+}

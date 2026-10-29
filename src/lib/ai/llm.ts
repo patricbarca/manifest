@@ -62,6 +62,9 @@ Reglas de las escenas (sceneBriefs):
   números (un "1.000.000" sale "10000"). Si el deseo es una cifra (dinero,
   ventas, kilos), muéstralo con la emoción y el contexto: celebrar con su gente,
   brindar, un apretón de manos, una pantalla con gráficas abstractas que suben.
+- Si el usuario dijo cómo quiere verse (ropa, colores), úsalo en TODAS las
+  escenas tal cual, salvo que una escena pida algo incompatible (p. ej. bañador
+  en la playa: entonces la versión más parecida).
 - Ropa: describe prendas concretas, bien ajustadas y completas (camisa
   abotonada, camiseta de cuello redondo, chaqueta), con colores sobrios y
   favorecedores (blanco, beige, azul marino, gris), salvo que el usuario pida

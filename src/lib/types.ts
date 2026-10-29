@@ -79,7 +79,8 @@ export interface Person {
 export type Palette = "dusk" | "ocean" | "sage" | "rose" | "lavender" | "gold";
 export const PALETTES: Palette[] = ["dusk", "ocean", "sage", "rose", "lavender", "gold"];
 
-export type ProjectStatus = "draft" | "queued" | "generating" | "ready" | "failed";
+/** "review": imágenes hechas, esperando que la persona las apruebe antes de animar. */
+export type ProjectStatus = "draft" | "queued" | "generating" | "review" | "ready" | "failed";
 
 export type StepId = "script" | "images" | "motion" | "voice" | "assemble";
 
@@ -132,6 +133,8 @@ export interface Manifestation {
   highlight?: Highlight;
   /** La muestra en su perfil público (solo el highlight, sin sonido ni el deseo). */
   onProfile?: boolean;
+  /** Ajuste que pidió al rehacerla ("camisa blanca", "sin texto en la pantalla"). */
+  redoNote?: string;
   /** Cuándo la marcó como cumplida. */
   manifestedAt?: number;
   /** Proyecto del que salió, si nació dentro de un vídeo completo. */
@@ -278,6 +281,12 @@ export interface Project {
   /** Duración real del vídeo final, en segundos. */
   videoDurationSec?: number;
   palette?: Palette;
+  /** La persona aprobó las imágenes (o pasó el tiempo de revisión): ya se puede animar. */
+  imagesApproved?: boolean;
+  /** Desde cuándo espera la revisión de imágenes. */
+  reviewSince?: number;
+  /** Veces que se rehízo cada escena en la revisión (por id de escena). */
+  redoCounts?: Record<string, number>;
   status: ProjectStatus;
   steps: PipelineStep[];
   /**

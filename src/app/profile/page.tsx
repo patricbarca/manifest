@@ -1,3 +1,4 @@
+import { PAYMENTS_ENABLED } from "@/lib/pricing";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -116,7 +117,8 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
         <ManifestationGrid
           initial={mine}
           locale={locale}
-          t={{ edit: t.manifest.edit, save: t.manifest.save, cancel: t.manifest.cancel, titleLabel: t.manifest.titleField, phraseLabel: t.manifest.phraseField, editHint: t.manifest.editHint, textBlocked: t.aura.errors.text_blocked, manifested: t.manifest.manifested, markManifested: t.manifest.markManifested, unmark: t.manifest.unmark, onProfile: t.manifest.onProfile, profileHint: t.manifest.profileHint, showOnProfile: t.manifest.showOnProfile, hideFromProfile: t.manifest.hideFromProfile, generating: t.manifest.generating, failed: t.manifest.failed, close: t.aura.close, empty: t.manifest.empty }}
+          paymentsOn={PAYMENTS_ENABLED}
+          t={{ redo: t.manifest.redo, edit: t.manifest.edit, save: t.manifest.save, cancel: t.manifest.cancel, titleLabel: t.manifest.titleField, phraseLabel: t.manifest.phraseField, editHint: t.manifest.editHint, textBlocked: t.aura.errors.text_blocked, manifested: t.manifest.manifested, markManifested: t.manifest.markManifested, unmark: t.manifest.unmark, onProfile: t.manifest.onProfile, profileHint: t.manifest.profileHint, showOnProfile: t.manifest.showOnProfile, hideFromProfile: t.manifest.hideFromProfile, generating: t.manifest.generating, failed: t.manifest.failed, close: t.aura.close, empty: t.manifest.empty }}
         />
       )}
 

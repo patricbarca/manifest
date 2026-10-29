@@ -108,7 +108,7 @@ export async function sweepStorage(): Promise<void> {
   try {
     const projects = await db.listAllProjects();
     const busy = new Set(
-      projects.filter((p) => p.status === "queued" || p.status === "generating").flatMap(photoUrls),
+      projects.filter((p) => p.status === "queued" || p.status === "generating" || p.status === "review").flatMap(photoUrls),
     );
     for (const abs of await oldEntries(mediaDir("uploads"), UPLOAD_TTL_DAYS * DAY)) {
       const url = `/media/uploads/${path.basename(abs)}`;

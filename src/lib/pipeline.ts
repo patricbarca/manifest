@@ -231,6 +231,13 @@ export async function runPipeline(projectId: string): Promise<void> {
       costCents: charge(imageCents),
     });
 
+    // Revisión: en los vídeos animados la persona ve las imágenes y puede rehacer
+    // alguna antes de pagar la animación (lo caro). Se reanuda al aprobar.
+    if (isAnimated(start.tier) && !(await db.getProject(projectId))?.imagesApproved && process.env.IMAGE_REVIEW !== "off") {
+      await db.patchProject(projectId, (p) => ({ ...p, status: "review", reviewSince: Date.now() }));
+      return;
+    }
+
     // ── 3. Voz ──────────────────────────────────────────────────────────────
     // Con el montaje nuevo cada frase es una pista: así cada escena dura lo
     // que su frase más la pausa para repetirla. Sin él, una sola narración.
@@ -387,4 +394,33 @@ export async function runPipeline(projectId: string): Promise<void> {
     }));
     throw err;
   }
+}
+
+/**
+ * Rehace la imagen de una escena durante la revisión, con un ajuste opcional
+ * de la persona ("camisa blanca", "más sonrisa"). Devuelve la URL nueva.
+ */
+export async function redoSceneImage(projectId: string, sceneId: string, note?: string): Promise<string> {
+  const project = await db.getProject(projectId);
+  if (!project) throw new Error("Proyecto no encontrado");
+  const scene = project.scenes.find((s) => s.id === sceneId);
+  if (!scene) throw new Error("Escena no encontrada");
+  const photos = photoAbsolutePaths(project);
+  const people = project.people ?? [];
+  const { refs } = castPlan(scene, photos, people);
+  const prompt = note ? `${scene.prompt}. Change requested by the person (apply it exactly): ${note}` : scene.prompt;
+  // Nombre nuevo para que el navegador no muestre la imagen anterior en caché.
+  const out = await providers.image.generate({
+    prompt,
+    referencePaths: refs.length ? refs : undefined,
+    projectId,
+    sceneId: `${scene.id}_r${Date.now().toString(36)}`,
+  });
+  await db.patchProject(projectId, (p) => ({
+    ...p,
+    costCents: +(p.costCents + out.costCents).toFixed(2),
+    redoCounts: { ...(p.redoCounts ?? {}), [sceneId]: (p.redoCounts?.[sceneId] ?? 0) + 1 },
+    scenes: p.scenes.map((s) => (s.id === sceneId ? { ...s, imageUrl: out.result.url, videoUrl: undefined } : s)),
+  }));
+  return out.result.url;
 }
