@@ -39,6 +39,8 @@ export async function runManifestation(id: string): Promise<void> {
       seed: id,
       locale: start.locale,
       desires: [start.desire],
+      // Al rehacerla, el cambio que pidió manda sobre la versión anterior.
+      details: start.redoNote ? [{ question: "Cambio que pidió para esta escena", answer: start.redoNote }] : undefined,
     });
     cents += script.costCents;
     const brief = script.result.sceneBriefs[0] ?? start.desire;
@@ -47,7 +49,10 @@ export async function runManifestation(id: string): Promise<void> {
     const [scene] = buildScenes([brief], start.style ?? "cinematic", photos.length > 0, 8, photos.length);
 
     // 2. Imagen con su cara.
-    const image = await providers.image.generate({ prompt: scene.prompt, referencePaths: photos.length ? photos : undefined, projectId: id, sceneId: "sc_1" });
+    // Nombre nuevo en cada versión: así el navegador no enseña la imagen anterior en caché.
+    const sceneId = start.redoNote !== undefined || start.clipUrl ? `sc_${Date.now().toString(36)}` : "sc_1";
+    const prompt = start.redoNote ? `${scene.prompt}. Change requested by the person (apply it exactly): ${start.redoNote}` : scene.prompt;
+    const image = await providers.image.generate({ prompt, referencePaths: photos.length ? photos : undefined, projectId: id, sceneId });
     cents += image.costCents;
 
     // 3. Voz de la afirmación: marca cuánto dura la escena.
@@ -65,7 +70,7 @@ export async function runManifestation(id: string): Promise<void> {
       prompt: `Gentle, realistic natural motion in this scene: ${plain}. Subtle movement of hair, clothes and light, people move naturally, the person keeps their face visible and turned toward the camera the whole time, steady camera, every face stays the same.`,
       durationSec: secs,
       projectId: id,
-      sceneId: "sc_1",
+      sceneId,
       quality: "standard",
     });
     cents += clip.costCents;

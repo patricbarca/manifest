@@ -9,6 +9,7 @@ import { VisualizationPlayer } from "./VisualizationPlayer";
 import { AuraVideo } from "./AuraVideo";
 import { Icon } from "./Icon";
 import { formatUsd } from "@/lib/pricing";
+import { SceneReview } from "./SceneReview";
 import type { Dictionary } from "@/lib/i18n";
 
 /**
@@ -37,6 +38,10 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
     }, 1500);
     return () => clearInterval(id);
   }, [working, awaitingPayment, project.id]);
+
+  if (project.status === "review") {
+    return <SceneReview project={project} onChange={setProject} t={t.review} />;
+  }
 
   if (awaitingPayment) {
     return (

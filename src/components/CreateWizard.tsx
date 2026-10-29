@@ -109,6 +109,8 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
   const [questionsKey, setQuestionsKey] = useState<string>();
   const [tailored, setTailored] = useState(false);
   const [answers, setAnswers] = useState<string[]>([]);
+  // Cómo quiere verse en las escenas (ropa, colores): el guionista lo usa en todas.
+  const [outfit, setOutfit] = useState("");
   const [loadingQuestions, setLoadingQuestions] = useState(false);
 
   // Revisión.
@@ -182,8 +184,9 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
         .map((q, i) => ({ question: q.question, answer: (answers[i] ?? "").trim() }))
         .filter((d) => d.answer),
       ...corrections.map((answer) => ({ question: t.create.reviewFixQuestion, answer })),
+      ...(outfit.trim() ? [{ question: t.create.outfitQuestion, answer: outfit.trim() }] : []),
     ],
-    [questions, answers, corrections, t],
+    [questions, answers, corrections, outfit, t],
   );
 
   // Todo lo que cambia el guion. Si difiere del de la revisión, esa revisión
@@ -403,6 +406,17 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
           <p className="t-caption mt-3 ml-7 text-[var(--color-label-3)]">
             {fill(t.create.desiresCount, { n: cleanDesires.length, max: MAX_DESIRES })}
           </p>
+
+          <label className="mt-8 block">
+            <span className="t-sub mb-2 block font-medium text-[var(--color-label-1)]">{t.create.outfitLabel}</span>
+            <input
+              value={outfit}
+              onChange={(e) => setOutfit(e.target.value)}
+              maxLength={160}
+              placeholder={t.create.outfitPlaceholder}
+              className="t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none transition-colors duration-200 placeholder:text-[var(--color-label-4)] focus:border-[var(--color-hairline-strong)]"
+            />
+          </label>
 
           <p className="t-sub mt-8 mb-3 text-[var(--color-label-2)]">{t.create.ideasLabel}</p>
           <div className="flex flex-wrap gap-2">

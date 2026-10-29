@@ -3,18 +3,21 @@
 import { useEffect, useState } from "react";
 import type { Manifestation } from "@/lib/types";
 
-type Labels = { edit: string; save: string; cancel: string; titleLabel: string; phraseLabel: string; editHint: string; textBlocked: string; manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; failed: string; close: string; empty: string };
+type Labels = { redo: Record<string, string>; edit: string; save: string; cancel: string; titleLabel: string; phraseLabel: string; editHint: string; textBlocked: string; manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; failed: string; close: string; empty: string };
 
 /**
  * Tus manifestaciones, una por tarjeta. Al tocar se ve su escena; desde ahí
  * se puede marcar como cumplida (✓ Manifestado).
  */
-export function ManifestationGrid({ initial, t, locale }: { initial: Manifestation[]; t: Labels; locale: string }) {
+export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { initial: Manifestation[]; t: Labels; locale: string; paymentsOn?: boolean }) {
   const [items, setItems] = useState(initial);
   const [open, setOpen] = useState<Manifestation | null>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({ title: "", affirmation: "" });
   const [err, setErr] = useState<string>();
+  const [redoing, setRedoing] = useState(false);
+  const [redoNote, setRedoNote] = useState("");
+  const [redoBusy, setRedoBusy] = useState(false);
   const pending = items.some((m) => m.status === "queued" || m.status === "generating");
 
   // Mientras alguna se está creando, se refresca sola cada pocos segundos.
@@ -30,7 +33,24 @@ export function ManifestationGrid({ initial, t, locale }: { initial: Manifestati
   function show(m: Manifestation | null) {
     setOpen(m);
     setEditing(false);
+    setRedoing(false);
     setErr(undefined);
+  }
+
+  // Rehacer la escena entera (imagen, voz y animación). Cuesta 1 manifestación del paquete.
+  async function redo(m: Manifestation) {
+    setRedoBusy(true);
+    setErr(undefined);
+    const res = await fetch(`/api/manifestations/${m.id}/redo`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ note: redoNote.trim() || undefined }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setRedoBusy(false);
+    if (!res.ok) return setErr(t.redo[data.error] ?? t.redo.failed);
+    setItems((xs) => xs.map((x) => (x.id === m.id ? data.manifestation : x)));
+    show(null);
   }
 
   async function toggle(m: Manifestation, change: { manifested?: boolean; onProfile?: boolean; title?: string; affirmation?: string }) {
@@ -145,6 +165,29 @@ export function ManifestationGrid({ initial, t, locale }: { initial: Manifestati
               <button type="button" onClick={() => show(null)} className="t-sub rounded-full bg-white/10 px-4 py-2">{t.close}</button>
             </div>
             {open.highlight && <p className="t-caption mt-2 text-[var(--color-label-3)]">{t.profileHint}</p>}
+            {redoing ? (
+              <div className="mt-4 space-y-2 rounded-[var(--radius-md)] border border-[var(--color-hairline)] p-3">
+                <p className="t-caption text-[var(--color-label-2)]">{paymentsOn ? t.redo.hintPaid : t.redo.hint}</p>
+                <input
+                  value={redoNote}
+                  onChange={(e) => setRedoNote(e.target.value)}
+                  maxLength={160}
+                  placeholder={t.redo.placeholder}
+                  className="t-caption w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-3 py-2 outline-none"
+                />
+                <div className="flex gap-2">
+                  <button type="button" disabled={redoBusy} onClick={() => redo(open)} className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 font-medium text-black disabled:opacity-40">
+                    {paymentsOn ? t.redo.confirmPaid : t.redo.confirm}
+                  </button>
+                  <button type="button" onClick={() => setRedoing(false)} className="t-sub rounded-full bg-white/10 px-4 py-2">{t.cancel}</button>
+                </div>
+              </div>
+            ) : (
+              <button type="button" onClick={() => { setRedoing(true); setRedoNote(""); setErr(undefined); }} className="t-caption mt-3 underline text-[var(--color-label-2)]">
+                ↻ {t.redo.open}
+              </button>
+            )}
+            {err && redoing && <p className="t-caption mt-2 text-rose-300">{err}</p>}
           </div>
         </div>
       )}

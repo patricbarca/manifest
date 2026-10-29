@@ -13,5 +13,6 @@ export async function register() {
   const { runReminders } = await import("./lib/reminders");
   setInterval(() => {
     runReminders().catch((err) => console.error("[reminders]", err));
+    import("./lib/queue").then((q) => q.approveStaleReviews()).catch((err) => console.error("[queue] revisiones:", err));
   }, 15 * 60 * 1000);
 }
