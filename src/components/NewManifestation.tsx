@@ -43,12 +43,14 @@ export function NewManifestation({
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string>();
+  const [note, setNote] = useState<string>();
   const canCreate = desire.trim().length >= 3 && photos > 0 && waiver && (!paymentsOn || credits > 0) && !busy;
   const input = "t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none focus:border-[var(--color-hairline-strong)]";
 
   async function upload(files: File[]) {
     setUploading(true);
     setError(undefined);
+    setNote(undefined);
     for (const file of files.slice(0, 4)) {
       const body = new FormData();
       body.append("selfie", file);
@@ -58,7 +60,10 @@ export function NewManifestation({
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) setError(data.error ?? t.errors.invalid);
-      else setPhotos((n) => n + 1);
+      else {
+        setPhotos((n) => n + 1);
+        if (data.warning) setNote(data.warning);
+      }
     }
     setUploading(false);
   }
@@ -161,6 +166,7 @@ export function NewManifestation({
         <span>{t.waiver}</span>
       </label>
 
+      {note && <p className="t-caption text-amber-200">{note}</p>}
       {error && (
         <div className="t-sub text-rose-300">
           {error}

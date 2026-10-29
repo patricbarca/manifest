@@ -235,3 +235,19 @@ export async function falText(system: string, user: string, maxTokens: number, o
   if (!data.output) throw new Error("LLM vía fal sin respuesta");
   return data.output;
 }
+
+/** Modelo de visión vía fal (OpenRouter): mira una foto local y responde texto. ~0,0002 $ por foto. */
+export async function falVision(absPath: string, system: string, prompt: string, opts: { model?: string; maxTokens?: number } = {}): Promise<string> {
+  const url = await falUpload(absPath);
+  const data = await run<{ output?: string; error?: string | null }>("openrouter/router/vision", {
+    model: opts.model ?? process.env.FAL_VISION_MODEL ?? "google/gemini-2.5-flash",
+    system_prompt: system,
+    prompt,
+    image_urls: [url],
+    temperature: 0,
+    max_tokens: opts.maxTokens ?? 300,
+  });
+  if (data.error) throw new Error(`Visión vía fal: ${data.error}`);
+  if (!data.output) throw new Error("Visión vía fal sin respuesta");
+  return data.output;
+}

@@ -102,6 +102,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
   const tone: VoiceTone = template?.tone ?? "calma";
   const durationSec: 30 | 60 = 60;
   const [error, setError] = useState<string>();
+  const [photoNote, setPhotoNote] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
 
   // Detalles: las preguntas se piden una vez por intención y se rehacen solo
@@ -292,6 +293,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
   /** Sube una foto y devuelve su URL, o undefined si falló (el error ya se muestra). */
   async function sendPhoto(file: File, agreed: boolean, self = false): Promise<string | undefined> {
     setError(undefined);
+    setPhotoNote(undefined);
     const body = new FormData();
     body.append("selfie", file);
     body.append("consent", String(agreed));
@@ -301,6 +303,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? t.errors.uploadFailed);
+      if (data.warning) setPhotoNote(data.warning);
       return data.url as string;
     } catch (err) {
       setError((err as Error).message);
@@ -852,6 +855,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
         </Section>
       )}
 
+      {photoNote && <p className="t-caption mt-4 text-amber-200">{photoNote}</p>}
       {error && (
         <div className="t-sub mt-6 rounded-[var(--radius-ctl)] border border-red-500/25 bg-red-500/[0.08] p-4 text-red-300">
           {error}
