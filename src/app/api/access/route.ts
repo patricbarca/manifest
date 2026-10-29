@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   if (f && now - f.since < WINDOW_MS && f.n >= MAX_FAILS) {
     return new NextResponse("Too many attempts", { status: 429 });
   }
-  const code = url.searchParams.get("code");
+  const code = url.searchParams.get("code")?.trim() ?? null;
   if (!accessCodeMatches(code)) {
     const cur = f && now - f.since < WINDOW_MS ? f : { n: 0, since: now };
     FAILS.set(ip, { ...cur, n: cur.n + 1 });
@@ -36,5 +36,24 @@ export async function GET(request: Request) {
       maxAge: 60 * 60 * 24 * 180,
     });
   }
+  return res;
+}
+
+/** Escribir el código en la app: mismo control de intentos, responde JSON. */
+export async function POST(request: Request) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "?";
+  const now = Date.now();
+  const f = FAILS.get(ip);
+  if (f && now - f.since < WINDOW_MS && f.n >= MAX_FAILS) return NextResponse.json({ ok: false, error: "too_many" }, { status: 429 });
+  const body = (await request.json().catch(() => ({}))) as { code?: unknown };
+  const code = typeof body.code === "string" ? body.code.trim().slice(0, 200) : "";
+  if (!accessCodeMatches(code)) {
+    const cur = f && now - f.since < WINDOW_MS ? f : { n: 0, since: now };
+    FAILS.set(ip, { ...cur, n: cur.n + 1 });
+    return NextResponse.json({ ok: false, error: "bad_code" }, { status: 403 });
+  }
+  const proto = request.headers.get("x-forwarded-proto") ?? "https";
+  const res = NextResponse.json({ ok: true });
+  res.cookies.set(ACCESS_COOKIE, code, { httpOnly: true, sameSite: "lax", secure: proto === "https", maxAge: 60 * 60 * 24 * 180 });
   return res;
 }
