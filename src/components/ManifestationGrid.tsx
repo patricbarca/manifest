@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Manifestation } from "@/lib/types";
 
-type Labels = { redo: Record<string, string>; edit: string; save: string; cancel: string; titleLabel: string; phraseLabel: string; editHint: string; textBlocked: string; manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; failed: string; close: string; empty: string };
+type Labels = { redo: Record<string, string>; remove: Record<string, string>; edit: string; save: string; cancel: string; titleLabel: string; phraseLabel: string; editHint: string; textBlocked: string; manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; failed: string; close: string; empty: string };
 
 /**
  * Tus manifestaciones, una por tarjeta. Al tocar se ve su escena; desde ahí
@@ -18,6 +18,7 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
   const [redoing, setRedoing] = useState(false);
   const [redoNote, setRedoNote] = useState("");
   const [redoBusy, setRedoBusy] = useState(false);
+  const [removing, setRemoving] = useState(false);
   const pending = items.some((m) => m.status === "queued" || m.status === "generating");
 
   // Mientras alguna se está creando, se refresca sola cada pocos segundos.
@@ -34,7 +35,16 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
     setOpen(m);
     setEditing(false);
     setRedoing(false);
+    setRemoving(false);
     setErr(undefined);
+  }
+
+  // Borrar para siempre: el registro y sus ficheros.
+  async function remove(m: Manifestation) {
+    const res = await fetch(`/api/manifestations?id=${encodeURIComponent(m.id)}`, { method: "DELETE" }).catch(() => null);
+    if (!res?.ok) return setErr(t.remove.failed);
+    setItems((xs) => xs.filter((x) => x.id !== m.id));
+    show(null);
   }
 
   // Rehacer la escena entera (imagen, voz y animación). Cuesta 1 manifestación del paquete.
@@ -87,7 +97,7 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
         {items.map((m) => {
           const poster = m.highlight?.posterUrl ?? m.imageUrl;
           return (
-            <button key={m.id} type="button" disabled={m.status !== "ready"} onClick={() => show(m)} className="group text-left">
+            <button key={m.id} type="button" disabled={m.status === "queued" || m.status === "generating"} onClick={() => show(m)} className="group text-left">
               <span className="relative block aspect-[9/16] overflow-hidden rounded-[var(--radius-md)] bg-white/5">
                 {poster ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -182,12 +192,27 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
                   <button type="button" onClick={() => setRedoing(false)} className="t-sub rounded-full bg-white/10 px-4 py-2">{t.cancel}</button>
                 </div>
               </div>
-            ) : (
+            ) : removing ? null : (
               <button type="button" onClick={() => { setRedoing(true); setRedoNote(""); setErr(undefined); }} className="t-caption mt-3 underline text-[var(--color-label-2)]">
                 ↻ {t.redo.open}
               </button>
             )}
-            {err && redoing && <p className="t-caption mt-2 text-rose-300">{err}</p>}
+            {err && (redoing || removing) && <p className="t-caption mt-2 text-rose-300">{err}</p>}
+            {removing ? (
+              <div className="mt-4 space-y-2 rounded-[var(--radius-md)] border border-rose-400/40 p-3">
+                <p className="t-caption text-[var(--color-label-2)]">{t.remove.confirm}</p>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => remove(open)} className="interactive t-sub flex-1 rounded-full bg-rose-400 px-4 py-2 font-medium text-black">{t.remove.yes}</button>
+                  <button type="button" onClick={() => setRemoving(false)} className="t-sub rounded-full bg-white/10 px-4 py-2">{t.cancel}</button>
+                </div>
+              </div>
+            ) : (
+              !redoing && (
+                <button type="button" onClick={() => { setRemoving(true); setErr(undefined); }} className="t-caption ml-4 mt-3 underline text-rose-300/80">
+                  {t.remove.open}
+                </button>
+              )
+            )}
           </div>
         </div>
       )}

@@ -139,6 +139,8 @@ export interface Manifestation {
   manifestedAt?: number;
   /** Proyecto del que salió, si nació dentro de un vídeo completo. */
   sourceProjectId?: string;
+  /** Qué escena de ese proyecto era (0, 1, 2). Al regenerar el vídeo, la nueva sustituye a la anterior. */
+  sourceSceneIndex?: number;
   /** Fotos de la persona usadas para generarla (se borran a los 30 días). */
   photoUrls?: string[];
   /** Intentos tras reinicios del servidor. */

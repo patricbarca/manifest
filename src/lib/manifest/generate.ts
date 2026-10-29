@@ -5,7 +5,7 @@ import { sceneLength } from "../experience";
 import { localPathForMediaUrl } from "../paths";
 import { mediaDuration } from "../render/glass";
 import { makeHighlights } from "../highlights";
-import { offloadProject } from "../cleanup";
+import { deleteMediaUrl, offloadProject } from "../cleanup";
 import { manifests } from "./store";
 import { db } from "../db/store";
 
@@ -87,11 +87,24 @@ export async function runManifestation(id: string): Promise<void> {
       voiceUrl,
       clipUrl: clip.result.url,
       highlight: hl?.[0],
-      costCents: +cents.toFixed(2),
+      costCents: +((start.costCents ?? 0) + cents).toFixed(2),
     }));
+    // Al rehacerla, la versión anterior ya no se ve en ningún sitio: se borran sus ficheros.
+    if (start.clipUrl) {
+      const now = new Set([image.result.url, clip.result.url, voiceUrl, hl?.[0]?.videoUrl, hl?.[0]?.posterUrl]);
+      for (const url of [start.imageUrl, start.clipUrl, start.voiceUrl, start.highlight?.videoUrl, start.highlight?.posterUrl]) {
+        if (url && !now.has(url)) await deleteMediaUrl(url);
+      }
+    }
     await offloadProject(id);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
+    // Si falla al rehacerla, se queda la versión anterior tal cual (y se devuelve el crédito).
+    if (start.clipUrl) {
+      await manifests.patch(id, (m) => ({ ...m, status: "ready", error: undefined, costCents: +((start.costCents ?? 0) + cents).toFixed(2) }));
+      await refundCredit(id);
+      throw err;
+    }
     await manifests.patch(id, (m) => ({ ...m, status: "failed", error: message, costCents: +cents.toFixed(2) }));
     await refundCredit(id);
     throw err;

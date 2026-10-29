@@ -3,7 +3,7 @@ import path from "node:path";
 import { randomBytes } from "node:crypto";
 import type { Manifestation, Project } from "../types";
 import { localPathForMediaUrl, mediaPath } from "../paths";
-import { offloadProject } from "../cleanup";
+import { deleteManifestFiles, offloadProject } from "../cleanup";
 import { manifests } from "./store";
 
 export const newManifestId = () => `m_${Date.now().toString(36)}${randomBytes(5).toString("hex")}`;
@@ -39,6 +39,11 @@ export async function extractManifestations(project: Project, lineUrls: Record<s
   const highlights = project.highlights ?? [];
   let clipIndex = 0;
   let made = 0;
+  // Si el vídeo se regeneró, ya hay manifestaciones de este proyecto: las nuevas
+  // las sustituyen (sin duplicados en el perfil) y conservan lo que eligió la persona.
+  const previous = (await manifests.list(project.ownerId)).filter((m) => m.sourceProjectId === project.id);
+  const prevFor = (i: number) =>
+    previous.filter((m) => (m.sourceSceneIndex ?? m.createdAt - project.createdAt) === i);
   for (const [i, scene] of project.scenes.entries()) {
     if (!scene.videoUrl) continue;
     const hl = highlights[clipIndex++];
@@ -46,6 +51,9 @@ export async function extractManifestations(project: Project, lineUrls: Record<s
     const clipUrl = await copyInto(mid, scene.videoUrl, "clip");
     if (!clipUrl) continue;
     const desire = project.desires?.[i] ?? affirmations[i] ?? project.title;
+    const prev = prevFor(i);
+    // Título editado a mano, visible en el perfil o marcado como cumplido: se mantiene.
+    const kept = prev.find((x) => x.title !== shortTitle(x.desire)) ?? prev[0];
     const m: Manifestation = {
       id: mid,
       ownerId: project.ownerId,
@@ -69,10 +77,18 @@ export async function extractManifestations(project: Project, lineUrls: Record<s
           }
         : undefined,
       sourceProjectId: project.id,
+      sourceSceneIndex: i,
       costCents: 0,
+      ...(kept && kept.title !== shortTitle(kept.desire) ? { title: kept.title } : {}),
+      ...(prev.some((x) => x.onProfile) ? { onProfile: true } : {}),
+      ...(prev.find((x) => x.manifestedAt) ? { manifestedAt: prev.find((x) => x.manifestedAt)!.manifestedAt } : {}),
     };
     await manifests.put(m);
     await offloadProject(mid);
+    for (const old of prev) {
+      await manifests.delete(old.id);
+      await deleteManifestFiles(old.id);
+    }
     made++;
   }
   return made;

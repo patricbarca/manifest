@@ -11,6 +11,7 @@ import { livePhotos } from "@/lib/manifest/photos";
 import { newManifestId, shortTitle } from "@/lib/manifest/extract";
 import { enqueueManifestation } from "@/lib/queue";
 import { VOICE_IDS } from "@/lib/voices";
+import { deleteManifestFiles } from "@/lib/cleanup";
 import type { Manifestation } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -52,6 +53,19 @@ export async function PATCH(request: Request) {
     ...(body.data.manifested !== undefined ? { manifestedAt: body.data.manifested ? Date.now() : undefined } : {}),
   }));
   return NextResponse.json({ manifestation: next });
+}
+
+/** Borrar una manifestación tuya: el registro y sus ficheros (imagen, clip, voz). No se puede deshacer. */
+export async function DELETE(request: Request) {
+  const who = await me();
+  if (!who) return NextResponse.json({ error: "signin" }, { status: 401 });
+  const id = new URL(request.url).searchParams.get("id") ?? "";
+  const cur = id.startsWith("m_") ? await manifests.get(id) : undefined;
+  if (!cur || cur.ownerId !== who.user.id) return NextResponse.json({ error: "not_found" }, { status: 404 });
+  if (cur.status === "queued" || cur.status === "generating") return NextResponse.json({ error: "busy" }, { status: 409 });
+  await manifests.delete(cur.id);
+  await deleteManifestFiles(cur.id);
+  return NextResponse.json({ ok: true });
 }
 
 const Create = z.object({
