@@ -27,7 +27,7 @@ export function siteBase(): string {
 }
 
 /** Páginas que solo existen en la web pública (desde la app se redirigen allí). */
-export const SITE_ONLY = ["/pricing", "/blog"];
+export const SITE_ONLY = ["/pricing", "/blog", "/start"];
 /** Páginas de la app (desde la web pública se redirigen a la app). */
 export const APP_ONLY = ["/profile", "/feed", "/create", "/new", "/my-video", "/video", "/login", "/library"];
 
