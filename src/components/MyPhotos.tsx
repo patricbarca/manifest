@@ -14,6 +14,7 @@ export function MyPhotos({ initial, t }: { initial: string[]; t: Labels }) {
   const [bio, setBio] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  const [note, setNote] = useState<string>();
 
   async function refresh() {
     const res = await fetch("/api/photos").catch(() => null);
@@ -30,6 +31,7 @@ export function MyPhotos({ initial, t }: { initial: string[]; t: Labels }) {
   async function upload(files: File[]) {
     setBusy(true);
     setError(undefined);
+    setNote(undefined);
     for (const file of files.slice(0, 4)) {
       const body = new FormData();
       body.append("selfie", file);
@@ -37,7 +39,9 @@ export function MyPhotos({ initial, t }: { initial: string[]; t: Labels }) {
       body.append("biometric", String(bio));
       body.append("kind", "self");
       const res = await fetch("/api/upload", { method: "POST", body });
-      if (!res.ok) setError((await res.json().catch(() => ({}))).error ?? t.error);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) setError(data.error ?? t.error);
+      else if (data.warning) setNote(data.warning);
     }
     await refresh();
     setBusy(false);
@@ -77,6 +81,7 @@ export function MyPhotos({ initial, t }: { initial: string[]; t: Labels }) {
         </label>
       </div>
       {error && <p className="t-caption mt-2 text-rose-300">{error}</p>}
+      {note && <p className="t-caption mt-2 text-amber-200">{note}</p>}
     </section>
   );
 }
