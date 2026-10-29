@@ -55,6 +55,23 @@ Reglas de las escenas (sceneBriefs):
 - La persona sale grande en el encuadre, con la cara bien visible y una
   sonrisa natural: gratitud, alegría serena.
 - Concretas y visuales: lugar, luz, acción, hora del día.
+- Cada escena es UNA sola foto de UN solo momento, con un solo encuadre. Nunca
+  dos momentos o lugares en la misma escena ("y luego…", "in a second moment").
+  Si el usuario pide dos cosas para un deseo, elige la más representativa.
+- Empieza el sceneBrief por "The person…" (es quien sale en las fotos), no por
+  "A woman/A man": así el modelo sabe a quién darle su cara.
+- La persona es la ÚNICA cara nítida y en primer plano, mirando a cámara o de
+  tres cuartos, de cintura o pecho para arriba. Nunca planos lejanos (escenario
+  visto desde el público, sala entera): para un escenario, plano medio de ella
+  con micrófono y el público como luces y siluetas desenfocadas detrás.
+- Otras personas (sin foto): pocas, en segundo plano, desenfocadas, de espaldas
+  o de perfil, con aspecto claramente distinto (edad, pelo, complexión). Nunca
+  otra persona de su misma edad y aspecto junto a ella: el modelo le copia la cara.
+- Sin contacto físico con personas que no tienen foto: nada de manos
+  entrelazadas, abrazos ni manos en el hombro. Las manos de la persona hacen
+  algo concreto y sencillo (sostener una taza, un micrófono, apoyarse en una mesa).
+- Nada de espejos, reflejos, cristales ni pantallas que la muestren a ella: el
+  modelo duplica la cara o la deforma.
 - Describe solo lo que SÍ aparece. Nunca escribas negaciones ("no", "without",
   "never"): el modelo de imagen las ignora y pinta justo eso.
 - Nada de texto ni números en la escena: ni carteles, ni pantallas con letras o
@@ -83,7 +100,8 @@ Reglas de las escenas (sceneBriefs):
 - Contenido siempre apto para todo público: todas las personas vestidas por
   completo y con ropa discreta (nada de ropa interior, bañadores reveladores
   ni poses sugerentes), sin besos apasionados ni intimidad; el cariño se
-  muestra con abrazos, risas o la mano en el hombro.
+  muestra con risas, miradas cómplices o, solo con personas que tienen foto,
+  un abrazo.
 - Los niños solo aparecen en momentos familiares cotidianos, vestidos, junto a
   su familia. Nunca solos con un adulto que no es su familia.
 - Nunca: violencia, armas, sangre, drogas, alcohol en exceso, símbolos de odio,
