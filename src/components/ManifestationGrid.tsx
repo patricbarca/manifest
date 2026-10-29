@@ -5,7 +5,7 @@ import type { Manifestation } from "@/lib/types";
 import { FREE_REGENS } from "@/lib/regens";
 
 type SceneEditLabels = { open: string; hint: string; placeholder: string; change: string; changing: string; current: string; next: string; left: string; animate: string; animateFree: string; freeLeft: string; animatePaid: string; animateHint: string; discard: string; errors: Record<string, string> };
-type Labels = { remove: Record<string, string>; sceneEdit: SceneEditLabels; edit: string; save: string; cancel: string; titleLabel: string; phraseLabel: string; editHint: string; textBlocked: string; manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; failed: string; close: string; empty: string };
+type Labels = { remove: Record<string, string>; sceneEdit: SceneEditLabels; edit: string; save: string; cancel: string; titleLabel: string; phraseLabel: string; editHint: string; textBlocked: string; manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; waitingFunds: string; failed: string; close: string; empty: string };
 
 /**
  * Tus manifestaciones, una por tarjeta. Al tocar se ve su escena; desde ahí
@@ -130,7 +130,7 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
                   <img src={poster} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
                 ) : (
                   <span className="t-caption grid h-full place-items-center p-3 text-center text-[var(--color-label-3)]">
-                    {m.status === "failed" ? t.failed : t.generating}
+                    {m.status === "failed" ? t.failed : m.waitingFunds ? t.waitingFunds : t.generating}
                   </span>
                 )}
                 {m.onProfile && (

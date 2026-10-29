@@ -139,6 +139,8 @@ export interface Manifestation {
   draftImageUrl?: string;
   /** El cambio que pidió para esa imagen. */
   draftNote?: string;
+  /** En cola porque el proveedor de IA se quedó sin saldo; se reintenta sola. */
+  waitingFunds?: boolean;
   /** Regeneraciones gratis ya usadas (en la revisión del vídeo y en el perfil); máximo FREE_REGENS. */
   regensUsed?: number;
   /** La regeneración en curso es gratis: si falla, se devuelve. */
@@ -303,6 +305,8 @@ export interface Project {
   reviewSince?: number;
   /** Veces que se rehízo cada escena en la revisión (por id de escena). */
   redoCounts?: Record<string, number>;
+  /** En cola porque el proveedor de IA se quedó sin saldo; se reintenta solo. */
+  waitingFunds?: boolean;
   status: ProjectStatus;
   steps: PipelineStep[];
   /**

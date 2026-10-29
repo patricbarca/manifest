@@ -59,6 +59,8 @@ export async function resumeInterrupted(): Promise<void> {
   const projects = await db.listAllProjects();
   for (const p of projects) {
     if (p.status !== "queued" && p.status !== "generating") continue;
+    // Los que esperan saldo no cuentan como intento: los relanza retryWaitingFunds.
+    if (p.waitingFunds && p.status === "queued") continue;
     const attempts = (p.attempts ?? 0) + 1;
     if (attempts > MAX_ATTEMPTS) {
       await db.patchProject(p.id, (cur) => ({
@@ -83,6 +85,7 @@ export async function resumeInterrupted(): Promise<void> {
 /** Igual para las manifestaciones sueltas. */
 export async function resumeManifestations(): Promise<void> {
   for (const m of await manifests.listPending()) {
+    if (m.waitingFunds && m.status === "queued") continue;
     const attempts = (m.attempts ?? 0) + 1;
     if (attempts > MAX_ATTEMPTS) {
       await manifests.patch(m.id, (cur) => ({ ...cur, status: "failed", error: "Se interrumpió varias veces." }));
@@ -106,4 +109,52 @@ export async function approveStaleReviews(maxMinutes = Number(process.env.REVIEW
     console.log("[queue] revisión aprobada sola", p.id);
     enqueue(p.id);
   }
+}
+
+type Waiting = { id: string; kind: "project" | "compose" | "manifest"; since: number };
+
+async function listWaitingFunds(): Promise<Waiting[]> {
+  const projects = (await db.listAllProjects())
+    .filter((p) => p.status === "queued" && p.waitingFunds)
+    .map((p): Waiting => ({ id: p.id, kind: p.composedFrom?.length ? "compose" : "project", since: p.updatedAt ?? p.createdAt }));
+  const ms = (await manifests.listPending())
+    .filter((m) => m.status === "queued" && m.waitingFunds)
+    .map((m): Waiting => ({ id: m.id, kind: "manifest", since: m.updatedAt ?? m.createdAt }));
+  return [...projects, ...ms].sort((a, b) => a.since - b.since);
+}
+
+async function clearFlag(w: Waiting): Promise<void> {
+  if (w.kind === "manifest") await manifests.patch(w.id, (m) => ({ ...m, waitingFunds: undefined }));
+  else await db.patchProject(w.id, (p) => ({ ...p, waitingFunds: undefined }));
+}
+
+async function stillWaiting(w: Waiting): Promise<boolean> {
+  if (w.kind === "manifest") return !!(await manifests.get(w.id))?.waitingFunds;
+  return !!(await db.getProject(w.id))?.waitingFunds;
+}
+
+function runOf(w: Waiting): () => Promise<void> {
+  if (w.kind === "manifest") return () => runManifestation(w.id);
+  if (w.kind === "compose") return () => runCompose(w.id);
+  return () => runPipeline(w.id);
+}
+
+/**
+ * Cada 15 min: si hay trabajos esperando saldo, prueba con el más antiguo.
+ * Si ya no se bloquea, suelta todos los demás a la cola.
+ */
+export async function retryWaitingFunds(): Promise<void> {
+  const [first, ...rest] = await listWaitingFunds();
+  if (!first || known.has(first.id)) return;
+  await clearFlag(first);
+  push(first.id, async () => {
+    // Aunque falle por otro motivo, lo que importa es si sigue bloqueado por saldo.
+    await runOf(first)().catch((err) => console.error("[queue]", first.id, err));
+    if (await stillWaiting(first)) return;
+    console.log("[fondos] hay saldo otra vez: relanzando", rest.length, "en espera");
+    for (const w of rest) {
+      await clearFlag(w);
+      push(w.id, runOf(w));
+    }
+  });
 }

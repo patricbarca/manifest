@@ -370,6 +370,7 @@ export const es: Dictionary = {
     voiceFile: "pista generada",
     generatingTitle: "Estamos creando tu vídeo",
     generatingStills: "Suele tardar menos de dos minutos.",
+    waitingFunds: "Hay mucha demanda ahora mismo. Tu vídeo está en cola y seguirá solo en unos minutos; no tienes que hacer nada.",
     generatingAnimated:
       "El vídeo animado tarda unos minutos: cada escena se genera por separado.",
     firstScenes: "Primeras escenas",
@@ -474,6 +475,7 @@ export const es: Dictionary = {
     markManifested: "Marcar como manifestado",
     unmark: "Quitar ✓",
     generating: "Creándose…",
+    waitingFunds: "En cola: seguirá sola en unos minutos",
     failed: "No se pudo crear",
     empty: "Aún no tienes manifestaciones. Cada deseo que creas aparece aquí.",
     newTitle: "Nueva manifestación",

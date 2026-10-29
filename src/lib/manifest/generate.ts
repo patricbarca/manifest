@@ -1,3 +1,4 @@
+import { isOutOfFunds, reportOutOfFunds } from "../provider-funds";
 import type { Project } from "../types";
 import { providers } from "../ai";
 import { buildScenes, inferArea } from "../script-engine";
@@ -121,6 +122,12 @@ export async function runManifestation(id: string): Promise<void> {
     }
     await offloadProject(id);
   } catch (err) {
+    // Proveedor sin saldo: se queda en cola (sin devolver nada: se hará igual) y se reintenta sola.
+    if (isOutOfFunds(err)) {
+      await manifests.patch(id, (m) => ({ ...m, status: "queued", waitingFunds: true, error: undefined, costCents: +((start.costCents ?? 0) + cents).toFixed(2) }));
+      await reportOutOfFunds(id, err);
+      return;
+    }
     const message = err instanceof Error ? err.message : String(err);
     // Si falla al rehacerla, se queda la versión anterior tal cual (y se devuelve el crédito).
     if (start.clipUrl) {
