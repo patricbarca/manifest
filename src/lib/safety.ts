@@ -11,7 +11,7 @@
  * ambas cosas estan en el roadmap antes de abrir el registro al publico.
  */
 
-type SafetyKey = "tooShort" | "tooLong" | "health" | "finance" | "minors" | "sexual";
+type SafetyKey = "tooShort" | "tooLong" | "crisis" | "health" | "finance" | "minors" | "sexual";
 
 /**
  * Los patrones son por idioma: bloquear "curar" no sirve de nada si el
@@ -19,6 +19,13 @@ type SafetyKey = "tooShort" | "tooLong" | "health" | "finance" | "minors" | "sex
  * para que el texto salga del diccionario en el idioma del usuario.
  */
 const BLOCKED_PATTERNS: { re: RegExp; key: SafetyKey }[] = [
+  // Va primero: si alguien habla de hacerse daño no se genera nada y se le
+  // muestran recursos de ayuda (t.safety.crisis). Mejor un falso positivo que
+  // un guion de "ya está hecho" para quien está en crisis.
+  {
+    re: /(suicid|autolesi|quitarme la vida|acabar con mi vida|matarme|hacerme daño|dejar de existir|no quiero (vivir|seguir viviendo|estar vivo|estar viva)|quiero morir|quiero morirme|mejor muert[oa]|no merece la pena vivir|no vale la pena vivir|kill myself|end my life|take my (own )?life|self[- ]?harm|hurt myself|want to die|wanna die|don'?t want to (live|be alive|exist)|better off dead|stop existing)/i,
+    key: "crisis",
+  },
   {
     re: /\b(curar|curarme|curación|cure|healing|remisión|remission|cáncer|cancer|tumor|diabetes|quimio|chemo)\b/i,
     key: "health",

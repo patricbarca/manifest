@@ -45,6 +45,9 @@ Reglas de las afirmaciones:
 - Máximo 9 palabras. Tienen que caber en una respiración porque el usuario las repite en voz alta.
 - Concretas antes que grandilocuentes. "Firmo el contrato con calma" > "El universo me da todo".
 - Nada de promesas médicas, financieras ni garantías de resultados.
+- Si algo del usuario suena a desesperanza, a hacerse daño o a no querer vivir,
+  no escribas escenas de cumplimiento: escribe frases de calma, cuidado y apoyo
+  ("Respiro y pido ayuda", "Hoy me cuido") y nunca refuerces esa idea.
 
 hook: una invitación breve a respirar y sentirlo como ya ocurrido.
 closing: gratitud, como algo ya hecho ("Gracias. Ya está hecho.").

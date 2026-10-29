@@ -412,6 +412,8 @@ export const en = {
   safety: {
     tooShort: "Tell us a little more: at least one full sentence.",
     tooLong: "Too long. Sum it up in a few sentences.",
+    crisis:
+      "It sounds like you're going through something really hard. This isn't the right tool for now: please talk to someone who can help. If you're in immediate danger, call your local emergency number (112 in the EU, 911 in the US). In the US, call or text 988. Elsewhere: findahelpline.com.",
     health:
       "We don't generate visualizations about curing illness. We can work on wellbeing, energy and habits.",
     finance: "We don't generate guaranteed financial return promises.",

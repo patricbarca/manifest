@@ -411,6 +411,8 @@ export const es: Dictionary = {
   safety: {
     tooShort: "Cuéntanos un poco más: al menos una frase completa.",
     tooLong: "Demasiado largo. Resúmelo en unas pocas frases.",
+    crisis:
+      "Parece que estás pasando por un momento muy difícil. Esto no es para ahora: habla con alguien que pueda ayudarte. En España, llama o escribe al 024 (gratis, confidencial, 24 h). Si estás en peligro inmediato, llama al 112. En otros países: findahelpline.com.",
     health:
       "No generamos visualizaciones sobre curación de enfermedades. Podemos trabajar el bienestar, la energía y los hábitos.",
     finance: "No generamos promesas de rendimiento financiero garantizado.",
