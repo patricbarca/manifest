@@ -36,6 +36,7 @@ export default async function ManifestarPage({ searchParams }: { searchParams: P
         packs={creditPacks()}
         voices={VOICES.map((v) => ({ id: v.id, label: v.label[locale as Locale] }))}
         locale={locale as Locale}
+        guide={t.photoGuide}
         t={{
           desire: m.desire, desirePlaceholder: m.desirePlaceholder, language: m.language, voice: m.voice,
           photosTitle: m.photosTitle, photosHint: m.photosHint, consent: t.consent, biometric: t.biometricConsent,

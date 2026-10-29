@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { PhotoSlots, type PhotoGuideLabels } from "./PhotoSlots";
 import { trackEvent } from "@/lib/track-client";
 import { useState } from "react";
 import { AccessCodeForm } from "./AccessCodeForm";
@@ -23,6 +24,7 @@ export function NewManifestation({
   voices,
   locale,
   t,
+  guide,
 }: {
   initialPhotos: number;
   credits: number;
@@ -31,6 +33,7 @@ export function NewManifestation({
   voices: Voice[];
   locale: Locale;
   t: Labels;
+  guide: PhotoGuideLabels;
 }) {
   const router = useRouter();
   const [desire, setDesire] = useState("");
@@ -42,13 +45,16 @@ export function NewManifestation({
   const [waiver, setWaiver] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [slotUrls, setSlotUrls] = useState<(string | undefined)[]>([]);
+  const [busySlot, setBusySlot] = useState<number>();
   const [error, setError] = useState<string>();
   const [note, setNote] = useState<string>();
   const canCreate = desire.trim().length >= 3 && photos > 0 && waiver && (!paymentsOn || credits > 0) && !busy;
   const input = "t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none focus:border-[var(--color-hairline-strong)]";
 
-  async function upload(files: File[]) {
+  async function upload(files: File[], slot = 0) {
     setUploading(true);
+    setBusySlot(slot);
     setError(undefined);
     setNote(undefined);
     for (const file of files.slice(0, 4)) {
@@ -62,6 +68,11 @@ export function NewManifestation({
       if (!res.ok) setError(data.error ?? t.errors.invalid);
       else {
         setPhotos((n) => n + 1);
+        setSlotUrls((prev) => {
+          const next = [...prev];
+          next[slot] = data.url;
+          return next;
+        });
         if (data.warning) setNote(data.warning);
       }
     }
@@ -117,7 +128,7 @@ export function NewManifestation({
         </label>
       </div>
 
-      {photos > 0 ? (
+      {photos > 0 && !slotUrls.some(Boolean) ? (
         <p className="t-caption text-emerald-300">✓ {t.photosOk}</p>
       ) : (
         <div className="card space-y-3 rounded-[var(--radius-lg)] p-5">
@@ -131,19 +142,13 @@ export function NewManifestation({
             <input type="checkbox" checked={bio} onChange={(e) => setBio(e.target.checked)} className="mt-[2px] h-4 w-4 accent-white" />
             <span>{t.biometric}</span>
           </label>
-          <input
-            type="file"
-            multiple
-            accept="image/jpeg,image/png,image/webp"
+          <PhotoSlots
+            urls={slotUrls}
+            onPick={(file, slot) => void upload([file], slot)}
             disabled={!consent || !bio || uploading}
-            onChange={(e) => {
-              const files = Array.from(e.target.files ?? []);
-              e.target.value = "";
-              void upload(files);
-            }}
-            className="t-sub block w-full text-[var(--color-label-2)] file:mr-4 file:rounded-full file:border-0 file:bg-white file:px-5 file:py-2 file:text-[13px] file:font-medium file:text-black disabled:opacity-35"
+            busySlot={uploading ? busySlot : undefined}
+            t={guide}
           />
-          {uploading && <p className="t-caption">{t.uploading}</p>}
         </div>
       )}
 
