@@ -13,46 +13,14 @@ export type PhotoGuideLabels = {
   good: string[];
   bad: string[];
   needConsent: string;
+  example: string;
+  badLabels: string[];
+  aiNote: string;
 };
 
-/** Silueta de ejemplo para cada hueco: de frente sonriendo, de frente suave, de tres cuartos, de cintura para arriba. */
-function Guide({ kind }: { kind: number }) {
-  const turned = kind === 2;
-  const body = kind === 3;
-  const smile = kind === 0 ? "M41 60 Q50 69 59 60" : "M43 61 Q50 64 57 61";
-  return (
-    <svg viewBox="0 0 100 133" className="h-full w-full text-[var(--color-label-3)]" aria-hidden>
-      <g fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        {body ? (
-          <>
-            <ellipse cx="50" cy="40" rx="15" ry="19" />
-            <path d="M22 133 Q24 80 50 74 Q76 80 78 133" />
-            <path d="M44 38 h1 M55 38 h1" strokeWidth="3" />
-            <path d="M45 48 Q50 51 55 48" />
-          </>
-        ) : (
-          <>
-            <ellipse cx={turned ? 54 : 50} cy="50" rx={turned ? 21 : 24} ry="30" />
-            <path d="M14 133 Q18 96 50 90 Q82 96 86 133" />
-            {turned ? (
-              <>
-                <path d="M50 46 h2 M64 46 h2" strokeWidth="3" />
-                <path d="M62 52 l3 6 h-4" />
-                <path d="M53 62 Q59 66 65 62" />
-              </>
-            ) : (
-              <>
-                <path d="M40 46 h2 M58 46 h2" strokeWidth="3" />
-                <path d="M50 50 v7" />
-                <path d={smile} />
-              </>
-            )}
-          </>
-        )}
-      </g>
-    </svg>
-  );
-}
+/** Fotos de ejemplo (persona ficticia generada con IA), en el mismo orden que los huecos. */
+const GOOD = ["good-smile", "good-soft", "good-three-quarter", "good-waist"];
+const BAD = ["bad-profile", "bad-covered", "bad-dark", "bad-filter", "bad-group"];
 
 /**
  * Huecos guiados para las selfies. Cada hueco dice qué foto va ahí y, al
@@ -104,7 +72,11 @@ export function PhotoSlots({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={url} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <span className="absolute inset-2 opacity-70"><Guide kind={i} /></span>
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`/photo-guide/${GOOD[i]}.webp`} alt="" className="h-full w-full object-cover opacity-45" />
+                    <span className="absolute left-1 top-1 rounded bg-black/60 px-1 text-[9px] uppercase tracking-wide text-white/80">{t.example}</span>
+                  </>
                 )}
                 {!url && <span className="absolute bottom-1 right-1.5 text-[18px] leading-none text-[var(--color-label-2)]">+</span>}
                 {busySlot === i && (
@@ -152,13 +124,33 @@ export function PhotoSlots({
         {tips ? "−" : "+"} {t.tipsTitle}
       </button>
       {tips && (
-        <div className="grid gap-3 rounded-[var(--radius-md)] bg-white/[0.04] p-3 sm:grid-cols-2">
+        <div className="space-y-3 rounded-[var(--radius-md)] bg-white/[0.04] p-3">
+          <div className="grid grid-cols-4 gap-1.5">
+            {GOOD.map((g) => (
+              <figure key={g} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/photo-guide/${g}.webp`} alt="" loading="lazy" className="aspect-[3/4] w-full rounded object-cover" />
+                <span className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-emerald-400 text-[11px] font-bold text-black">✓</span>
+              </figure>
+            ))}
+          </div>
           <ul className="t-caption space-y-1 text-[var(--color-label-2)]">
             {t.good.map((g) => <li key={g}>✓ {g}</li>)}
           </ul>
+          <div className="grid grid-cols-5 gap-1.5">
+            {BAD.map((b, i) => (
+              <figure key={b} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/photo-guide/${b}.webp`} alt="" loading="lazy" className="aspect-[3/4] w-full rounded object-cover opacity-80" />
+                <span className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-rose-400 text-[11px] font-bold text-black">✗</span>
+                <figcaption className="mt-0.5 text-center text-[10px] leading-tight text-[var(--color-label-3)]">{t.badLabels[i]}</figcaption>
+              </figure>
+            ))}
+          </div>
           <ul className="t-caption space-y-1 text-[var(--color-label-3)]">
             {t.bad.map((b) => <li key={b}>✗ {b}</li>)}
           </ul>
+          <p className="text-[10px] text-[var(--color-label-3)]">{t.aiNote}</p>
         </div>
       )}
     </div>
