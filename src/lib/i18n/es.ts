@@ -32,6 +32,33 @@ export const es: Dictionary = {
     seconds: "s",
     createAnother: "Crear otro",
   },
+  start: {
+    title: "Mírate viviendo la vida que quieres.",
+    lede: "Sube una selfie, escribe 3 deseos y recibe un vídeo guiado donde te ves viviéndolos, con tu cara, una voz que te guía y tus afirmaciones.",
+    cta: "Crear mi vídeo",
+    priceNote: "{price} pago único · sin suscripción",
+    howTitle: "Cómo funciona",
+    steps: [
+      { title: "Sube una selfie", body: "Basta una foto clara de tu cara." },
+      { title: "Escribe tus 3 deseos", body: "Salud, dinero, amor, viajes… con tus palabras." },
+      { title: "Mira tu vídeo cada día", body: "Unos 2 minutos: respiras, te ves en cada escena y repites tus afirmaciones." },
+    ],
+    examplesNote: "Ejemplos reales hechos con la app.",
+    points: [
+      "Revisa tus escenas antes de animarlas y cambia lo que no te guste",
+      "3 regeneraciones gratis por escena",
+      "Listo en minutos, en cualquier dispositivo",
+      "Tus selfies solo se usan para tu vídeo y se borran a los 30 días",
+    ],
+    faq: [
+      { q: "¿Cuánto cuesta?", a: "Tu primer vídeo cuesta {price}, pago único. Sin suscripción. Después puedes añadir más escenas con paquetes." },
+      { q: "¿Cuánto tarda?", a: "Normalmente unos minutos. Puedes cerrar la app: sigue sola y el vídeo aparece en tu perfil." },
+      { q: "¿Y si una escena no me gusta?", a: "Antes de animarlas ves todas las escenas y puedes cambiarlas. Cada escena tiene 3 regeneraciones gratis, al crear o después desde tu perfil." },
+      { q: "¿Qué pasa con mis fotos?", a: "Solo se usan para crear tus escenas, nunca son públicas y se borran a los 30 días. Puedes borrarlas antes desde Ajustes." },
+    ],
+    closing: "Tu futuro, visto primero.",
+    disclaimer: "Visualización generada con IA para motivación y práctica personal. No garantiza ningún resultado.",
+  },
   home: {
     demoBanner:
       "Modo demo · sin claves de API las escenas y la voz se generan en local, sin coste",

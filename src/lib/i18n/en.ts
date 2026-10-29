@@ -33,6 +33,33 @@ export const en = {
     seconds: "s",
     createAnother: "Create another",
   },
+  start: {
+    title: "See yourself living the life you want.",
+    lede: "Upload a selfie, write 3 desires and get a guided video where you see yourself living them, with your face, a voice that guides you and your affirmations.",
+    cta: "Create my video",
+    priceNote: "{price} one-time · no subscription",
+    howTitle: "How it works",
+    steps: [
+      { title: "Upload a selfie", body: "One clear photo of your face is enough." },
+      { title: "Write your 3 desires", body: "Health, money, love, travel… in your own words." },
+      { title: "Watch your video every day", body: "About 2 minutes: you breathe, see each scene with you in it and repeat your affirmations." },
+    ],
+    examplesNote: "Real examples made with the app.",
+    points: [
+      "Review your scenes before they're animated and change what you don't like",
+      "3 free regenerations per scene",
+      "Ready in minutes, on any device",
+      "Your selfies are only used for your video and are deleted after 30 days",
+    ],
+    faq: [
+      { q: "How much does it cost?", a: "Your first video is {price}, one-time. No subscription. Later you can add more scenes with packs." },
+      { q: "How long does it take?", a: "Usually a few minutes. You can close the app: it keeps going and your video appears in your profile." },
+      { q: "What if a scene doesn't look right?", a: "Before animating, you see every scene and can change it. Each scene has 3 free regenerations, during creation or later from your profile." },
+      { q: "What happens to my photos?", a: "They're only used to create your scenes, are never public and are deleted after 30 days. You can delete them sooner from Settings." },
+    ],
+    closing: "Your future, seen first.",
+    disclaimer: "AI-generated visualization for motivation and personal practice. It doesn't guarantee any result.",
+  },
   home: {
     demoBanner:
       "Demo mode · with no API keys, scenes and voice are generated locally at no cost",
