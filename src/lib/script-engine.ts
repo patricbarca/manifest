@@ -369,8 +369,8 @@ export function isPovBrief(brief: string): boolean {
  * modelo le copia la cara (caras duplicadas). Con reparto con fotos, applyCast
  * lo cambia por la versión para varias personas.
  */
-const ALONE = "One single photograph of one moment, with the main subject as the only sharp face in the foreground; anyone else is a clearly different-looking person, softly out of focus in the background";
-const WITH_CAST = "One single photograph of one moment; the people from the figures are the only sharp faces; anyone else is a clearly different-looking person, softly out of focus in the background";
+const ALONE = "One single photograph of one moment, with the main subject as the only face in the image; anyone else appears only from behind or as a blurred silhouette far in the background";
+const WITH_CAST = "One single photograph of one moment; the people from the figures are the only faces in the image; anyone else appears only from behind or as a blurred silhouette far in the background";
 
 /** Compone el prompt final de imagen: identidad + escena + estilo + encuadre. */
 export function buildScenePrompt(
