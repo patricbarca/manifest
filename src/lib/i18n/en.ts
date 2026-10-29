@@ -371,6 +371,7 @@ export const en = {
     voiceFile: "generated track",
     generatingTitle: "We're creating your video",
     generatingStills: "Usually takes less than two minutes.",
+    waitingFunds: "Demand is high right now. Your video is queued and will continue on its own in a few minutes; you don't need to do anything.",
     generatingAnimated:
       "The animated video takes a few minutes: each scene is generated separately.",
     firstScenes: "First scenes",
@@ -475,6 +476,7 @@ export const en = {
     markManifested: "Mark as manifested",
     unmark: "Remove ✓",
     generating: "Creating…",
+    waitingFunds: "Queued: it will continue on its own in a few minutes",
     failed: "Couldn't be created",
     empty: "No manifestations yet. Every desire you create shows up here.",
     newTitle: "New manifestation",

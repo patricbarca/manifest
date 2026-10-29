@@ -214,6 +214,9 @@ function GenerationProgress({ project, t }: { project: Project; t: Dictionary })
           ? t.video.generatingAnimated
           : t.video.generatingStills}
       </p>
+      {project.waitingFunds && (
+        <p className="t-sub mt-4 rounded-[var(--radius-md)] bg-white/[0.06] px-4 py-3 text-[var(--color-label-1)]">{t.video.waitingFunds}</p>
+      )}
 
       <div className="mt-10 h-[3px] w-full overflow-hidden rounded-full bg-white/12">
         <div

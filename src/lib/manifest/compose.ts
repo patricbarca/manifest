@@ -1,3 +1,4 @@
+import { isOutOfFunds, reportOutOfFunds } from "../provider-funds";
 import { speakLinesCached } from "../voice-cache";
 import { appBase } from "../hosts";
 import { access, rm } from "node:fs/promises";
@@ -152,6 +153,19 @@ export async function runCompose(projectId: string): Promise<void> {
       for (const m of items) await rm(mediaPath("generated", m.id), { recursive: true, force: true }).catch(() => undefined);
     }
   } catch (err) {
+    // Proveedor sin saldo: no es un fallo del vídeo; queda en cola y se reintenta solo.
+    if (isOutOfFunds(err)) {
+      await db.patchProject(projectId, (p) => ({
+        ...p,
+        status: "queued",
+        waitingFunds: true,
+        error: undefined,
+        costCents: +cents.toFixed(2),
+        steps: p.steps.map((s) => (s.status === "running" ? { ...s, status: "pending" } : s)),
+      }));
+      await reportOutOfFunds(projectId, err);
+      return;
+    }
     const message = err instanceof Error ? err.message : String(err);
     await db.patchProject(projectId, (p) => ({
       ...p,

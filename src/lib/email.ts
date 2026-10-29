@@ -113,3 +113,9 @@ export async function sendStreakReminder(opts: { to: string; locale: Locale; str
     return false;
   }
 }
+
+/** Aviso interno al administrador (texto plano). */
+export async function sendAdminAlert(opts: { to: string; subject: string; text: string }): Promise<void> {
+  if (!emailEnabled()) return;
+  await send(opts.to, opts.subject, `<p>${escape(opts.text)}</p>`);
+}

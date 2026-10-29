@@ -1,3 +1,4 @@
+import { isOutOfFunds, reportOutOfFunds } from "./provider-funds";
 import { ensureLocal } from "./manifest/compose";
 import { speakLinesCached } from "./voice-cache";
 import { appBase } from "./hosts";
@@ -382,6 +383,19 @@ export async function runPipeline(projectId: string): Promise<void> {
     // El vídeo y sus escenas pasan al bucket (si está configurado).
     await offloadProject(projectId);
   } catch (err) {
+    // Proveedor sin saldo: no es un fallo del vídeo; queda en cola y se reintenta solo.
+    if (isOutOfFunds(err)) {
+      await db.patchProject(projectId, (p) => ({
+        ...p,
+        status: "queued",
+        waitingFunds: true,
+        error: undefined,
+        costCents: +spentCents.toFixed(2),
+        steps: p.steps.map((s) => (s.status === "running" ? { ...s, status: "pending" } : s)),
+      }));
+      await reportOutOfFunds(projectId, err);
+      return;
+    }
     const message = err instanceof Error ? err.message : String(err);
     await db.patchProject(projectId, (p) => ({
       ...p,
