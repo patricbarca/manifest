@@ -515,8 +515,8 @@ export const es: Dictionary = {
     edit: "Editar",
     redo: {
       open: "Rehacer esta manifestación",
-      hint: "Se vuelve a crear la escena (imagen, voz y animación). Tarda unos minutos.",
-      hintPaid: "Se vuelve a crear la escena (imagen, voz y animación) y usa 1 manifestación de tu paquete. Si falla, se te devuelve.",
+      hint: "Se vuelve a crear la escena (imagen, voz y animación). Tarda unos minutos y la versión anterior se borra.",
+      hintPaid: "Se vuelve a crear la escena (imagen, voz y animación) y usa 1 manifestación de tu paquete. La versión anterior se borra; si falla, se queda la anterior y se te devuelve.",
       placeholder: "Opcional: qué cambiar (p. ej. camisa blanca, sin texto en pantallas)",
       confirm: "Rehacer",
       confirmPaid: "Rehacer · 1 manifestación",
@@ -525,6 +525,12 @@ export const es: Dictionary = {
       busy: "Ya se está creando.",
       text_blocked: "Ese cambio no está permitido.",
       failed: "No se pudo empezar. Prueba otra vez.",
+    },
+    remove: {
+      open: "Borrar",
+      confirm: "¿Borrar esta manifestación? Se borran su imagen y su animación. No se puede deshacer.",
+      yes: "Sí, borrar",
+      failed: "No se pudo borrar. Prueba otra vez.",
     },
     save: "Guardar",
     cancel: "Cancelar",

@@ -33,6 +33,24 @@ async function removeUrl(url: string) {
   if (abs) await rm(abs, { force: true }).catch(() => undefined);
 }
 
+/** Borra un fichero de /media, en disco y en el bucket. */
+export async function deleteMediaUrl(url: string | undefined): Promise<void> {
+  if (!url) return;
+  await removeUrl(url);
+  const key = url.split("?")[0].replace(/^\/media\//, "");
+  if (objectStorageEnabled() && key.startsWith("generated/")) {
+    await deletePrefix(key).catch((err) => console.error("[bucket] borrar", key, err));
+  }
+}
+
+/** Borra la carpeta entera de una manifestación (imagen, clip, voz, highlight). */
+export async function deleteManifestFiles(id: string): Promise<void> {
+  await rm(mediaPath("generated", id), { recursive: true, force: true });
+  if (objectStorageEnabled()) {
+    await deletePrefix(`generated/${id}/`).catch((err) => console.error("[bucket] borrar", id, err));
+  }
+}
+
 /** Borra un proyecto entero. Las fotos que use otro proyecto del mismo dueño se quedan. */
 export async function deleteProject(project: Project): Promise<void> {
   const others = (await db.listProjects(project.ownerId)).filter((p) => p.id !== project.id);

@@ -516,8 +516,8 @@ export const en = {
     edit: "Edit",
     redo: {
       open: "Redo this manifestation",
-      hint: "The scene is created again (image, voice and animation). It takes a few minutes.",
-      hintPaid: "The scene is created again (image, voice and animation) and uses 1 manifestation from your pack. If it fails, you get it back.",
+      hint: "The scene is created again (image, voice and animation). It takes a few minutes and the previous version is deleted.",
+      hintPaid: "The scene is created again (image, voice and animation) and uses 1 manifestation from your pack. The previous version is deleted; if it fails, you keep it and get your manifestation back.",
       placeholder: "Optional: what to change (e.g. white shirt, no text on screens)",
       confirm: "Redo",
       confirmPaid: "Redo · 1 manifestation",
@@ -526,6 +526,12 @@ export const en = {
       busy: "It's already being created.",
       text_blocked: "That change isn't allowed.",
       failed: "Couldn't start. Try again.",
+    },
+    remove: {
+      open: "Delete",
+      confirm: "Delete this manifestation? Its image and animation are deleted. This can't be undone.",
+      yes: "Yes, delete",
+      failed: "Couldn't delete it. Try again.",
     },
     save: "Save",
     cancel: "Cancel",
