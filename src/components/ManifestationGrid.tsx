@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import type { Manifestation } from "@/lib/types";
+import { FREE_REGENS } from "@/lib/regens";
 
-type SceneEditLabels = { open: string; hint: string; placeholder: string; change: string; changing: string; current: string; next: string; left: string; animate: string; animatePaid: string; animateHint: string; discard: string; errors: Record<string, string> };
+type SceneEditLabels = { open: string; hint: string; placeholder: string; change: string; changing: string; current: string; next: string; left: string; animate: string; animateFree: string; freeLeft: string; animatePaid: string; animateHint: string; discard: string; errors: Record<string, string> };
 type Labels = { redo: Record<string, string>; remove: Record<string, string>; sceneEdit: SceneEditLabels; edit: string; save: string; cancel: string; titleLabel: string; phraseLabel: string; editHint: string; textBlocked: string; manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; failed: string; close: string; empty: string };
 
 /**
@@ -234,6 +235,7 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
                   </div>
                 )}
                 <p className="t-caption text-[var(--color-label-2)]">{t.sceneEdit.hint}</p>
+                <p className="t-caption text-[var(--color-label-2)]">{t.sceneEdit.freeLeft.replace("{n}", String(Math.max(0, FREE_REGENS - (open.regensUsed ?? 0))))}</p>
                 {(open.draftTries ?? 0) < 3 && (
                   <>
                     <input
@@ -254,7 +256,7 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
                     <p className="t-caption text-[var(--color-label-2)]">{t.sceneEdit.animateHint}</p>
                     <div className="flex gap-2">
                       <button type="button" disabled={sceneBusy} onClick={() => animateDraft(open)} className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 font-medium text-black disabled:opacity-40">
-                        {paymentsOn ? t.sceneEdit.animatePaid : t.sceneEdit.animate}
+                        {(open.regensUsed ?? 0) < FREE_REGENS ? t.sceneEdit.animateFree : paymentsOn ? t.sceneEdit.animatePaid : t.sceneEdit.animate}
                       </button>
                       <button type="button" disabled={sceneBusy} onClick={() => discardDraft(open)} className="t-sub rounded-full bg-white/10 px-4 py-2">{t.sceneEdit.discard}</button>
                     </div>
@@ -271,7 +273,8 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
             )}
             {sceneOpen ? null : redoing ? (
               <div className="mt-4 space-y-2 rounded-[var(--radius-md)] border border-[var(--color-hairline)] p-3">
-                <p className="t-caption text-[var(--color-label-2)]">{paymentsOn ? t.redo.hintPaid : t.redo.hint}</p>
+                <p className="t-caption text-[var(--color-label-2)]">{paymentsOn && (open.regensUsed ?? 0) >= FREE_REGENS ? t.redo.hintPaid : t.redo.hint}</p>
+                <p className="t-caption text-[var(--color-label-3)]">{t.sceneEdit.freeLeft.replace("{n}", String(Math.max(0, FREE_REGENS - (open.regensUsed ?? 0))))}</p>
                 <input
                   value={redoNote}
                   onChange={(e) => setRedoNote(e.target.value)}
@@ -281,7 +284,7 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
                 />
                 <div className="flex gap-2">
                   <button type="button" disabled={redoBusy} onClick={() => redo(open)} className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 font-medium text-black disabled:opacity-40">
-                    {paymentsOn ? t.redo.confirmPaid : t.redo.confirm}
+                    {(open.regensUsed ?? 0) < FREE_REGENS ? t.redo.confirmFree : paymentsOn ? t.redo.confirmPaid : t.redo.confirm}
                   </button>
                   <button type="button" onClick={() => setRedoing(false)} className="t-sub rounded-full bg-white/10 px-4 py-2">{t.cancel}</button>
                 </div>

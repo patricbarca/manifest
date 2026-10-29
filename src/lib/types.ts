@@ -139,6 +139,12 @@ export interface Manifestation {
   draftImageUrl?: string;
   /** El cambio que pidió para esa imagen. */
   draftNote?: string;
+  /** Regeneraciones gratis ya usadas (en la revisión del vídeo y en el perfil); máximo FREE_REGENS. */
+  regensUsed?: number;
+  /** La regeneración en curso es gratis: si falla, se devuelve. */
+  freeRegen?: boolean;
+  /** Calidad de animación con la que nació (Elevated se re-anima con Kling). */
+  quality?: "standard" | "elevated";
   /** Cambios de imagen hechos desde la última animación (máximo 3). */
   draftTries?: number;
   /** En cola solo para animar el borrador (sin guion ni imagen nuevos). */
