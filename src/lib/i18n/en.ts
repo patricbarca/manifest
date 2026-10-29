@@ -38,6 +38,13 @@ export const en = {
     lede: "Upload a selfie, write 3 desires and get a guided video where you see yourself living them, with your face, a voice that guides you and your affirmations.",
     cta: "Create my video",
     priceNote: "{price} one-time · no subscription",
+    guarantee: "If your video fails, we remake it or refund you.",
+    angles: {
+      money: { title: "See yourself living financially free.", lede: "Upload a selfie, write your money goals and get a guided video where you see yourself already living them: your business, your home, your freedom." },
+      body: { title: "See yourself in the body you're working for.", lede: "Upload a selfie, write your health and fitness goals and get a guided video where you see yourself already there, strong and full of energy." },
+      love: { title: "See yourself living the love you want.", lede: "Upload a selfie, write what you want in love and family and get a guided video where you see yourself living it." },
+      travel: { title: "See yourself in the places you dream of.", lede: "Upload a selfie, write the trips you want and get a guided video where you see yourself already there." },
+    },
     howTitle: "How it works",
     steps: [
       { title: "Upload a selfie", body: "One clear photo of your face is enough." },

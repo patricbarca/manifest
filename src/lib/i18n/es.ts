@@ -37,6 +37,13 @@ export const es: Dictionary = {
     lede: "Sube una selfie, escribe 3 deseos y recibe un vídeo guiado donde te ves viviéndolos, con tu cara, una voz que te guía y tus afirmaciones.",
     cta: "Crear mi vídeo",
     priceNote: "{price} pago único · sin suscripción",
+    guarantee: "Si tu vídeo falla, lo rehacemos o te devolvemos el dinero.",
+    angles: {
+      money: { title: "Mírate viviendo con libertad financiera.", lede: "Sube una selfie, escribe tus metas de dinero y recibe un vídeo guiado donde te ves ya viviéndolas: tu negocio, tu casa, tu libertad." },
+      body: { title: "Mírate en el cuerpo por el que trabajas.", lede: "Sube una selfie, escribe tus metas de salud y forma física y recibe un vídeo guiado donde te ves ya ahí, fuerte y con energía." },
+      love: { title: "Mírate viviendo el amor que quieres.", lede: "Sube una selfie, escribe lo que quieres en el amor y la familia y recibe un vídeo guiado donde te ves viviéndolo." },
+      travel: { title: "Mírate en los lugares con los que sueñas.", lede: "Sube una selfie, escribe los viajes que quieres hacer y recibe un vídeo guiado donde te ves ya allí." },
+    },
     howTitle: "Cómo funciona",
     steps: [
       { title: "Sube una selfie", body: "Basta una foto clara de tu cara." },

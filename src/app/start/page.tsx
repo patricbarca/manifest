@@ -27,6 +27,10 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
   const L = t.start;
   const sp = await searchParams;
   const create = withUtm("/create", sp);
+  // Versión por ángulo del anuncio: /start?a=money|body|love|travel. El titular repite la promesa del anuncio.
+  const angle = typeof sp.a === "string" && sp.a in L.angles ? L.angles[sp.a as keyof typeof L.angles] : null;
+  const title = angle?.title ?? L.title;
+  const lede = angle?.lede ?? L.lede;
   const price = formatUsd(priceUsd("cinematic"));
   const cta = (
     <Link href={create} className="interactive inline-block rounded-full bg-white px-7 py-3.5 text-[16px] font-semibold tracking-[-0.011em] text-black hover:bg-white/90">
@@ -37,8 +41,8 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
   return (
     <div className="mx-auto max-w-xl px-5 pb-24">
       <section className="pt-12 text-center sm:pt-16">
-        <h1 className="t-display text-balance">{L.title}</h1>
-        <p className="t-body mx-auto mt-4 max-w-md text-pretty text-[var(--color-label-2)]">{L.lede}</p>
+        <h1 className="t-display text-balance">{title}</h1>
+        <p className="t-body mx-auto mt-4 max-w-md text-pretty text-[var(--color-label-2)]">{lede}</p>
         <div className="relative mx-auto mt-8 w-full max-w-[280px]">
           <div className="absolute -inset-12 -z-10 rounded-full bg-white/[0.045] blur-3xl" />
           <div className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-hairline)] bg-black">
@@ -47,6 +51,7 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
         </div>
         <div className="mt-8">{cta}</div>
         <p className="t-caption mt-3 text-[var(--color-label-3)]">{fill(L.priceNote, { price })}</p>
+        <p className="t-caption mt-1 text-emerald-300/90">✓ {L.guarantee}</p>
       </section>
 
       <section className="mt-16">
@@ -98,6 +103,7 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
       <section className="mt-16 text-center">
         <h2 className="t-title text-balance">{L.closing}</h2>
         <div className="mt-7">{cta}</div>
+        <p className="t-caption mt-3 text-emerald-300/90">✓ {L.guarantee}</p>
         <p className="t-caption mx-auto mt-6 max-w-sm text-[var(--color-label-3)]">{L.disclaimer}</p>
       </section>
     </div>
