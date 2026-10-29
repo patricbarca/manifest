@@ -7,6 +7,7 @@ import { moderate } from "@/lib/moderation";
 import { hasAccess } from "@/lib/access";
 import { db } from "@/lib/db/store";
 import { PAYMENTS_ENABLED } from "@/lib/pricing";
+import { canCreateNow } from "@/lib/db/session";
 import { livePhotos } from "@/lib/manifest/photos";
 import { newManifestId, shortTitle } from "@/lib/manifest/extract";
 import { enqueueManifestation } from "@/lib/queue";
@@ -73,6 +74,10 @@ export async function POST(request: Request) {
   if (!(await hasAccess())) return NextResponse.json({ error: "access" }, { status: 403 });
   const body = Create.safeParse(await request.json().catch(() => ({})));
   if (!body.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
+  // Sin pagos, solo la lista de prueba genera: cada escena cuesta dinero real.
+  if (!PAYMENTS_ENABLED && !canCreateNow((await db.getUser(who.user.id)) ?? who.user)) {
+    return NextResponse.json({ error: "paymentsSoon" }, { status: 402 });
+  }
   let verdict = checkDesires([body.data.desire]);
   if (verdict.ok) verdict = await moderate([body.data.desire]);
   if (!verdict.ok) return NextResponse.json({ error: "unsafe", key: verdict.key }, { status: 422 });

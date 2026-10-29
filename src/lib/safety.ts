@@ -22,6 +22,13 @@ export type SafetyKey = "tooShort" | "tooLong" | "health" | "finance" | "minors"
  * para que el texto salga del diccionario en el idioma del usuario.
  */
 const BLOCKED_PATTERNS: { re: RegExp; key: SafetyKey }[] = [
+  // Va primero: si alguien habla de hacerse daño no se genera nada y se le
+  // muestran recursos de ayuda (t.safety.selfHarm), aunque mencione también
+  // salud o dinero. Mejor un falso positivo que un guion de "ya está hecho".
+  {
+    re: /(suicid|autolesi|quitarme la vida|acabar con mi vida|matarme|cortarme las venas|hacerme daño|dejar de existir|no quiero (vivir|seguir viviendo|estar vivo|estar viva)|quiero morir|mejor muert[oa]|no merece la pena vivir|no vale la pena vivir|kill myself|end my life|take my (own )?life|self[- ]?harm|hurt myself|want to die|wanna die|don'?t want to (live|be alive|exist)|better off dead|stop existing)/i,
+    key: "selfHarm",
+  },
   {
     re: /\b(curar|curarme|curación|cure|healing|remisión|remission|cáncer|cancer|tumor|diabetes|quimio|chemo)\b/i,
     key: "health",
@@ -51,7 +58,6 @@ const BLOCKED_PATTERNS: { re: RegExp; key: SafetyKey }[] = [
     re: /\b(matar a|mato a|asesin|murder|kill (him|her|them|my|people|someone|everyone)|disparar a|shoot (him|her|them|people|someone)|(fabricar|hacer|make|build) (a |una )?(bomb|bomba)|terroris|masacre|massacre|tortur|secuestr|kidnap|vengar|venganza|revenge|que (sufra|muera)|(make|watch|see) (him|her|them) (suffer|die)|(he|she|they) (dies|suffers)|armas?\b|guns?\b|rifles?\b|pistolas?\b|fusil)/i,
     key: "violence",
   },
-  { re: /\b(suicid|matarme|kill myself|autolesi|self[- ]harm|cortarme|hacerme daño|hurt myself|quiero morir|want to die)/i, key: "selfHarm" },
   { re: /\b(cocaína|cocaine|heroína|heroin|metanfetamina|meth\b|fentanil|fentanyl|éxtasis|ecstasy|mdma)/i, key: "drugs" },
 ];
 

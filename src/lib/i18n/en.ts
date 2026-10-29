@@ -426,7 +426,8 @@ export const en = {
     sexual: "We don't generate sexual or suggestive content, or nudity.",
     hate: "We don't generate hateful content or anything that discriminates against anyone.",
     violence: "We don't generate violence, weapons or wishes to harm others.",
-    selfHarm: "We can't turn this into a video. If you're going through a hard time, talk to someone you trust or a helpline in your country.",
+    selfHarm:
+      "It sounds like you're going through something really hard. This isn't the right tool for now: please talk to someone who can help. If you're in immediate danger, call your local emergency number (112 in the EU, 911 in the US). In the US, call or text 988. Elsewhere: findahelpline.com.",
     drugs: "We don't generate content about drugs.",
   },
   deleteVideo: {
@@ -652,6 +653,7 @@ export const en = {
     tooManyPreviews: "You've rewritten the scenes many times this hour. Wait a bit and try again.",
     noFreeLeft:
       "You've used your free video. Payments aren't active yet.",
+    paymentsSoon: "You'll be able to create your video very soon: we're switching on payments. Check back in a few days.",
     betaOnly: "ManifestLifeAI is in private beta. You need an invite link to create videos.",
   },
 };

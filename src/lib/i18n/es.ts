@@ -425,7 +425,8 @@ export const es: Dictionary = {
     sexual: "No generamos contenido sexual, sugerente ni desnudos.",
     hate: "No generamos contenido de odio ni que discrimine a nadie.",
     violence: "No generamos violencia, armas ni deseos de dañar a otras personas.",
-    selfHarm: "Esto no lo podemos convertir en un vídeo. Si estás pasando por un momento difícil, habla con alguien de confianza o con la línea de ayuda de tu país.",
+    selfHarm:
+      "Parece que estás pasando por un momento muy difícil. Esto no es para ahora: habla con alguien que pueda ayudarte. En España, llama o escribe al 024 (gratis, confidencial, 24 h). Si estás en peligro inmediato, llama al 112. En otros países: findahelpline.com.",
     drugs: "No generamos contenido sobre drogas.",
   },
   deleteVideo: {
@@ -650,6 +651,7 @@ export const es: Dictionary = {
     previewFailed: "No se pudieron escribir las escenas. Inténtalo otra vez.",
     tooManyPreviews: "Has reescrito las escenas muchas veces esta hora. Espera un poco y vuelve a probar.",
     noFreeLeft: "Ya has usado tu vídeo gratis. Los pagos todavía no están activos.",
+    paymentsSoon: "Muy pronto podrás crear tu vídeo: estamos activando los pagos. Vuelve en unos días.",
     betaOnly: "ManifestLifeAI está en beta privada. Necesitas un enlace de invitación para crear vídeos.",
   },
 };

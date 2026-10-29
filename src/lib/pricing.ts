@@ -150,6 +150,18 @@ export const FREE_VIDEOS = Number(process.env.FREE_VIDEOS ?? 0);
 export const PAYMENTS_ENABLED = process.env.PAYMENTS_ENABLED === "true";
 
 /**
+ * Emails que pueden generar sin pagar mientras no hay pagos (el equipo y
+ * quien prueba). Sin pagos, el resto no puede crear: cada vídeo cuesta dinero
+ * real en los proveedores. Separados por comas, en PRELAUNCH_ALLOWLIST.
+ */
+export const PRELAUNCH_ALLOWLIST = new Set(
+  (process.env.PRELAUNCH_ALLOWLIST ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean),
+);
+
+/**
  * PAQUETES DE MANIFESTACIONES (añadir deseos de uno en uno)
  *
  * Coste real por manifestación ~0,25–0,40 $ (imagen + animación + voz).

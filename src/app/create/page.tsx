@@ -1,5 +1,6 @@
 import { CreateWizard } from "@/components/CreateWizard";
-import { currentUser, freeVideosLeft, isSignedIn } from "@/lib/db/session";
+import { canCreateNow, currentUser, freeVideosLeft, isSignedIn } from "@/lib/db/session";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { templateBySlug } from "@/lib/templates";
 import { LIFE_AREAS, TIERS } from "@/lib/types";
@@ -25,6 +26,16 @@ export default async function CrearPage({
     redirect(`/login?next=${encodeURIComponent(back)}`);
   }
   const [user, { t, locale }] = await Promise.all([currentUser(), getDictionary()]);
+  if (!canCreateNow(user)) {
+    return (
+      <div className="mx-auto max-w-[1120px] px-6 py-24 text-center">
+        <p className="t-body mx-auto max-w-sm text-[var(--color-label-2)]">{t.errors.paymentsSoon}</p>
+        <Link href="/" className="t-caption mt-6 inline-block underline">
+          ManifestLifeAI
+        </Link>
+      </div>
+    );
+  }
 
   const initialArea = LIFE_AREAS.some((a) => a.id === area)
     ? (area as LifeArea)

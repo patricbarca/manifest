@@ -4,7 +4,8 @@ import { db } from "./store";
 import type { User } from "../types";
 import { authUser } from "../supabase/server";
 import { authEnabled } from "../supabase/config";
-import { FREE_VIDEOS, PAYMENTS_ENABLED } from "../pricing";
+import { FREE_VIDEOS, PAYMENTS_ENABLED, PRELAUNCH_ALLOWLIST } from "../pricing";
+import { stripeEnabled } from "../stripe";
 
 /**
  * Identidad.
@@ -17,6 +18,18 @@ import { FREE_VIDEOS, PAYMENTS_ENABLED } from "../pricing";
 
 const COOKIE = "manifest_uid";
 
+/**
+ * Un id anónimo siempre empieza por "u_" (ids actuales: u_ + 24 hex; los de la
+ * primera versión eran base36). Los ids de cuenta (Supabase) son UUID. Si la
+ * cookie trae cualquier otra cosa, p. ej. el UUID de otra persona, se ignora:
+ * si no, bastaría con escribir esa cookie para hacerse pasar por ella.
+ */
+const ANON_ID = /^u_[0-9a-z]{8,40}$/;
+
+export function isAnonymousId(id: string | undefined): id is string {
+  return !!id && ANON_ID.test(id);
+}
+
 function newId(): string {
   // Aleatorio criptográfico: el id anónimo es una credencial (no debe poder adivinarse).
   return "u_" + randomBytes(12).toString("hex");
@@ -25,7 +38,7 @@ function newId(): string {
 async function anonymousId(): Promise<string> {
   const jar = await cookies();
   let id = jar.get(COOKIE)?.value;
-  if (!id) {
+  if (!isAnonymousId(id)) {
     id = newId();
     // En un Server Component la cookie puede no ser escribible; se reintenta en la API.
     try {
@@ -77,8 +90,10 @@ export async function linkAnonymousData(): Promise<void> {
   const jar = await cookies();
   const anonId = jar.get(COOKIE)?.value;
   if (auth) await recordReferral(auth.id, jar.get("ml_ref")?.value);
-  if (!auth || !anonId || anonId === auth.id) return;
+  if (!auth || !isAnonymousId(anonId) || anonId === auth.id) return;
   const anon = await db.getUser(anonId);
+  // Un id con email es una cuenta, no un visitante anónimo: nunca se fusiona.
+  if (anon?.email) return;
   const account = await ensureUser(auth.id, auth.email, auth.name ?? auth.email.split("@")[0]);
   for (const p of await db.listProjects(anonId)) {
     await db.patchProject(p.id, (cur) => ({ ...cur, ownerId: auth.id }));
@@ -97,6 +112,19 @@ export async function linkAnonymousData(): Promise<void> {
   }
 }
 
+function isPrelaunchTester(user: Pick<User, "email">): boolean {
+  return !!user.email && PRELAUNCH_ALLOWLIST.has(user.email.toLowerCase());
+}
+
+/**
+ * Si este usuario puede empezar a crear ahora: Stripe está configurado, le queda un
+ * vídeo gratis o está en la lista de prueba. Se mira al entrar en /crear y
+ * antes de llamar al LLM, para no gastar ni hacerle escribir para nada.
+ */
+export function canCreateNow(user: User): boolean {
+  return stripeEnabled() || user.freeVideosUsed < FREE_VIDEOS || isPrelaunchTester(user);
+}
+
 /**
  * Cobra un vídeo, o lo deja pasar.
  *
@@ -113,7 +141,7 @@ export async function linkAnonymousData(): Promise<void> {
 export type ChargeKind = "free" | "prelaunch" | "paid";
 
 /** Clave del diccionario con el motivo, no el mensaje ya escrito. */
-type ChargeError = "noFreeLeft" | "paymentRequired";
+type ChargeError = "noFreeLeft" | "paymentRequired" | "paymentsSoon";
 
 export async function chargeForVideo(
   userId: string,
@@ -131,6 +159,7 @@ export async function chargeForVideo(
   }
 
   if (!PAYMENTS_ENABLED) {
+    if (!isPrelaunchTester(user)) return { ok: false, reason: "paymentsSoon" };
     return { ok: true, kind: "prelaunch", paidCents: 0 };
   }
 
