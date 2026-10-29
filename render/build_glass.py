@@ -379,9 +379,11 @@ def encode(video_in, vf, clips, length, name):
     label_in = ["-loop", "1", "-framerate", str(FPS), "-i", f"{T}/ailabel.png"]
     # Los tramos son intermedios: preset rápido y calidad alta; la compresión buena va al final.
     # Cada tramo ya sale con la calidad final; al unirlos se copia sin recodificar.
-    pending.append([FF, "-y", "-loglevel", "error", *video_in, *label_in, *ain, "-filter_complex", vf + ";" + ag,
+    # Hilos acotados por proceso: con varios ffmpeg a la vez, x264 abría tantos hilos
+    # como núcleos ve el servidor y el contenedor se quedaba sin hilos (no abría el codificador).
+    pending.append([FF, "-y", "-loglevel", "error", "-filter_complex_threads", "2", *video_in, *label_in, *ain, "-filter_complex", vf + ";" + ag,
                     "-map", "[vo]", "-map", "[ao]", "-t", f"{length:.2f}", "-r", str(FPS),
-                    "-c:v", "libx264", "-preset", JOB.get("preset", "faster"), "-crf", str(JOB.get("crf", 27)),
+                    "-c:v", "libx264", "-threads", "2", "-preset", JOB.get("preset", "faster"), "-crf", str(JOB.get("crf", 27)),
                     "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k", out])
     segs.append(out)
     clock[0] += length
@@ -390,7 +392,9 @@ def encode(video_in, vf, clips, length, name):
 def run_pending():
     if not pending:
         return
-    workers = max(2, min(len(pending), os.cpu_count() or 2, 6))
+    # Unos 2 hilos por tramo: tantos tramos a la vez como pares de núcleos (máx. 4).
+    cores = len(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else (os.cpu_count() or 2)
+    workers = max(2, min(len(pending), cores // 2, 4))
     with ThreadPoolExecutor(max_workers=workers) as ex:
         for f in [ex.submit(run, cmd) for cmd in pending]:
             f.result()
