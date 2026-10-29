@@ -35,6 +35,7 @@ export default async function EditarPerfilPage() {
 
       <MyPhotos
         initial={photos}
+        guide={t.photoGuide}
         t={{ title: t.manifest.myPhotos, hint: t.manifest.myPhotosHint, empty: t.manifest.noPhotos, remove: t.manifest.removePhoto, upload: t.manifest.upload, uploading: t.manifest.uploading, consent: t.consent, biometric: t.biometricConsent, error: t.aura.errors.invalid }}
       />
 

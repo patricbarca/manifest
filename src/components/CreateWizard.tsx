@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { PhotoSlots } from "./PhotoSlots";
 import { trackEvent } from "@/lib/track-client";
 import { useMemo, useState } from "react";
 import { PALETTES, TIERS, type Palette } from "@/lib/types";
@@ -82,7 +83,10 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
     // Siempre 3 casillas: el primer vídeo trae 3 escenas, una por deseo.
     template ? template.affirmations[locale].slice(0, MAX_DESIRES) : Array(MAX_DESIRES).fill(""),
   );
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  // Un hueco por tipo de foto (de frente sonriendo, suave, tres cuartos, medio cuerpo).
+  const [slotUrls, setSlotUrls] = useState<(string | undefined)[]>([undefined, undefined, undefined, undefined]);
+  const [uploadingSlot, setUploadingSlot] = useState<number>();
+  const photoUrls = slotUrls.filter((u): u is string => !!u);
   const [palette, setPalette] = useState<Palette>("dusk");
   const [videoLocale, setVideoLocale] = useState<VideoLocale>(locale as VideoLocale);
   const [voice, setVoice] = useState<string>(DEFAULT_VOICE);
@@ -311,10 +315,12 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
     }
   }
 
-  async function upload(file: File) {
+  async function upload(file: File, slot: number) {
     setUploading(true);
+    setUploadingSlot(slot);
     const url = await sendPhoto(file, consent, true);
-    if (url) setPhotoUrls((prev) => [...prev, url].slice(0, 4));
+    if (url) setSlotUrls((prev) => prev.map((u, i) => (i === slot ? url : u)));
+    setUploadingSlot(undefined);
     setUploading(false);
   }
 
@@ -502,31 +508,14 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
           hint={t.create.photoHint}
         >
           <div className="space-y-5">
-            <div className="grid grid-cols-4 gap-3">
-              {Array.from({ length: 4 }, (_, i) => photoUrls[i]).map((url, i) => (
-                <div
-                  key={i}
-                  className="relative aspect-[3/4] overflow-hidden rounded-[var(--radius-md)] border border-dashed border-[var(--color-hairline-strong)] bg-[var(--color-surface-2)]"
-                >
-                  {url ? (
-                    <>
-                      <img src={url} alt="" className="h-full w-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setPhotoUrls((prev) => prev.filter((u) => u !== url))}
-                        className="t-caption absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-white backdrop-blur"
-                      >
-                        {t.create.removePhoto}
-                      </button>
-                    </>
-                  ) : (
-                    <span className="t-caption grid h-full place-items-center text-[var(--color-label-3)]">
-                      {i + 1}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
+            <PhotoSlots
+              urls={slotUrls}
+              onPick={(file, slot) => void upload(file, slot)}
+              onRemove={(slot) => setSlotUrls((prev) => prev.map((u, i) => (i === slot ? undefined : u)))}
+              disabled={!consent || !bioConsent || uploading}
+              busySlot={uploadingSlot}
+              t={t.photoGuide}
+            />
 
             <label className="t-sub flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
               <input
@@ -550,18 +539,6 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
               </span>
             </label>
 
-            <input
-              type="file"
-              multiple
-              accept="image/jpeg,image/png,image/webp"
-              disabled={!consent || !bioConsent || uploading || photoUrls.length >= 4}
-              onChange={async (e) => {
-                const files = Array.from(e.target.files ?? []).slice(0, 4 - photoUrls.length);
-                e.target.value = "";
-                for (const file of files) await upload(file);
-              }}
-              className="t-sub block w-full text-[var(--color-label-2)] file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-white file:px-5 file:py-2 file:text-[13px] file:font-medium file:text-black hover:file:bg-white/90 disabled:opacity-35"
-            />
             <p className="t-caption text-[var(--color-label-3)]">
               {uploading ? t.create.uploading : fill(t.create.photoCount, { n: photoUrls.length })}
             </p>
