@@ -101,6 +101,51 @@ export interface Affirmation {
   endSec: number;
 }
 
+/**
+ * UNA MANIFESTACIÓN: un deseo convertido en una escena animada de la persona,
+ * con su afirmación y su voz. Es la unidad que se compra y que se reutiliza:
+ * el vídeo de manifestación se monta eligiendo varias.
+ */
+export interface Manifestation {
+  /** Empieza por "m_": sus ficheros viven en generated/<id>/. */
+  id: string;
+  ownerId: string;
+  createdAt: number;
+  updatedAt: number;
+  status: "queued" | "generating" | "ready" | "failed";
+  /** El deseo en palabras de la persona. Privado. */
+  desire: string;
+  /** Nombre corto para la tarjeta (lo puede cambiar). */
+  title: string;
+  locale: Locale;
+  style?: VisualStyle;
+  voice?: string;
+  /** Descripción visual de la escena (inglés). */
+  brief?: string;
+  /** La frase que se dice sobre la escena. */
+  affirmation?: string;
+  imageUrl?: string;
+  /** Clip de la escena a calidad completa: es lo que se reutiliza al montar. */
+  clipUrl?: string;
+  /** Voz de la afirmación (con la voz y el idioma de arriba). */
+  voiceUrl?: string;
+  highlight?: Highlight;
+  /** La muestra en su perfil público (solo el highlight, sin sonido ni el deseo). */
+  onProfile?: boolean;
+  /** Cuándo la marcó como cumplida. */
+  manifestedAt?: number;
+  /** Proyecto del que salió, si nació dentro de un vídeo completo. */
+  sourceProjectId?: string;
+  /** Fotos de la persona usadas para generarla (se borran a los 30 días). */
+  photoUrls?: string[];
+  /** Intentos tras reinicios del servidor. */
+  attempts?: number;
+  /** Se pagó con una manifestación de un paquete: si falla, se devuelve una vez. */
+  paidCredit?: boolean;
+  costCents: number;
+  error?: string;
+}
+
 /** Una escena animada en pequeño, para el perfil. */
 export interface Highlight {
   videoUrl: string;
@@ -270,6 +315,8 @@ export interface Project {
   watermark: boolean;
   /** Cuándo pidió generar ya y aceptó perder el desistimiento de 14 días (UE). */
   waiverAt?: number;
+  /** Vídeo de manifestación montado con estas manifestaciones (en este orden). */
+  composedFrom?: string[];
   error?: string;
 }
 
@@ -343,4 +390,10 @@ export interface User {
   reminders?: boolean;
   /** Último día (local) en que se le envió el recordatorio. */
   lastReminder?: string;
+  /** Manifestaciones que puede crear (compradas y aún no usadas). No caducan. */
+  credits?: number;
+  /** Sesiones de Stripe ya abonadas (para no sumar dos veces el mismo pago). */
+  creditSessions?: string[];
+  /** Sus últimas fotos (para crear manifestaciones sin volver a subirlas mientras existan). */
+  photoUrls?: string[];
 }

@@ -26,7 +26,7 @@ export async function GET(request: Request) {
   // Detrás del proxy de Railway, request.url puede traer el host interno.
   const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? url.host;
   const proto = request.headers.get("x-forwarded-proto") ?? url.protocol.replace(":", "");
-  const dest = new URL(accessCodeMatches(code) ? "/crear" : "/", `${proto}://${host}`);
+  const dest = new URL(accessCodeMatches(code) ? "/create" : "/", `${proto}://${host}`);
   const res = NextResponse.redirect(dest);
   if (accessCodeMatches(code)) {
     res.cookies.set(ACCESS_COOKIE, code!, {

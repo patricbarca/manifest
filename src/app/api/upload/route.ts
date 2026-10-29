@@ -1,5 +1,6 @@
 import { isSignedIn } from "@/lib/db/session";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
+import { photoLooksUnsafe } from "@/lib/photo-safety";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
@@ -65,9 +66,21 @@ export async function POST(request: Request) {
 
   await mkdir(path.dirname(abs), { recursive: true });
   await writeFile(abs, Buffer.from(await file.arrayBuffer()));
+  if (await photoLooksUnsafe(abs)) {
+    await rm(abs, { force: true });
+    return NextResponse.json({ error: t.errors.photoUnsafe }, { status: 422 });
+  }
   // Registro del consentimiento expreso (fecha y versión del texto), la primera vez.
-  if (!user.photoConsent || user.photoConsent.version !== PHOTO_CONSENT_VERSION) {
-    await db.putUser({ ...user, photoConsent: { at: Date.now(), version: PHOTO_CONSENT_VERSION } });
+  // Sus propias fotos se recuerdan (las 4 últimas) para crear más manifestaciones
+  // sin volver a subirlas, mientras existan (se borran a los 30 días).
+  const self = form.get("kind") === "self";
+  const url = mediaUrl("uploads", name);
+  if (self || !user.photoConsent || user.photoConsent.version !== PHOTO_CONSENT_VERSION) {
+    await db.putUser({
+      ...user,
+      photoConsent: { at: Date.now(), version: PHOTO_CONSENT_VERSION },
+      ...(self ? { photoUrls: [...(user.photoUrls ?? []), url].slice(-4) } : {}),
+    });
   }
 
   return NextResponse.json({ url: mediaUrl("uploads", name) });

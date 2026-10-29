@@ -2,8 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CirclePostCard, MarketCard } from "@/components/FeedCards";
 import { PeopleSearch } from "@/components/PeopleSearch";
-import { feedPosts } from "@/lib/social/feed";
-import { db } from "@/lib/db/store";
+import { manifestPosts } from "@/lib/social/feed";
+import { manifests } from "@/lib/manifest/store";
 import { me } from "@/lib/social/me";
 import { social } from "@/lib/social/store";
 import { canSee } from "@/lib/social/aura";
@@ -11,7 +11,7 @@ import { TEMPLATES, templatePreview } from "@/lib/templates";
 import { getDictionary } from "@/lib/i18n/server";
 import type { Locale } from "@/lib/i18n/locale";
 import type { Profile } from "@/lib/social/types";
-import type { FeedPost } from "@/components/ProfileFeed";
+import type { FeedPost } from "@/lib/social/feed";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +28,7 @@ const FILTERS: Filter[] = ["all", "circle", "market"];
 
 export default async function FeedPage({ searchParams }: { searchParams: Promise<{ f?: string }> }) {
   const who = await me();
-  if (!who) redirect("/entrar?next=/feed");
+  if (!who) redirect("/login?next=/feed");
   const { t, locale } = await getDictionary();
   const loc = locale as Locale;
   const { f } = await searchParams;
@@ -40,7 +40,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
   for (const author of authors) {
     // Lo mismo que vería en su perfil: si ahora es privado, no sale.
     if (!(await canSee(author, who.user.id))) continue;
-    for (const post of feedPosts(await db.listProjects(author.userId), false)) posts.push({ author, post });
+    for (const post of manifestPosts(await manifests.list(author.userId))) posts.push({ author, post });
   }
   posts.sort((a, b) => (b.post.createdAt ?? 0) - (a.post.createdAt ?? 0));
 

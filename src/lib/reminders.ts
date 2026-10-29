@@ -1,3 +1,4 @@
+import { appBase } from "./hosts";
 import { db } from "./db/store";
 import { emailEnabled, sendStreakReminder } from "./email";
 import { localDay, statsFrom } from "./social/aura";
@@ -20,7 +21,7 @@ function localHour(tz: string): number {
  */
 export async function runReminders(): Promise<void> {
   if (!emailEnabled()) return;
-  const site = process.env.SITE_URL ?? "";
+  const site = appBase();
   for (const user of await db.listUsers()) {
     if (user.reminders === false || !user.tz || localHour(user.tz) !== REMIND_HOUR) continue;
     const today = localDay(user.tz);
@@ -31,8 +32,8 @@ export async function runReminders(): Promise<void> {
       to: user.email,
       locale: user.locale === "es" ? "es" : "en",
       streak: stats.streak,
-      url: `${site}/perfil?tab=today`,
-      settingsUrl: `${site}/perfil/editar`,
+      url: `${site}/profile?tab=today`,
+      settingsUrl: `${site}/profile/edit`,
     });
     if (sent) await db.putUser({ ...user, lastReminder: today });
   }

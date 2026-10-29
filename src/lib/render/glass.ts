@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { access, mkdir, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Project } from "../types";
 import { DATA_DIR, localPathForMediaUrl, mediaPath, mediaUrl } from "../paths";
@@ -82,6 +82,9 @@ export async function renderGlass(
 
   const work = path.join(DATA_DIR, "tmp", `render-${project.id}`);
   const outAbs = mediaPath("generated", project.id, "video.mp4");
+  // Se escribe a un temporal y se renombra al final: dos montajes del mismo
+  // vídeo (p. ej. tras un reinicio) nunca dejan un MP4 mezclado.
+  const tmpOut = `${outAbs}.${process.pid}-${Date.now()}.tmp.mp4`;
   await mkdir(work, { recursive: true });
   await mkdir(path.dirname(outAbs), { recursive: true });
 
@@ -112,7 +115,9 @@ export async function renderGlass(
     })),
     voices,
     work_dir: work,
-    out: outAbs,
+    // Fondo animado ya hecho por paleta: se reutiliza entre vídeos.
+    cache_dir: path.join(DATA_DIR, "cache", "glass"),
+    out: tmpOut,
     // Elevado conserva el detalle de los clips 1080p; el resto pesa menos.
     crf: project.tier === "elevated" ? 20 : 27,
   };
@@ -124,9 +129,11 @@ export async function renderGlass(
     if (r.code !== 0) throw new Error(`El montaje falló (${r.code}): ${r.err.slice(-600)}`);
     const last = r.out.trim().split("\n").pop() ?? "{}";
     const info = JSON.parse(last) as { durationSec?: number };
+    await rename(tmpOut, outAbs);
     return { exportUrl: mediaUrl("generated", project.id, "video.mp4"), durationSec: info.durationSec ?? 0 };
   } finally {
     // Los tramos intermedios pesan mucho y el volumen es pequeño.
     await rm(work, { recursive: true, force: true });
+    await rm(tmpOut, { force: true });
   }
 }

@@ -6,6 +6,7 @@ import { templateBySlug } from "@/lib/templates";
 import { LIFE_AREAS, TIERS } from "@/lib/types";
 import type { LifeArea } from "@/lib/types";
 import { getDictionary } from "@/lib/i18n/server";
+import { PRODUCTS } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +22,8 @@ export default async function CrearPage({
     if (area) q.set("area", area);
     if (template) q.set("template", template);
     if (tier) q.set("tier", tier);
-    const back = `/crear${q.size ? `?${q}` : ""}`;
-    redirect(`/entrar?next=${encodeURIComponent(back)}`);
+    const back = `/create${q.size ? `?${q}` : ""}`;
+    redirect(`/login?next=${encodeURIComponent(back)}`);
   }
   const [user, { t, locale }] = await Promise.all([currentUser(), getDictionary()]);
   if (!canCreateNow(user)) {
@@ -46,6 +47,7 @@ export default async function CrearPage({
       template={template ? templateBySlug(template) : undefined}
       initialTier={TIERS.find((x) => x === tier)}
       freeLeft={freeVideosLeft(user)}
+      prices={{ vision: PRODUCTS.vision.priceUsd, cinematic: PRODUCTS.cinematic.priceUsd, elevated: PRODUCTS.elevated.priceUsd }}
       t={t}
       locale={locale}
     />

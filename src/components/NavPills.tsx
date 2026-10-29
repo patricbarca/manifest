@@ -8,7 +8,7 @@ export function NavPills({ feed, profile }: { feed: string; profile: string }) {
   const path = usePathname();
   const items = [
     { href: "/feed", label: feed, active: path.startsWith("/feed") },
-    { href: "/perfil", label: profile, active: path.startsWith("/perfil") },
+    { href: "/profile", label: profile, active: path.startsWith("/profile") },
   ];
   return (
     <nav className="flex items-center rounded-full border border-[var(--color-hairline)] p-0.5">

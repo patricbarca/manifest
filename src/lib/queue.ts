@@ -1,5 +1,8 @@
 import { db } from "./db/store";
 import { runPipeline } from "./pipeline";
+import { refundCredit, runManifestation } from "./manifest/generate";
+import { runCompose } from "./manifest/compose";
+import { manifests } from "./manifest/store";
 
 /**
  * Cola de vídeos en proceso.
@@ -13,22 +16,36 @@ import { runPipeline } from "./pipeline";
 const MAX = Math.max(1, Number(process.env.PIPELINE_CONCURRENCY ?? 2));
 const MAX_ATTEMPTS = 2;
 let running = 0;
-const waiting: string[] = [];
+const waiting: { id: string; run: () => Promise<void> }[] = [];
 const known = new Set<string>();
 
 export function enqueue(projectId: string): void {
-  if (known.has(projectId)) return;
-  known.add(projectId);
-  waiting.push(projectId);
+  push(projectId, () => runPipeline(projectId));
+}
+
+/** Vídeo de manifestación a partir de manifestaciones ya hechas. */
+export function enqueueCompose(projectId: string): void {
+  push(projectId, () => runCompose(projectId));
+}
+
+/** Una manifestación suelta (comparte la cola y el límite con los vídeos). */
+export function enqueueManifestation(id: string): void {
+  push(id, () => runManifestation(id));
+}
+
+function push(id: string, run: () => Promise<void>): void {
+  if (known.has(id)) return;
+  known.add(id);
+  waiting.push({ id, run });
   pump();
 }
 
 function pump(): void {
   while (running < MAX && waiting.length) {
-    const id = waiting.shift()!;
+    const { id, run } = waiting.shift()!;
     running++;
-    runPipeline(id)
-      .catch((err) => console.error("[pipeline]", id, err))
+    run()
+      .catch((err) => console.error("[queue]", id, err))
       .finally(() => {
         running--;
         known.delete(id);
@@ -58,6 +75,21 @@ export async function resumeInterrupted(): Promise<void> {
       steps: cur.steps.map((s) => (s.status === "running" ? { ...s, status: "pending" } : s)),
     }));
     console.log("[queue] relanzando", p.id, "intento", attempts);
-    enqueue(p.id);
+    if (p.composedFrom?.length) enqueueCompose(p.id);
+    else enqueue(p.id);
+  }
+}
+
+/** Igual para las manifestaciones sueltas. */
+export async function resumeManifestations(): Promise<void> {
+  for (const m of await manifests.listPending()) {
+    const attempts = (m.attempts ?? 0) + 1;
+    if (attempts > MAX_ATTEMPTS) {
+      await manifests.patch(m.id, (cur) => ({ ...cur, status: "failed", error: "Se interrumpió varias veces." }));
+      await refundCredit(m.id);
+      continue;
+    }
+    await manifests.patch(m.id, (cur) => ({ ...cur, status: "queued", attempts }));
+    enqueueManifestation(m.id);
   }
 }

@@ -48,10 +48,28 @@ export interface Product {
   priceUsd: number;
 }
 
+/**
+ * Precio del primer vídeo por calidad. Se cambia sin tocar código con
+ * TIER_PRICES="vision:9,cinematic:39,elevated:49" (solo en el servidor: los
+ * componentes de cliente reciben los precios por props).
+ */
+const DEFAULT_TIER_PRICES: Record<Tier, number> = { vision: 9, cinematic: 39, elevated: 49 };
+
+function tierPrices(): Record<Tier, number> {
+  const out = { ...DEFAULT_TIER_PRICES };
+  for (const part of (process.env.TIER_PRICES ?? "").split(",")) {
+    const [k, v] = part.split(":").map((x) => x.trim());
+    const n = Number(v);
+    if (k in out && Number.isFinite(n) && n >= 1 && n <= 999) out[k as Tier] = n;
+  }
+  return out;
+}
+
+const PRICES = tierPrices();
 export const PRODUCTS: Record<Tier, Product> = {
-  vision: { id: "vision", priceUsd: 9 },
-  cinematic: { id: "cinematic", priceUsd: 29 },
-  elevated: { id: "elevated", priceUsd: 49 },
+  vision: { id: "vision", priceUsd: PRICES.vision },
+  cinematic: { id: "cinematic", priceUsd: PRICES.cinematic },
+  elevated: { id: "elevated", priceUsd: PRICES.elevated },
 };
 
 export function productFor(tier: Tier): Product {
@@ -142,3 +160,25 @@ export const PRELAUNCH_ALLOWLIST = new Set(
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean),
 );
+
+/**
+ * PAQUETES DE MANIFESTACIONES (añadir deseos de uno en uno)
+ *
+ * Coste real por manifestación ~0,25–0,40 $ (imagen + animación + voz).
+ * Precio por defecto: 1 → 7 $, 5 → 29 $, 12 → 59 $. Se cambian sin tocar
+ * código con PACK_PRICES="1:9,5:35,12:69".
+ */
+export interface CreditPack {
+  qty: number;
+  priceUsd: number;
+}
+
+export function creditPacks(): CreditPack[] {
+  const raw = process.env.PACK_PRICES ?? "1:9,5:35,12:69";
+  const packs = raw
+    .split(",")
+    .map((p) => p.split(":").map(Number))
+    .filter(([q, price]) => q > 0 && price > 0)
+    .map(([qty, priceUsd]) => ({ qty, priceUsd }));
+  return packs.length ? packs : [{ qty: 1, priceUsd: 9 }];
+}

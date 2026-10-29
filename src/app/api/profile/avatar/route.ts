@@ -1,4 +1,5 @@
 import { mkdir, rm } from "node:fs/promises";
+import { photoLooksUnsafe } from "@/lib/photo-safety";
 import { randomBytes } from "node:crypto";
 import sharp from "sharp";
 import { NextResponse } from "next/server";
@@ -32,6 +33,11 @@ export async function POST(request: Request) {
   const name = `${who.user.id}_${randomBytes(6).toString("hex")}.jpg`;
   await mkdir(mediaDir("avatars"), { recursive: true });
   await sharp(jpg).toFile(mediaPath("avatars", name));
+  // La foto de perfil es pública: se revisa antes de ponerla.
+  if (await photoLooksUnsafe(mediaPath("avatars", name))) {
+    await rm(mediaPath("avatars", name), { force: true });
+    return NextResponse.json({ error: "photo_unsafe" }, { status: 422 });
+  }
   const old = who.profile.avatarUrl;
   const next = { ...who.profile, avatarUrl: `/media/avatars/${name}` };
   await social.putProfile(next);

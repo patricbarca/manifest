@@ -121,7 +121,7 @@ export function MarketCard({
       <div className="space-y-2 px-4 py-3">
         <p className="t-sub font-medium">{title}</p>
         <p className="t-caption text-[var(--color-label-2)]">{summary}</p>
-        <Link href={`/crear?template=${slug}&tier=${tier}`} className="interactive mt-1 inline-block rounded-full bg-white px-5 py-2 text-[14px] font-medium text-black">
+        <Link href={`/create?template=${slug}&tier=${tier}`} className="interactive mt-1 inline-block rounded-full bg-white px-5 py-2 text-[14px] font-medium text-black">
           {labels.makeIt}
         </Link>
       </div>

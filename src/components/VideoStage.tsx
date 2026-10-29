@@ -52,13 +52,14 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
       <div className="mx-auto max-w-lg px-6 py-28 text-center">
         <h1 className="t-title">{t.video.failedTitle}</h1>
         <p className="t-body mt-4 text-[var(--color-label-2)]">
-          {project.error ?? t.video.failedUnknown}
+          {/* El detalle técnico queda en los logs: aquí, un texto en el idioma de la persona. */}
+          {t.video.failedUnknown}
         </p>
         <p className="t-caption mt-2 text-[var(--color-label-3)]">
           {t.video.failedRefund}
         </p>
         <Link
-          href="/crear"
+          href="/create"
           className="interactive mt-9 inline-block rounded-full bg-white px-6 py-2.5 text-[15px] font-medium text-black"
         >
           {t.video.tryAgain}
@@ -112,7 +113,7 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
               </span>
             )}
             <Link
-              href="/crear"
+              href="/create"
               className="interactive t-sub rounded-full border border-[var(--color-hairline)] px-5 py-2.5 text-[var(--color-label-1)]"
             >
               {t.common.createAnother}
@@ -245,9 +246,6 @@ function GenerationProgress({ project, t }: { project: Project; t: Dictionary })
               >
                 {t.video.steps[step.id]}
               </p>
-              {step.error && (
-                <p className="t-caption mt-0.5 text-[var(--color-label-3)]">{step.error}</p>
-              )}
             </div>
           </li>
         ))}
@@ -256,15 +254,29 @@ function GenerationProgress({ project, t }: { project: Project; t: Dictionary })
       {preview.length > 0 && (
         <div className="mt-12">
           <p className="t-sub mb-3 text-[var(--color-label-2)]">{t.video.firstScenes}</p>
-          <div className="grid grid-cols-4 gap-2.5">
-            {preview.map((s) => (
-              <img
-                key={s.id}
-                src={s.imageUrl}
-                alt=""
-                className="rise aspect-[9/16] w-full rounded-[var(--radius-ctl)] object-cover ring-1 ring-[var(--color-hairline)]"
-              />
-            ))}
+          <div className="grid grid-cols-3 gap-2.5">
+            {/* Cada escena se ve en cuanto está: primero la imagen y, cuando su animación termina, el clip en bucle. */}
+            {preview.map((s) =>
+              s.videoUrl ? (
+                <video
+                  key={`${s.id}-v`}
+                  src={s.videoUrl}
+                  poster={s.imageUrl}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="rise aspect-[9/16] w-full rounded-[var(--radius-ctl)] object-cover ring-1 ring-[var(--color-hairline)]"
+                />
+              ) : (
+                <img
+                  key={s.id}
+                  src={s.imageUrl}
+                  alt=""
+                  className="rise aspect-[9/16] w-full rounded-[var(--radius-ctl)] object-cover ring-1 ring-[var(--color-hairline)]"
+                />
+              ),
+            )}
           </div>
         </div>
       )}

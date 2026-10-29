@@ -9,6 +9,7 @@ import { getObjectStream, objectStorageEnabled } from "@/lib/object-storage";
 import { social } from "@/lib/social/store";
 import { canSee } from "@/lib/social/aura";
 import { isHighlightFile } from "@/lib/highlights";
+import { manifests } from "@/lib/manifest/store";
 
 export const runtime = "nodejs";
 
@@ -53,6 +54,22 @@ export async function GET(
     const ownerId = parts[0].slice(0, Math.max(0, parts[0].lastIndexOf("_")));
     const profile = ownerId ? await social.getProfile(ownerId) : undefined;
     if (!profile || profile.avatarUrl !== `/media/avatars/${parts[0]}` || !(await canSee(profile, user.id))) {
+      return NextResponse.json({ error: "No es tuyo" }, { status: 403 });
+    }
+  } else if (parts[0].startsWith("m_")) {
+    // Ficheros de una manifestación: su dueño todo; los demás, solo el
+    // highlight si la mostró en su perfil y el perfil se lo permite.
+    const m = await manifests.get(parts[0]);
+    const shared =
+      !!m &&
+      m.ownerId !== user.id &&
+      m.onProfile === true &&
+      parts.length === 2 &&
+      isHighlightFile(parts[1]) &&
+      !!m.highlight &&
+      (m.highlight.videoUrl.endsWith(`/${parts[1]}`) || m.highlight.posterUrl.endsWith(`/${parts[1]}`)) &&
+      (await social.getProfile(m.ownerId).then((pr) => (pr ? canSee(pr, user.id) : false)));
+    if (!m || (m.ownerId !== user.id && !shared)) {
       return NextResponse.json({ error: "No es tuyo" }, { status: 403 });
     }
   } else {

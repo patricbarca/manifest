@@ -49,7 +49,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
               "No usamos tus fotos ni tus textos para entrenar modelos de IA, no las usamos para identificarte y no las vendemos.",
             ] },
             { h: "Con quién se comparten", p: [
-              "Con los proveedores técnicos imprescindibles para generar el vídeo: fal.ai (que ejecuta los modelos de imagen, animación, voz y texto, entre ellos ElevenLabs, MiniMax, ByteDance y Anthropic a través de OpenRouter), Railway (alojamiento de la web y los ficheros) y Stripe (pagos). Cada uno trata los datos según sus propias políticas y puede conservar copias temporales.",
+              "Con los proveedores técnicos imprescindibles para generar el vídeo: fal.ai (que ejecuta los modelos de imagen, animación, voz y texto, entre ellos ElevenLabs, MiniMax, ByteDance y Anthropic a través de OpenRouter), Railway (alojamiento de la web y los ficheros) y Stripe (pagos). Cada uno trata los datos según sus propias políticas y puede conservar copias temporales. Las fotos que subes (también la de perfil) y los textos que escribes pasan además un filtro automático de contenido de fal.ai para impedir contenido sexual, de odio o violento.",
             ] },
             { h: "Cuánto tiempo", p: [
               "Las fotos de otras personas se borran en cuanto tu vídeo está listo.",
@@ -77,7 +77,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
               "We don't use your photos or text to train AI models, we don't use them to identify you, and we don't sell them.",
             ] },
             { h: "Who we share it with", p: [
-              "With the technical providers needed to generate the video: fal.ai (which runs the image, animation, voice and text models, including ElevenLabs, MiniMax, ByteDance and Anthropic via OpenRouter), Railway (hosting for the site and files) and Stripe (payments). Each processes data under its own policies and may keep temporary copies.",
+              "With the technical providers needed to generate the video: fal.ai (which runs the image, animation, voice and text models, including ElevenLabs, MiniMax, ByteDance and Anthropic via OpenRouter), Railway (hosting for the site and files) and Stripe (payments). Each processes data under its own policies and may keep temporary copies. The photos you upload (including your profile photo) and the text you write also go through an automated content filter at fal.ai to prevent sexual, hateful or violent content.",
             ] },
             { h: "How long", p: [
               "Other people's photos are deleted as soon as your video is ready.",
@@ -111,7 +111,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
               "Las imágenes y voces las crea una IA: pueden tener errores o parecidos imperfectos. Revisa el guion antes de generar.",
               "Cada vídeo lleva el aviso «Generado con IA». No lo quites ni presentes el vídeo como real al compartirlo.",
             ] },
-            { h: "Pagos", p: ["Pagas por vídeo, al precio que se muestra antes de confirmar. No hay suscripción. Las condiciones de devolución están en la página de reembolsos."] },
+            { h: "Pagos", p: ["Pagas por vídeo o por paquetes de manifestaciones, al precio que se muestra antes de confirmar. No hay suscripción. Las manifestaciones compradas no caducan; cada una se descuenta al empezar a generarse y, si falla, se te devuelve. Montar un vídeo con manifestaciones que ya tienes no tiene coste. Las condiciones de devolución están en la página de reembolsos."] },
             { h: "Disponibilidad", p: ["Hacemos lo posible por que el servicio funcione, pero puede tener interrupciones. Podemos cambiar o retirar funciones avisando en esta web."] },
             { h: "Responsabilidad", p: ["En la medida que permita la ley, nuestra responsabilidad se limita al importe que hayas pagado por el vídeo afectado."] },
             { h: "Contacto", p: [`Para cualquier duda escribe a ${c}.`] },
@@ -129,7 +129,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
               "Images and voices are created by AI: they can contain mistakes or imperfect likeness. Review the script before generating.",
               "Every video carries an \"AI-generated\" notice. Don't remove it or present the video as real when you share it.",
             ] },
-            { h: "Payments", p: ["You pay per video, at the price shown before you confirm. There's no subscription. Refund conditions are on the refunds page."] },
+            { h: "Payments", p: ["You pay per video or for manifestation packs, at the price shown before you confirm. There's no subscription. Manifestations you buy don't expire; each one is used when it starts generating and returned if it fails. Building a video from manifestations you already have is free. Refund conditions are on the refunds page."] },
             { h: "Availability", p: ["We do our best to keep the service running, but it can be interrupted. We may change or remove features with notice on this site."] },
             { h: "Liability", p: ["To the extent allowed by law, our liability is limited to the amount you paid for the affected video."] },
             { h: "Contact", p: [`For any question, write to ${c}.`] },

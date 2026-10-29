@@ -2,9 +2,8 @@ import Link from "next/link";
 import { ProfileHeader } from "@/components/ProfileHeader";
 import { CircleRequestButton } from "@/components/CircleRequestButton";
 import { Highlights } from "@/components/Highlights";
-import { ProfileFeed } from "@/components/ProfileFeed";
-import { feedPosts } from "@/lib/social/feed";
-import { db } from "@/lib/db/store";
+import { manifestPosts } from "@/lib/social/feed";
+import { manifests } from "@/lib/manifest/store";
 import { me } from "@/lib/social/me";
 import { social } from "@/lib/social/store";
 import { canSee, localDay, statsFrom } from "@/lib/social/aura";
@@ -15,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Perfil público de alguien. Los visitantes ven sus datos, aura y solo los
- * highlights de los vídeos que activó. Si eres tú, ves esa misma vista previa.
+ * highlights de las manifestaciones que activó. Si eres tú, ves esa misma vista previa.
  */
 export default async function UserPage({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;
@@ -31,7 +30,7 @@ export default async function UserPage({ params }: { params: Promise<{ handle: s
   const requestBtn = viewerId ? (
     <CircleRequestButton handle={profile.handle} initial={circleState} t={t.aura} className={btn} />
   ) : (
-    <Link href={`/entrar?next=/u/${profile.handle}`} className={btn}>{t.aura.requestJoin}</Link>
+    <Link href={`/login?next=/u/${profile.handle}`} className={btn}>{t.aura.requestJoin}</Link>
   );
 
   if (!(await canSee(profile, viewerId))) {
@@ -45,14 +44,14 @@ export default async function UserPage({ params }: { params: Promise<{ handle: s
     );
   }
 
-  const [views, projects, circle] = await Promise.all([
+  const [views, mine, circle] = await Promise.all([
     social.listViews(profile.userId),
-    db.listProjects(profile.userId),
+    manifests.list(profile.userId),
     social.listCircle(profile.userId),
   ]);
   const stats = statsFrom(views, localDay("UTC"));
-  // Siempre la vista de visitante: solo highlights de los vídeos activados.
-  const posts = feedPosts(projects, false);
+  // Siempre la vista de visitante: un highlight por cada manifestación que activó.
+  const posts = manifestPosts(mine);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 px-4 py-10 sm:px-6">
@@ -71,25 +70,19 @@ export default async function UserPage({ params }: { params: Promise<{ handle: s
         actions={
           owner ? (
             <>
-              <Link href="/perfil" className={btn}>← {t.aura.nav}</Link>
-              <Link href="/perfil/editar" className={btn}>{t.aura.editProfile}</Link>
+              <Link href="/profile" className={btn}>← {t.aura.nav}</Link>
+              <Link href="/profile/edit" className={btn}>{t.aura.editProfile}</Link>
             </>
           ) : (
             requestBtn
           )
         }
       />
-      {posts.length > 0 && <Highlights groups={posts} closeLabel={t.aura.close} aiLabel={t.aiLabel} />}
-      <div>
-        <p className="t-sub border-b border-[var(--color-hairline)] pb-3 text-center font-medium">{t.aura.posts}</p>
-        <div className="mt-4">
-          {posts.length ? (
-            <ProfileFeed posts={posts} owner={false} labels={{ close: t.aura.close, onlyYou: t.aura.onlyYou, scenes: t.aura.scenes, ai: t.aiLabel }} />
-          ) : (
-            <p className="t-sub py-8 text-center text-[var(--color-label-2)]">{t.aura.noPosts}</p>
-          )}
-        </div>
-      </div>
+      {posts.length > 0 ? (
+        <Highlights groups={posts} closeLabel={t.aura.close} aiLabel={t.aiLabel} />
+      ) : (
+        <p className="t-sub py-8 text-center text-[var(--color-label-2)]">{t.aura.noPosts}</p>
+      )}
     </div>
   );
 }

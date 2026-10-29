@@ -32,12 +32,12 @@ export function LogoMark({ size = 24, className }: { size?: number; className?: 
   );
 }
 
-/** `compact`: en móvil solo el símbolo, para dejar sitio a la navegación. */
+/** El nombre se ve siempre; `compact` lo hace algo más pequeño en el móvil para dejar sitio a la navegación. */
 export function Logo({ size = 24, compact = false }: { size?: number; compact?: boolean }) {
   return (
     <span className="inline-flex items-center gap-2">
       <LogoMark size={size} />
-      <span className={`text-[15px] font-semibold tracking-[-0.02em] text-[var(--color-label-1)] ${compact ? "hidden sm:inline" : ""}`}>ManifestLifeAI</span>
+      <span className={`font-semibold tracking-[-0.02em] text-[var(--color-label-1)] ${compact ? "text-[13px] sm:text-[15px]" : "text-[15px]"}`}>ManifestLifeAI</span>
     </span>
   );
 }

@@ -73,6 +73,19 @@ Reglas de las escenas (sceneBriefs):
 - Si el usuario menciona un país o ciudad, respeta los detalles locales (por
   ejemplo, en Australia o Reino Unido el volante va a la derecha).
 - Una escena por afirmación, en el mismo orden.
+- Contenido siempre apto para todo público: todas las personas vestidas por
+  completo y con ropa discreta (nada de ropa interior, bañadores reveladores
+  ni poses sugerentes), sin besos apasionados ni intimidad; el cariño se
+  muestra con abrazos, risas o la mano en el hombro.
+- Los niños solo aparecen en momentos familiares cotidianos, vestidos, junto a
+  su familia. Nunca solos con un adulto que no es su familia.
+- Nunca: violencia, armas, sangre, drogas, alcohol en exceso, símbolos de odio,
+  ni nada que humille o discrimine a una persona o grupo.
+- Nunca personas famosas o reales con su nombre ni marcas o logos: describe
+  a la gente de forma genérica.
+- Si un deseo pide algo de esto, escribe la escena con la versión sana del
+  mismo deseo (por ejemplo, "sentirme atractiva" → ella elegante y segura en
+  una cena con amigas).
 - En tercera persona. Solo usa una escena en primera persona si el deseo lo
   pide de forma natural; esas empiezan por "POV:" y muestran solo las manos.
 

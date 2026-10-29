@@ -1,3 +1,5 @@
+import { speakLinesCached } from "./voice-cache";
+import { appBase } from "./hosts";
 import { providers } from "./ai";
 import { db } from "./db/store";
 import { applyCast, buildScenes, layoutTimeline, narrationText, sceneCast } from "./script-engine";
@@ -8,6 +10,7 @@ import { localPathForMediaUrl } from "./paths";
 import { rm } from "node:fs/promises";
 import { dropIntermediates, offloadProject, sweepStorage } from "./cleanup";
 import { makeHighlights } from "./highlights";
+import { extractManifestations } from "./manifest/extract";
 import { nextQuoteId } from "./quotes";
 import { sendVideoReady } from "./email";
 import { isAnimated, type Person, type PipelineStep, type Project, type Scene, type StepId } from "./types";
@@ -223,7 +226,7 @@ export async function runPipeline(projectId: string): Promise<void> {
     const glass = !!providers.voice.speakLines && (await canRenderGlass());
     let lineUrls: Record<string, string> | undefined;
     if (glass) {
-      const out = await providers.voice.speakLines!({
+      const out = await speakLinesCached({
         lines: voiceLines(start.locale, start.id, script.affirmations, quoteId),
         projectId,
         locale: start.locale,
@@ -271,8 +274,8 @@ export async function runPipeline(projectId: string): Promise<void> {
       const withImages = (await db.getProject(projectId))!.scenes;
       let motionCents = 0;
 
-      // Kling tarda minutos por clip: en Elevado se piden más a la vez.
-      const parallel = start.tier === "elevated" ? 5 : 2;
+      // Cada clip tarda minutos: se piden todos a la vez (fal encola si se pasa del límite de la cuenta).
+      const parallel = Number(process.env.FAL_VIDEO_PARALLEL ?? (start.tier === "elevated" ? 5 : 3));
       await mapWithLimit(withImages, parallel, async (scene) => {
         if (!scene.imageUrl) return;
         const brief = plainBrief(script.sceneBriefs[withImages.indexOf(scene)] ?? "");
@@ -331,11 +334,16 @@ export async function runPipeline(projectId: string): Promise<void> {
         to: owner.email,
         locale: start.locale,
         title: script.title || start.title,
-        url: `${process.env.SITE_URL ?? ""}/video/${projectId}`,
+        url: `${appBase()}/video/${projectId}`,
       });
     }
     // Las fotos de otras personas solo hacían falta para las escenas.
     await deletePeoplePhotos(people);
+    // Cada escena queda también como manifestación reutilizable (antes de tirar los clips).
+    if (lineUrls) {
+      const done = await db.getProject(projectId);
+      if (done) await extractManifestations(done, lineUrls).catch((err) => console.error("[manifest] extraer", projectId, err));
+    }
     // Con el vídeo montado, los clips sueltos sobran y ocupan mucho.
     if (lineUrls) {
       const done = await db.getProject(projectId);

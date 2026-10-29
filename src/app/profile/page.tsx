@@ -6,8 +6,9 @@ import { ShareProfileButton } from "@/components/ShareProfileButton";
 import { CirclePanel } from "@/components/CirclePanel";
 import { PeopleSearch } from "@/components/PeopleSearch";
 import { Highlights } from "@/components/Highlights";
-import { ProfileFeed } from "@/components/ProfileFeed";
-import { feedPosts } from "@/lib/social/feed";
+import { manifestPosts } from "@/lib/social/feed";
+import { manifests } from "@/lib/manifest/store";
+import { ManifestationGrid } from "@/components/ManifestationGrid";
 import { db } from "@/lib/db/store";
 import { me } from "@/lib/social/me";
 import { social } from "@/lib/social/store";
@@ -18,24 +19,25 @@ import type { Locale } from "@/lib/i18n/locale";
 
 export const dynamic = "force-dynamic";
 
-type Tab = "posts" | "today" | "circle";
-const TABS: Tab[] = ["posts", "today", "circle"];
+type Tab = "manifest" | "today" | "circle";
+const TABS: Tab[] = ["manifest", "today", "circle"];
 
-/** Tu perfil: cabecera, highlights y pestañas (publicaciones, hoy, círculo). Los ajustes están en /perfil/editar. */
+/** Tu perfil: cabecera, highlights y pestañas (publicaciones, hoy, círculo). Los ajustes están en /profile/edit. */
 export default async function PerfilPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const who = await me();
-  if (!who) redirect("/entrar?next=/perfil");
+  if (!who) redirect("/login?next=/profile");
   const { tab: rawTab } = await searchParams;
-  const tab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : "posts";
+  const tab: Tab = TABS.includes(rawTab as Tab) ? (rawTab as Tab) : "manifest";
   const { t, locale } = await getDictionary();
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
 
-  const [views, projects, circle, memberships] = await Promise.all([
+  const [views, projects, circle, memberships, mine] = await Promise.all([
     social.listViews(who.user.id),
     db.listProjects(who.user.id),
     social.listCircle(who.user.id),
     social.listMemberships(who.user.id),
+    manifests.list(who.user.id),
   ]);
   // Sin zona horaria del navegador en el servidor: se usa UTC para "hoy" en la página.
   const stats = statsFrom(views, localDay("UTC"));
@@ -45,25 +47,25 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
     return { userId: id, handle: p?.handle ?? "", displayName: p?.displayName ?? "", avatarUrl: p?.avatarUrl };
   };
   const ready = projects.filter((p) => p.status === "ready");
-  const posts = feedPosts(ready, true);
-  const groups = posts.filter((p) => p.shared);
+  // Arriba, los mismos círculos que ven los demás: las manifestaciones que muestra.
+  const groups = manifestPosts(mine);
   const members = circle.filter((c) => c.status === "accepted");
   const pending = circle.filter((c) => c.status === "pending");
   const btn = "interactive t-sub flex-1 rounded-[var(--radius-md)] bg-white/10 px-4 py-2 text-center font-medium hover:bg-white/15";
-  const tabLabel: Record<Tab, string> = { posts: t.aura.posts, today: t.aura.tabToday, circle: t.aura.circleShort };
+  const tabLabel: Record<Tab, string> = { manifest: t.manifest.tab, today: t.aura.tabToday, circle: t.aura.circleShort };
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 px-4 py-10 sm:px-6">
       <ProfileHeader
         profile={who.profile}
         stats={stats}
-        posts={posts.length}
+        posts={groups.length}
         circle={members.length}
         t={t}
         locale={locale as Locale}
         actions={
           <>
-            <Link href="/perfil/editar" className={btn}>{t.aura.editProfile}</Link>
+            <Link href="/profile/edit" className={btn}>{t.aura.editProfile}</Link>
             {who.profile.visibility === "private" ? (
               <Link href={`/u/${who.profile.handle}`} className={btn}>{t.aura.viewAsVisitor}</Link>
             ) : (
@@ -76,12 +78,12 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
       {who.profile.visibility === "private" && (
         <p className="t-caption rounded-[var(--radius-md)] bg-white/[0.04] px-4 py-3 text-[var(--color-label-2)]">
           🔒 {t.aura.privateNote}{" "}
-          <Link href="/perfil/editar" className="underline">{t.aura.change}</Link>
+          <Link href="/profile/edit" className="underline">{t.aura.change}</Link>
         </p>
       )}
 
       {pending.length > 0 && tab !== "circle" && (
-        <Link href="/perfil?tab=circle" className="t-sub block rounded-[var(--radius-md)] border border-[var(--color-hairline-strong)] px-4 py-3">
+        <Link href="/profile?tab=circle" className="t-sub block rounded-[var(--radius-md)] border border-[var(--color-hairline-strong)] px-4 py-3">
           👋 {fill(t.aura.pendingRequests, { n: pending.length })}
         </Link>
       )}
@@ -92,7 +94,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
         {TABS.map((k) => (
           <Link
             key={k}
-            href={k === "posts" ? "/perfil" : `/perfil?tab=${k}`}
+            href={k === "manifest" ? "/profile" : `/profile?tab=${k}`}
             scroll={false}
             className={`t-sub flex-1 border-b-2 pb-3 text-center ${tab === k ? "border-white font-medium text-[var(--color-label-1)]" : "border-transparent text-[var(--color-label-3)]"}`}
           >
@@ -102,20 +104,21 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
         ))}
       </nav>
 
-      {tab === "posts" &&
-        (posts.length ? (
-          <div>
-            <ProfileFeed posts={posts} owner labels={{ close: t.aura.close, onlyYou: t.aura.onlyYou, scenes: t.aura.scenes, create: t.nav.newVisualization, ai: t.aiLabel }} />
-            <p className="t-caption mt-3 text-[var(--color-label-3)]">{t.aura.feedHintOwner}</p>
-          </div>
-        ) : (
-          <div className="py-8 text-center">
-            <p className="t-sub text-[var(--color-label-2)]">{t.aura.noManifestations}</p>
-            <Link href="/crear" className="interactive mt-4 inline-block rounded-full bg-white px-5 py-2 text-[14px] font-medium text-black">
-              {t.aura.createFirst}
-            </Link>
-          </div>
-        ))}
+      {tab === "manifest" && (
+        <div className="flex gap-2">
+          <Link href="/new" className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 text-center font-medium text-black">+ {t.manifest.newButton}</Link>
+          {mine.some((x) => x.status === "ready") && (
+            <Link href="/my-video" className="interactive t-sub flex-1 rounded-full border border-[var(--color-hairline-strong)] px-4 py-2 text-center font-medium">▶ {t.manifest.composeButton}</Link>
+          )}
+        </div>
+      )}
+      {tab === "manifest" && (
+        <ManifestationGrid
+          initial={mine}
+          locale={locale}
+          t={{ edit: t.manifest.edit, save: t.manifest.save, cancel: t.manifest.cancel, titleLabel: t.manifest.titleField, phraseLabel: t.manifest.phraseField, editHint: t.manifest.editHint, textBlocked: t.aura.errors.text_blocked, manifested: t.manifest.manifested, markManifested: t.manifest.markManifested, unmark: t.manifest.unmark, onProfile: t.manifest.onProfile, profileHint: t.manifest.profileHint, showOnProfile: t.manifest.showOnProfile, hideFromProfile: t.manifest.hideFromProfile, generating: t.manifest.generating, failed: t.manifest.failed, close: t.aura.close, empty: t.manifest.empty }}
+        />
+      )}
 
       {tab === "today" && (
         <section>

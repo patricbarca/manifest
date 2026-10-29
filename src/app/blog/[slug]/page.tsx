@@ -96,7 +96,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
       <section className="card mt-6 rounded-[var(--radius-lg)] p-8 text-center">
         <h2 className="t-headline">{t.blog.ctaTitle}</h2>
         <p className="t-sub mx-auto mt-2 max-w-md text-[var(--color-label-2)]">{t.blog.ctaBody}</p>
-        <Link href="/crear" className="interactive mt-6 inline-block rounded-full bg-white px-6 py-2.5 text-[15px] font-medium text-black hover:bg-white/90">
+        <Link href="/create" className="interactive mt-6 inline-block rounded-full bg-white px-6 py-2.5 text-[15px] font-medium text-black hover:bg-white/90">
           {t.blog.ctaButton}
         </Link>
       </section>

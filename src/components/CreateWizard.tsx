@@ -13,24 +13,17 @@ import type {
   VisualStyle,
   VoiceTone,
 } from "@/lib/types";
-import { PRODUCTS, formatUsd, priceUsd } from "@/lib/pricing";
+import { formatUsd } from "@/lib/pricing";
+import { PALETTE_SWATCH } from "@/lib/palettes";
 import { fill, type Dictionary, type Locale } from "@/lib/i18n";
 import { Icon } from "./Icon";
 
 /** Muestra de cada paleta: mismos colores que el fondo animado del vídeo. */
-const PALETTE_SWATCH: Record<Palette, string> = {
-  dusk: "radial-gradient(circle at 30% 20%, #f6b296, transparent 60%), radial-gradient(circle at 70% 80%, #968adc, transparent 60%), #3a2a4a",
-  ocean: "radial-gradient(circle at 30% 20%, #6ec8dc, transparent 60%), radial-gradient(circle at 70% 80%, #5a6ec8, transparent 60%), #15304a",
-  sage: "radial-gradient(circle at 30% 20%, #dcd2aa, transparent 60%), radial-gradient(circle at 70% 80%, #82aa96, transparent 60%), #2a3a30",
-  rose: "radial-gradient(circle at 30% 20%, #facdbe, transparent 60%), radial-gradient(circle at 70% 80%, #c87896, transparent 60%), #4a2434",
-  lavender: "radial-gradient(circle at 30% 20%, #e6bef0, transparent 60%), radial-gradient(circle at 70% 80%, #8278d2, transparent 60%), #2c2650",
-  gold: "radial-gradient(circle at 30% 20%, #fae1aa, transparent 60%), radial-gradient(circle at 70% 80%, #be8c50, transparent 60%), #3a2c16",
-};
 
 /**
  * El asistente de creación.
  *
- * Se empieza por lo que la persona quiere manifestar, de 1 a 6 cosas, una por
+ * Se empieza por lo que la persona quiere manifestar, 3 deseos, una por
  * casilla: cada una se convierte en una imagen y una frase.
  *
  * El orden importa: primero se pregunta qué quiere la persona y solo después
@@ -53,7 +46,8 @@ const MAX_PERSON_PHOTOS = 3;
 type PersonDraft = { name: string; relation: string; photoUrls: string[] };
 
 /** Cuántas cosas se pueden manifestar en un vídeo: una imagen y una frase por cada una. */
-const MAX_DESIRES = 6;
+// Tres deseos: el vídeo de inicio trae 3 manifestaciones; luego se añaden de una en una.
+const MAX_DESIRES = 3;
 
 /** Correcciones que se arrastran de una reescritura a la siguiente. */
 const MAX_CORRECTIONS = 3;
@@ -65,6 +59,8 @@ type Props = {
   template?: Template;
   /** Vídeos gratis que le quedan. El primero lo invita la casa. */
   freeLeft: number;
+  /** Precio por calidad, calculado en el servidor (TIER_PRICES). */
+  prices: Record<Tier, number>;
   /** Producto elegido antes de entrar (desde la ficha de una plantilla). */
   initialTier?: Tier;
   /** El diccionario llega por prop: este componente corre en el cliente. */
@@ -72,7 +68,7 @@ type Props = {
   locale: Locale;
 };
 
-export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, locale }: Props) {
+export function CreateWizard({ initialArea, template, freeLeft, prices, initialTier, t, locale }: Props) {
   const router = useRouter();
 
   const [step, setStep] = useState<number>(STEP.desires);
@@ -81,7 +77,8 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
   const area: LifeArea | undefined = template?.area ?? initialArea;
   // Con plantilla, sus frases son el punto de partida: se pueden editar.
   const [desires, setDesires] = useState<string[]>(
-    template ? template.affirmations[locale].slice(0, MAX_DESIRES) : [""],
+    // Siempre 3 casillas: el primer vídeo trae 3 escenas, una por deseo.
+    template ? template.affirmations[locale].slice(0, MAX_DESIRES) : Array(MAX_DESIRES).fill(""),
   );
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [palette, setPalette] = useState<Palette>("dusk");
@@ -119,14 +116,14 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
   const [fix, setFix] = useState("");
   const [corrections, setCorrections] = useState<string[]>([]);
 
-  const price = priceUsd(tier);
+  const price = prices[tier];
   const isFree = freeLeft > 0;
 
   const canContinue = useMemo(() => {
     if (step === STEP.desires) {
       const filled = desires.map((d) => d.trim()).filter(Boolean);
       return (
-        filled.length > 0 &&
+        filled.length === MAX_DESIRES &&
         filled.every((d) => d.length >= 3) &&
         filled.join(" ").length >= 8
       );
@@ -288,12 +285,13 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
   }
 
   /** Sube una foto y devuelve su URL, o undefined si falló (el error ya se muestra). */
-  async function sendPhoto(file: File, agreed: boolean): Promise<string | undefined> {
+  async function sendPhoto(file: File, agreed: boolean, self = false): Promise<string | undefined> {
     setError(undefined);
     const body = new FormData();
     body.append("selfie", file);
     body.append("consent", String(agreed));
     body.append("biometric", String(bioConsent));
+    if (self) body.append("kind", "self");
     try {
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json();
@@ -307,7 +305,7 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
 
   async function upload(file: File) {
     setUploading(true);
-    const url = await sendPhoto(file, consent);
+    const url = await sendPhoto(file, consent, true);
     if (url) setPhotoUrls((prev) => [...prev, url].slice(0, 4));
     setUploading(false);
   }
@@ -393,31 +391,14 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
                   value={d}
                   onChange={(e) => setDesire(i, e.target.value)}
                   maxLength={200}
-                  autoFocus={i === desires.length - 1 && i > 0}
+                  autoFocus={i === 0}
                   placeholder={t.create.desirePlaceholders[i % t.create.desirePlaceholders.length]}
                   className="t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none transition-colors duration-200 placeholder:text-[var(--color-label-4)] focus:border-[var(--color-hairline-strong)]"
                 />
-                {desires.length > 1 && (
-                  <button
-                    onClick={() => setDesires((prev) => prev.filter((_, k) => k !== i))}
-                    aria-label={t.create.removeDesire}
-                    className="t-sub shrink-0 px-2 text-[var(--color-label-3)] hover:text-[var(--color-label-1)]"
-                  >
-                    ×
-                  </button>
-                )}
               </div>
             ))}
           </div>
 
-          {desires.length < MAX_DESIRES && (
-            <button
-              onClick={() => setDesires((prev) => [...prev, ""])}
-              className="interactive t-sub mt-4 ml-7 rounded-full border border-[var(--color-hairline)] px-4 py-2 text-[var(--color-label-2)] hover:text-[var(--color-label-1)]"
-            >
-              {t.create.addDesire}
-            </button>
-          )}
           <p className="t-caption mt-3 ml-7 text-[var(--color-label-3)]">
             {fill(t.create.desiresCount, { n: cleanDesires.length, max: MAX_DESIRES })}
           </p>
@@ -545,7 +526,7 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
               />
               <span>
                 {t.biometricConsent}{" "}
-                <a href="/privacidad" target="_blank" className="underline">{t.biometricMore}</a>
+                <a href="/privacy" target="_blank" className="underline">{t.biometricMore}</a>
               </span>
             </label>
 
@@ -703,7 +684,7 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
                   onClick={() => setTier(id)}
                   title={t.products[id].name}
                   sub={t.products[id].tagline}
-                  price={formatUsd(PRODUCTS[id].priceUsd)}
+                  price={formatUsd(prices[id])}
                 />
               ))}
             </div>
@@ -865,7 +846,7 @@ export function CreateWizard({ initialArea, template, freeLeft, initialTier, t, 
           <input type="checkbox" checked={waiver} onChange={(e) => setWaiver(e.target.checked)} className="mt-[2px] h-4 w-4 shrink-0 accent-white" />
           <span>
             {t.create.waiver}{" "}
-            <a href="/reembolsos" target="_blank" className="underline">{t.create.waiverMore}</a>
+            <a href="/refunds" target="_blank" className="underline">{t.create.waiverMore}</a>
           </span>
         </label>
       )}

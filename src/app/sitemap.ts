@@ -12,7 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Fecha real del último cambio de esas páginas. Si cada lectura dijera
   // "hoy", Google dejaría de fiarse del lastmod. Actualízala al cambiarlas.
   const now = new Date(PAGES_UPDATED);
-  const pages = ["", "/market", "/precios", "/blog", "/privacidad", "/terminos", "/reembolsos"].map((path) => ({
+  const pages = ["", "/market", "/pricing", "/blog", "/privacy", "/terms", "/refunds"].map((path) => ({
     url: `${SITE_URL}${path}`,
     lastModified: now,
     changeFrequency: "weekly" as const,

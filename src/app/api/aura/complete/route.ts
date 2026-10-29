@@ -10,7 +10,8 @@ export const runtime = "nodejs";
 
 /**
  * Terminó de ver (llegó al 80 %). Da +10 aura si: el vídeo es suyo, empezó a
- * verlo hace al menos el 80 % de su duración (con margen) y hoy aún no contaba.
+ * verlo hace al menos el 80 % de su duración (con margen) y hoy aún no ganó
+ * aura viendo ningún vídeo (una vez al día, no por vídeo: fabricar vídeos no suma).
  */
 export async function POST(request: Request) {
   const who = await me();
@@ -32,7 +33,8 @@ export async function POST(request: Request) {
 
   await rememberTz(who.user, body.data.tz);
   const day = localDay(body.data.tz);
-  const awarded = await social.addView({ userId: who.user.id, projectId: project.id, day, points: AURA_PER_VIEW });
+  const today = (await social.listViews(who.user.id)).some((v) => v.day === day && v.points === AURA_PER_VIEW);
+  const awarded = !today && (await social.addView({ userId: who.user.id, projectId: project.id, day, points: AURA_PER_VIEW }));
   const stats = statsFrom(await social.listViews(who.user.id), day);
   return NextResponse.json({ awarded, points: awarded ? AURA_PER_VIEW : 0, aura: stats.aura, streak: stats.streak, level: levelFor(stats.aura).index });
 }
