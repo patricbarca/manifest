@@ -60,6 +60,9 @@ export const es: Dictionary = {
       "Fotos en grupo o muy de lejos",
     ],
     needConsent: "Marca las dos casillas de abajo para poder subir fotos.",
+    example: "Ejemplo",
+    badLabels: ["De perfil y lejos", "Gafas y gorra", "Contraluz", "Filtros", "En grupo"],
+    aiNote: "Ejemplos con una persona ficticia generada con IA.",
   },
   cookies: {
     text: "Usamos cookies de Google y TikTok para saber qué anuncios funcionan. Solo si aceptas.",

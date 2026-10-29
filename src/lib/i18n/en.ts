@@ -61,6 +61,9 @@ export const en = {
       "Group photos or taken from far away",
     ],
     needConsent: "Tick both boxes below to upload photos.",
+    example: "Example",
+    badLabels: ["Profile, far away", "Sunglasses & cap", "Backlit", "Filters", "Group"],
+    aiNote: "Examples show a fictional AI-generated person.",
   },
   cookies: {
     text: "We use Google and TikTok cookies to know which ads work. Only if you accept.",
