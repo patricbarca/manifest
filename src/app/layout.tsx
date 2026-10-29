@@ -10,6 +10,8 @@ import { Logo } from "@/components/Logo";
 import { authUser } from "@/lib/supabase/server";
 import { authEnabled } from "@/lib/supabase/config";
 import { getDictionary } from "@/lib/i18n/server";
+import { trackingConfig } from "@/lib/tracking";
+import { CookieSettingsLink, Tracking } from "@/components/Tracking";
 
 /** Correo de contacto público: solo se muestra si está configurado. */
 const CONTACT = process.env.CONTACT_EMAIL;
@@ -39,6 +41,7 @@ export default async function RootLayout({
   const splitHosts = !!process.env.APP_URL;
   const app = splitHosts && !inApp ? appBase() : ""; // enlaces de la web a la app
   const site = inApp ? siteBase() : ""; // enlaces de la app a la web
+  const tracking = trackingConfig();
 
   // Menú de la web pública (sin "Crear": ese es el botón de la derecha, que lleva a la app).
   const nav = [
@@ -126,6 +129,7 @@ export default async function RootLayout({
         </header>
 
         <main className="relative z-10">{children}</main>
+        {tracking && <Tracking cfg={tracking} t={t.cookies} privacyHref={`${site}/privacy`} />}
 
         <footer className={`relative z-10 ${inApp ? "mt-16" : "mt-32"} border-t border-[var(--color-hairline)]`}>
           <div className="mx-auto flex max-w-[1120px] flex-col gap-5 px-6 py-12 sm:flex-row sm:items-start sm:justify-between">
@@ -143,6 +147,7 @@ export default async function RootLayout({
                     {l.label}
                   </a>
                 ))}
+                {tracking && <CookieSettingsLink label={t.cookies.settings} domain={tracking.cookieDomain} />}
               </nav>
               <p className="t-caption text-[var(--color-label-3)]">
                 © {new Date().getFullYear()} ManifestLifeAI

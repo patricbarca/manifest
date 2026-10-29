@@ -292,6 +292,8 @@ export interface Project {
   voice?: string;
   /** Sesión de Stripe Checkout con la que se pagó. */
   stripeSessionId?: string;
+  /** De qué anuncio vino (utm_*, gclid, ttclid), si aceptó las cookies. */
+  attribution?: Record<string, string>;
   /** Frase de apertura elegida para este vídeo (id de lib/quotes). */
   quoteId?: string;
   /** Veces que se relanzó tras un reinicio del servidor. */

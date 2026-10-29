@@ -40,7 +40,8 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
               "Las fotos que subes de ti y, si las añades, de otras personas, con su nombre y relación contigo.",
               "Lo que escribes: tus deseos, tus respuestas y tus correcciones al guion.",
               "Lo que generamos para ti: guion, imágenes, clips, voz y el vídeo final.",
-              "Un identificador anónimo en una cookie, para saber qué vídeos son tuyos. No usamos cookies de publicidad ni de analítica de terceros.",
+              "Un identificador anónimo en una cookie, para saber qué vídeos son tuyos.",
+              "Solo si lo aceptas en el aviso de cookies: cookies de Google Ads y TikTok para medir qué anuncios traen compras, y el anuncio del que vienes (campaña y su identificador de clic) durante 90 días. Si las rechazas, no se carga nada de terceros. Puedes cambiar tu elección con el enlace «Cookies» del pie de página.",
               "Si pagas, los datos de pago los procesa Stripe; nosotros no vemos ni guardamos el número de tu tarjeta.",
               "Si tienes cuenta: tu perfil (nombre visible, nombre de usuario), los días en que ves tus vídeos (para calcular tu aura, nivel y racha) y las personas de tu círculo. Si los añades, tu foto de perfil, descripción, intención, enlace y ubicación. Tu perfil es privado salvo que elijas mostrarlo a tu círculo o a todo el mundo; entonces los demás ven esos datos, tu aura, nivel, racha y logros, y los highlights (escenas animadas cortas, sin sonido, en las que puede salir tu cara) de los vídeos que tú actives uno a uno. Nunca tus vídeos completos ni tus frases.",
             ] },
@@ -49,7 +50,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
               "No usamos tus fotos ni tus textos para entrenar modelos de IA, no las usamos para identificarte y no las vendemos.",
             ] },
             { h: "Con quién se comparten", p: [
-              "Con los proveedores técnicos imprescindibles para generar el vídeo: fal.ai (que ejecuta los modelos de imagen, animación, voz y texto, entre ellos ElevenLabs, MiniMax, ByteDance y Anthropic a través de OpenRouter), Railway (alojamiento de la web y los ficheros) y Stripe (pagos). Cada uno trata los datos según sus propias políticas y puede conservar copias temporales. Las fotos que subes (también la de perfil) y los textos que escribes pasan además un filtro automático de contenido de fal.ai para impedir contenido sexual, de odio o violento.",
+              "Con los proveedores técnicos imprescindibles para generar el vídeo: fal.ai (que ejecuta los modelos de imagen, animación, voz y texto, entre ellos ElevenLabs, MiniMax, ByteDance y Anthropic a través de OpenRouter), Railway (alojamiento de la web y los ficheros) y Stripe (pagos). Si aceptas las cookies de publicidad, también Google y TikTok reciben que has visitado la web o comprado (nunca tus fotos, deseos ni vídeos). Cada uno trata los datos según sus propias políticas y puede conservar copias temporales. Las fotos que subes (también la de perfil) y los textos que escribes pasan además un filtro automático de contenido de fal.ai para impedir contenido sexual, de odio o violento.",
             ] },
             { h: "Cuánto tiempo", p: [
               "Las fotos de otras personas se borran en cuanto tu vídeo está listo.",
@@ -68,7 +69,8 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
               "The photos you upload of yourself and, if you add them, of other people, with their name and relationship to you.",
               "What you write: your desires, your answers and your corrections to the script.",
               "What we generate for you: script, images, clips, voice and the final video.",
-              "An anonymous identifier in a cookie, so we know which videos are yours. We don't use third-party advertising or analytics cookies.",
+              "An anonymous identifier in a cookie, so we know which videos are yours.",
+              "Only if you accept in the cookie notice: Google Ads and TikTok cookies to measure which ads lead to purchases, and the ad you came from (campaign and its click ID) for 90 days. If you decline, nothing from third parties is loaded. You can change your choice with the “Cookies” link in the footer.",
               "If you pay, payment details are processed by Stripe; we never see or store your card number.",
               "If you have an account: your profile (display name, username), the days you watch your videos (to calculate your aura, level and streak) and the people in your circle. If you add them, your profile photo, bio, intention, link and location. Your profile is private unless you choose to show it to your circle or to everyone; then others see those details, your aura, level, streak and achievements, and the highlights (short muted animated scenes, which may show your face) of the videos you switch on one by one. Never your full videos or your phrases.",
             ] },
@@ -77,7 +79,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
               "We don't use your photos or text to train AI models, we don't use them to identify you, and we don't sell them.",
             ] },
             { h: "Who we share it with", p: [
-              "With the technical providers needed to generate the video: fal.ai (which runs the image, animation, voice and text models, including ElevenLabs, MiniMax, ByteDance and Anthropic via OpenRouter), Railway (hosting for the site and files) and Stripe (payments). Each processes data under its own policies and may keep temporary copies. The photos you upload (including your profile photo) and the text you write also go through an automated content filter at fal.ai to prevent sexual, hateful or violent content.",
+              "With the technical providers needed to generate the video: fal.ai (which runs the image, animation, voice and text models, including ElevenLabs, MiniMax, ByteDance and Anthropic via OpenRouter), Railway (hosting for the site and files) and Stripe (payments). If you accept advertising cookies, Google and TikTok also learn that you visited the site or made a purchase (never your photos, desires or videos). Each processes data under its own policies and may keep temporary copies. The photos you upload (including your profile photo) and the text you write also go through an automated content filter at fal.ai to prevent sexual, hateful or violent content.",
             ] },
             { h: "How long", p: [
               "Other people's photos are deleted as soon as your video is ready.",

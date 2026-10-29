@@ -32,6 +32,13 @@ export const es: Dictionary = {
     seconds: "s",
     createAnother: "Crear otro",
   },
+  cookies: {
+    text: "Usamos cookies de Google y TikTok para saber qué anuncios funcionan. Solo si aceptas.",
+    accept: "Aceptar",
+    reject: "Rechazar",
+    more: "Más información",
+    settings: "Cookies",
+  },
   start: {
     title: "Mírate viviendo la vida que quieres.",
     lede: "Sube una selfie, escribe 3 deseos y recibe un vídeo guiado donde te ves viviéndolos, con tu cara, una voz que te guía y tus afirmaciones.",

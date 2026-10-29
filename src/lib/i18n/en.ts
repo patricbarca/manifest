@@ -33,6 +33,13 @@ export const en = {
     seconds: "s",
     createAnother: "Create another",
   },
+  cookies: {
+    text: "We use Google and TikTok cookies to know which ads work. Only if you accept.",
+    accept: "Accept",
+    reject: "Decline",
+    more: "Learn more",
+    settings: "Cookies",
+  },
   start: {
     title: "See yourself living the life you want.",
     lede: "Upload a selfie, write 3 desires and get a guided video where you see yourself living them, with your face, a voice that guides you and your affirmations.",
