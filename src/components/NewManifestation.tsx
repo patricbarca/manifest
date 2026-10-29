@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { trackEvent } from "@/lib/track-client";
 import { useState } from "react";
 import { AccessCodeForm } from "./AccessCodeForm";
 import type { Locale } from "@/lib/i18n/locale";
@@ -65,7 +66,10 @@ export function NewManifestation({
   async function buy(qty: number) {
     const res = await fetch("/api/credits", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ qty }) });
     const data = await res.json().catch(() => ({}));
-    if (res.ok && data.url) window.location.href = data.url;
+    if (res.ok && data.url) {
+      trackEvent({ name: "begin_checkout" });
+      window.location.href = data.url;
+    }
     else setError(t.errors[data.error] ?? t.errors.invalid);
   }
 

@@ -8,11 +8,14 @@ import { stripeEnabled } from "@/lib/stripe";
 import { VOICES } from "@/lib/voices";
 import { getDictionary } from "@/lib/i18n/server";
 import type { Locale } from "@/lib/i18n/locale";
+import { TrackPurchase } from "@/components/Tracking";
 
 export const dynamic = "force-dynamic";
 
 /** Nueva manifestación: escribe un deseo y se crea una escena animada tuya. */
-export default async function ManifestarPage() {
+export default async function ManifestarPage({ searchParams }: { searchParams: Promise<{ bought?: string; sid?: string }> }) {
+  const { bought, sid } = await searchParams;
+  const pack = creditPacks().find((p) => String(p.qty) === bought);
   const who = await me();
   if (!who) redirect("/login?next=/new");
   const { t, locale } = await getDictionary();
@@ -21,6 +24,7 @@ export default async function ManifestarPage() {
   const m = t.manifest;
   return (
     <div className="mx-auto max-w-xl space-y-6 px-4 py-10 sm:px-6">
+      {pack && sid?.startsWith("cs_") && <TrackPurchase id={sid.slice(0, 80)} value={pack.priceUsd} />}
       <div>
         <h1 className="t-title">{m.newTitle}</h1>
         <p className="t-sub mt-1 text-[var(--color-label-2)]">{m.newSub}</p>

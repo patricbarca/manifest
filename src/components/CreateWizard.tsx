@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { trackEvent } from "@/lib/track-client";
 import { useMemo, useState } from "react";
 import { PALETTES, TIERS, type Palette } from "@/lib/types";
 import type {
@@ -359,6 +360,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
       if (!res.ok) throw new Error(data.error ?? t.errors.createFailed);
       // Con pagos activos, la API devuelve la página de pago de Stripe.
       if (data.checkoutUrl) {
+        trackEvent({ name: "begin_checkout", id: data.project?.id });
         window.location.href = data.checkoutUrl;
         return;
       }

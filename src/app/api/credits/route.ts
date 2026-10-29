@@ -4,6 +4,7 @@ import { me } from "@/lib/social/me";
 import { creditPacks } from "@/lib/pricing";
 import { createCreditCheckout, siteOrigin, stripeEnabled } from "@/lib/stripe";
 import { getDictionary } from "@/lib/i18n/server";
+import { attributionMetadata, readAttribution } from "@/lib/tracking";
 
 export const runtime = "nodejs";
 
@@ -23,6 +24,7 @@ export async function POST(request: Request) {
     productName: `ManifestLifeAI · ${pack.qty} ${locale === "es" ? (pack.qty === 1 ? "manifestación" : "manifestaciones") : pack.qty === 1 ? "manifestation" : "manifestations"}`,
     locale,
     origin: siteOrigin(request),
+    extraMetadata: attributionMetadata(await readAttribution()),
   });
   return NextResponse.json({ url: session.url });
 }
