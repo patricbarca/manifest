@@ -30,7 +30,9 @@ function fal(): FalClient {
 
 async function run<T>(endpoint: string, input: Record<string, unknown>): Promise<T> {
   try {
-    const res = await fal().subscribe(endpoint, { input, logs: false });
+    // Lo que genera fal (imágenes con su cara, clips, voces) caduca allí en 1 día:
+    // nosotros lo copiamos a nuestro almacenamiento al momento.
+    const res = await fal().subscribe(endpoint, { input, logs: false, storageSettings: { expiresIn: FAL_EXPIRES } });
     return res.data as T;
   } catch (err) {
     // fal responde 422 content_policy_violation si su filtro (o el del modelo)
@@ -56,21 +58,29 @@ const MIME: Record<string, string> = {
  *
  * Así el modelo no depende de que nuestra app sea alcanzable desde fuera, y
  * no mandamos fotos de varios MB incrustadas en base64. Se cachea por ruta
- * mientras dure el proceso: las 6 escenas reutilizan las mismas fotos.
+ * unas horas: las escenas de un vídeo reutilizan las mismas fotos.
+ *
+ * Privacidad: las selfies son datos biométricos. En fal caducan en 1 día
+ * (FAL_STORAGE_EXPIRES, en segundos o "1h"/"1d"); antes la URL se renueva.
  */
-const uploads = new Map<string, Promise<string>>();
+const FAL_EXPIRES = ((): "1h" | "1d" | "7d" | number => {
+  const v = process.env.FAL_STORAGE_EXPIRES;
+  if (v === "1h" || v === "1d" || v === "7d") return v;
+  return v && Number(v) > 0 ? Number(v) : "1d";
+})();
+const REUSE_MS = 6 * 60 * 60 * 1000;
+const uploads = new Map<string, { at: number; url: Promise<string> }>();
 
 export function falUpload(absPath: string): Promise<string> {
-  let p = uploads.get(absPath);
-  if (!p) {
-    p = (async () => {
-      const buf = await readFile(absPath);
-      const type = MIME[path.extname(absPath).toLowerCase()] ?? "application/octet-stream";
-      return fal().storage.upload(new Blob([new Uint8Array(buf)], { type }));
-    })();
-    uploads.set(absPath, p);
-    p.catch(() => uploads.delete(absPath));
-  }
+  const hit = uploads.get(absPath);
+  if (hit && Date.now() - hit.at < REUSE_MS) return hit.url;
+  const p = (async () => {
+    const buf = await readFile(absPath);
+    const type = MIME[path.extname(absPath).toLowerCase()] ?? "application/octet-stream";
+    return fal().storage.upload(new Blob([new Uint8Array(buf)], { type }), { lifecycle: { expiresIn: FAL_EXPIRES } });
+  })();
+  uploads.set(absPath, { at: Date.now(), url: p });
+  p.catch(() => uploads.delete(absPath));
   return p;
 }
 
