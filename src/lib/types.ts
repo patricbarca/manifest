@@ -135,6 +135,14 @@ export interface Manifestation {
   onProfile?: boolean;
   /** Ajuste que pidió al rehacerla ("camisa blanca", "sin texto en la pantalla"). */
   redoNote?: string;
+  /** Editar escena: imagen nueva aún sin animar (la animación actual sigue hasta que la anime). */
+  draftImageUrl?: string;
+  /** El cambio que pidió para esa imagen. */
+  draftNote?: string;
+  /** Cambios de imagen hechos desde la última animación (máximo 3). */
+  draftTries?: number;
+  /** En cola solo para animar el borrador (sin guion ni imagen nuevos). */
+  animateOnly?: boolean;
   /** Cuándo la marcó como cumplida. */
   manifestedAt?: number;
   /** Proyecto del que salió, si nació dentro de un vídeo completo. */

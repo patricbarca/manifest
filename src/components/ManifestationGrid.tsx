@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import type { Manifestation } from "@/lib/types";
 
-type Labels = { redo: Record<string, string>; remove: Record<string, string>; edit: string; save: string; cancel: string; titleLabel: string; phraseLabel: string; editHint: string; textBlocked: string; manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; failed: string; close: string; empty: string };
+type SceneEditLabels = { open: string; hint: string; placeholder: string; change: string; changing: string; current: string; next: string; left: string; animate: string; animatePaid: string; animateHint: string; discard: string; errors: Record<string, string> };
+type Labels = { redo: Record<string, string>; remove: Record<string, string>; sceneEdit: SceneEditLabels; edit: string; save: string; cancel: string; titleLabel: string; phraseLabel: string; editHint: string; textBlocked: string; manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; failed: string; close: string; empty: string };
 
 /**
  * Tus manifestaciones, una por tarjeta. Al tocar se ve su escena; desde ahí
@@ -19,6 +20,9 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
   const [redoNote, setRedoNote] = useState("");
   const [redoBusy, setRedoBusy] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const [sceneOpen, setSceneOpen] = useState(false);
+  const [sceneNote, setSceneNote] = useState("");
+  const [sceneBusy, setSceneBusy] = useState(false);
   const pending = items.some((m) => m.status === "queued" || m.status === "generating");
 
   // Mientras alguna se está creando, se refresca sola cada pocos segundos.
@@ -36,7 +40,48 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
     setEditing(false);
     setRedoing(false);
     setRemoving(false);
+    setSceneOpen(false);
     setErr(undefined);
+  }
+
+  function replace(m: Manifestation) {
+    setItems((xs) => xs.map((x) => (x.id === m.id ? m : x)));
+    setOpen(m);
+  }
+
+  // Editar escena, paso 1: imagen nueva a partir de la guardada (la animación actual no cambia).
+  async function changeImage(m: Manifestation) {
+    setSceneBusy(true);
+    setErr(undefined);
+    const res = await fetch(`/api/manifestations/${m.id}/edit-image`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ note: sceneNote.trim() }),
+    }).catch(() => null);
+    const data = await res?.json().catch(() => ({}));
+    setSceneBusy(false);
+    if (!res?.ok) return setErr(t.sceneEdit.errors[data?.error] ?? t.sceneEdit.errors.failed);
+    replace(data.manifestation);
+    setSceneNote("");
+  }
+
+  // Paso 2: animar la imagen nueva (1 manifestación). Paso alternativo: descartarla.
+  async function animateDraft(m: Manifestation) {
+    setSceneBusy(true);
+    setErr(undefined);
+    const res = await fetch(`/api/manifestations/${m.id}/animate`, { method: "POST" }).catch(() => null);
+    const data = await res?.json().catch(() => ({}));
+    setSceneBusy(false);
+    if (!res?.ok) return setErr(t.sceneEdit.errors[data?.error] ?? t.sceneEdit.errors.failed);
+    setItems((xs) => xs.map((x) => (x.id === m.id ? data.manifestation : x)));
+    show(null);
+  }
+
+  async function discardDraft(m: Manifestation) {
+    const res = await fetch(`/api/manifestations/${m.id}/edit-image`, { method: "DELETE" }).catch(() => null);
+    const data = await res?.json().catch(() => ({}));
+    if (!res?.ok) return setErr(t.sceneEdit.errors[data?.error] ?? t.sceneEdit.errors.failed);
+    replace(data.manifestation);
   }
 
   // Borrar para siempre: el registro y sus ficheros.
@@ -175,7 +220,56 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
               <button type="button" onClick={() => show(null)} className="t-sub rounded-full bg-white/10 px-4 py-2">{t.close}</button>
             </div>
             {open.highlight && <p className="t-caption mt-2 text-[var(--color-label-3)]">{t.profileHint}</p>}
-            {redoing ? (
+            {sceneOpen ? (
+              <div className="mt-4 space-y-2 rounded-[var(--radius-md)] border border-[var(--color-hairline)] p-3">
+                {open.draftImageUrl && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {[{ src: open.imageUrl, label: t.sceneEdit.current }, { src: open.draftImageUrl, label: t.sceneEdit.next }].map((x) => (
+                      <figure key={x.label}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={x.src} alt="" className="aspect-[9/16] w-full rounded-[var(--radius-ctl)] object-cover" />
+                        <figcaption className="t-caption mt-1 text-center text-[var(--color-label-3)]">{x.label}</figcaption>
+                      </figure>
+                    ))}
+                  </div>
+                )}
+                <p className="t-caption text-[var(--color-label-2)]">{t.sceneEdit.hint}</p>
+                {(open.draftTries ?? 0) < 3 && (
+                  <>
+                    <input
+                      value={sceneNote}
+                      onChange={(e) => setSceneNote(e.target.value)}
+                      maxLength={160}
+                      placeholder={t.sceneEdit.placeholder}
+                      className="t-caption w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-3 py-2 outline-none"
+                    />
+                    <button type="button" disabled={sceneBusy || sceneNote.trim().length < 2} onClick={() => changeImage(open)} className="interactive t-sub w-full rounded-full bg-white/10 px-4 py-2 font-medium disabled:opacity-40">
+                      {sceneBusy ? t.sceneEdit.changing : t.sceneEdit.change}
+                    </button>
+                  </>
+                )}
+                <p className="t-caption text-[var(--color-label-3)]">{t.sceneEdit.left.replace("{n}", String(Math.max(0, 3 - (open.draftTries ?? 0))))}</p>
+                {open.draftImageUrl && (
+                  <>
+                    <p className="t-caption text-[var(--color-label-2)]">{t.sceneEdit.animateHint}</p>
+                    <div className="flex gap-2">
+                      <button type="button" disabled={sceneBusy} onClick={() => animateDraft(open)} className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 font-medium text-black disabled:opacity-40">
+                        {paymentsOn ? t.sceneEdit.animatePaid : t.sceneEdit.animate}
+                      </button>
+                      <button type="button" disabled={sceneBusy} onClick={() => discardDraft(open)} className="t-sub rounded-full bg-white/10 px-4 py-2">{t.sceneEdit.discard}</button>
+                    </div>
+                  </>
+                )}
+                <button type="button" onClick={() => setSceneOpen(false)} className="t-caption underline text-[var(--color-label-3)]">{t.cancel}</button>
+              </div>
+            ) : (
+              !redoing && !removing && open.imageUrl && open.status === "ready" && (
+                <button type="button" onClick={() => { setSceneOpen(true); setSceneNote(""); setErr(undefined); }} className="t-caption mr-4 mt-3 underline text-[var(--color-label-1)]">
+                  ✎ {t.sceneEdit.open}
+                </button>
+              )
+            )}
+            {sceneOpen ? null : redoing ? (
               <div className="mt-4 space-y-2 rounded-[var(--radius-md)] border border-[var(--color-hairline)] p-3">
                 <p className="t-caption text-[var(--color-label-2)]">{paymentsOn ? t.redo.hintPaid : t.redo.hint}</p>
                 <input
@@ -197,7 +291,7 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
                 ↻ {t.redo.open}
               </button>
             )}
-            {err && (redoing || removing) && <p className="t-caption mt-2 text-rose-300">{err}</p>}
+            {err && (redoing || removing || sceneOpen) && <p className="t-caption mt-2 text-rose-300">{err}</p>}
             {removing ? (
               <div className="mt-4 space-y-2 rounded-[var(--radius-md)] border border-rose-400/40 p-3">
                 <p className="t-caption text-[var(--color-label-2)]">{t.remove.confirm}</p>
@@ -207,7 +301,7 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
                 </div>
               </div>
             ) : (
-              !redoing && (
+              !redoing && !sceneOpen && (
                 <button type="button" onClick={() => { setRemoving(true); setErr(undefined); }} className="t-caption ml-4 mt-3 underline text-rose-300/80">
                   {t.remove.open}
                 </button>
