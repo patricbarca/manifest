@@ -1,3 +1,4 @@
+import { ensureLocal } from "./manifest/compose";
 import { speakLinesCached } from "./voice-cache";
 import { appBase } from "./hosts";
 import { providers } from "./ai";
@@ -167,7 +168,7 @@ export async function runPipeline(projectId: string): Promise<void> {
     const timeline = layoutTimeline(script.affirmations, start.durationSec);
     const photos = photoAbsolutePaths(start);
     const people = start.people ?? [];
-    const scenes = buildScenes(
+    const built = buildScenes(
       script.sceneBriefs,
       start.style,
       photos.length > 0,
@@ -178,6 +179,16 @@ export async function runPipeline(projectId: string): Promise<void> {
       const withCast: Scene = { ...scene, cast: ids.length ? ids : undefined };
       return { ...withCast, prompt: applyCast(scene.prompt, castPlan(withCast, photos, people).ranges) };
     });
+    // Reintento tras un fallo o reinicio: se reutilizan las imágenes y los clips
+    // que ya se pagaron, si sus ficheros siguen ahí (local o en el bucket).
+    const prev = start.scenes ?? [];
+    const scenes: Scene[] = [];
+    for (const [i, s] of built.entries()) {
+      const old = prev.length === built.length ? prev[i] : undefined;
+      const imageUrl = old?.imageUrl && (await ensureLocal(old.imageUrl)) ? old.imageUrl : undefined;
+      const videoUrl = imageUrl && old?.videoUrl && (await ensureLocal(old.videoUrl)) ? old.videoUrl : undefined;
+      scenes.push({ ...s, imageUrl, videoUrl });
+    }
 
     await db.patchProject(projectId, (p) => ({
       ...p,
@@ -197,6 +208,7 @@ export async function runPipeline(projectId: string): Promise<void> {
     let imageCents = 0;
 
     await mapWithLimit(scenes, 3, async (scene) => {
+      if (scene.imageUrl) return; // ya hecha en un intento anterior
       const { refs } = castPlan(scene, photos, people);
       const out = await providers.image.generate({
         prompt: scene.prompt,
@@ -226,13 +238,18 @@ export async function runPipeline(projectId: string): Promise<void> {
     const glass = !!providers.voice.speakLines && (await canRenderGlass());
     let lineUrls: Record<string, string> | undefined;
     if (glass) {
-      const out = await speakLinesCached({
-        lines: voiceLines(start.locale, start.id, script.affirmations, quoteId),
-        projectId,
-        locale: start.locale,
-        voice: start.voice,
-      });
-      lineUrls = out.result;
+      const wanted = voiceLines(start.locale, start.id, script.affirmations, quoteId);
+      // Reintento: las frases ya grabadas (y que siguen ahí) no se vuelven a pagar.
+      const kept: Record<string, string> = {};
+      for (const k of Object.keys(wanted)) {
+        const url = start.voiceLines?.[k];
+        if (url && (await ensureLocal(url))) kept[k] = url;
+      }
+      const missing = Object.fromEntries(Object.entries(wanted).filter(([k]) => !kept[k]));
+      const out = Object.keys(missing).length
+        ? await speakLinesCached({ lines: missing, projectId, locale: start.locale, voice: start.voice })
+        : { result: {}, costCents: 0 };
+      lineUrls = { ...kept, ...out.result };
       await db.patchProject(projectId, (p) => ({ ...p, voiceLines: lineUrls, voiceMode: "file" }));
       await setStep(projectId, "voice", {
         status: "done",
@@ -277,7 +294,7 @@ export async function runPipeline(projectId: string): Promise<void> {
       // Cada clip tarda minutos: se piden todos a la vez (fal encola si se pasa del límite de la cuenta).
       const parallel = Number(process.env.FAL_VIDEO_PARALLEL ?? (start.tier === "elevated" ? 5 : 3));
       await mapWithLimit(withImages, parallel, async (scene) => {
-        if (!scene.imageUrl) return;
+        if (!scene.imageUrl || scene.videoUrl) return; // sin imagen, o ya animada antes
         const brief = plainBrief(script.sceneBriefs[withImages.indexOf(scene)] ?? "");
         const out = await providers.video.animate({
           imageUrl: scene.imageUrl,

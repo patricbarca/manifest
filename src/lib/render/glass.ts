@@ -125,7 +125,16 @@ export async function renderGlass(
   await writeFile(jobPath, JSON.stringify(job));
 
   try {
-    const r = await exec(pythonBin(), [SCRIPT, jobPath], 40 * 60_000);
+    let r = await exec(pythonBin(), [SCRIPT, jobPath], 40 * 60_000);
+    if (r.code !== 0) {
+      // Respaldo: si el montaje rápido falla, se repite con el método clásico
+      // (tramos uno a uno, sin caché). El error queda en los logs para corregirlo.
+      console.error(`[glass] montaje rápido falló en ${project.id}, se repite en modo clásico:`, r.err.slice(-1500));
+      await rm(tmpOut, { force: true });
+      const legacyPath = path.join(work, "job-legacy.json");
+      await writeFile(legacyPath, JSON.stringify({ ...job, legacy: true, work_dir: path.join(work, "legacy") }));
+      r = await exec(pythonBin(), [SCRIPT, legacyPath], 40 * 60_000);
+    }
     if (r.code !== 0) throw new Error(`El montaje falló (${r.code}): ${r.err.slice(-600)}`);
     const last = r.out.trim().split("\n").pop() ?? "{}";
     const info = JSON.parse(last) as { durationSec?: number };

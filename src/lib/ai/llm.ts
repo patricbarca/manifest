@@ -57,8 +57,15 @@ Reglas de las escenas (sceneBriefs):
 - Concretas y visuales: lugar, luz, acción, hora del día.
 - Describe solo lo que SÍ aparece. Nunca escribas negaciones ("no", "without",
   "never"): el modelo de imagen las ignora y pinta justo eso.
-- Nada de texto escrito en la escena: ni carteles, ni pantallas con letras, ni
-  logos, ni rótulos en coches. Una pantalla muestra gráficos o fotos.
+- Nada de texto ni números en la escena: ni carteles, ni pantallas con letras o
+  cifras, ni logos, ni rótulos en coches. Los modelos de imagen escriben mal los
+  números (un "1.000.000" sale "10000"). Si el deseo es una cifra (dinero,
+  ventas, kilos), muéstralo con la emoción y el contexto: celebrar con su gente,
+  brindar, un apretón de manos, una pantalla con gráficas abstractas que suben.
+- Ropa: describe prendas concretas, bien ajustadas y completas (camisa
+  abotonada, camiseta de cuello redondo, chaqueta), con colores sobrios y
+  favorecedores (blanco, beige, azul marino, gris), salvo que el usuario pida
+  otra cosa.
 - Si aparecen niños: edad concreta, rasgos de niño y sonrisa con la boca
   cerrada. Los adultos sí pueden sonreír enseñando los dientes.
 - Si llega una lista de personas con foto y un deseo nombra a alguna (por su

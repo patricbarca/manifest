@@ -63,7 +63,7 @@ def voice(k):
 LOOP = 20.0
 BG = f"{T}/bg.mp4"
 # El fondo solo depende de la paleta: se guarda hecho y se reutiliza entre vídeos.
-CACHE = JOB.get("cache_dir")
+CACHE = None if JOB.get("legacy") else JOB.get("cache_dir")
 
 
 # Paletas: el usuario elige una (o pasa la suya en el config como
@@ -351,11 +351,28 @@ def bg_in():
 
 
 pending = []  # tramos por codificar: se lanzan todos a la vez al final (cada uno es un ffmpeg aparte)
+# Modo clásico (respaldo): tramos uno a uno y el aviso de IA en una recodificación final.
+LEGACY = bool(JOB.get("legacy"))
+
+
+def run(cmd):
+    """Ejecuta ffmpeg y, si falla, incluye su error en la excepción (para los logs)."""
+    r = subprocess.run(cmd, capture_output=True, text=True)
+    if r.returncode != 0:
+        raise RuntimeError(f"ffmpeg {r.returncode}: {r.stderr.strip()[-800:]}")
 
 
 def encode(video_in, vf, clips, length, name):
     out = f"{T}/{len(segs):03d}_{name}.mp4"
     n_video = video_in.count("-i")
+    if LEGACY:
+        ag, ain = audio_graph(clips, n_video, length)
+        run([FF, "-y", "-loglevel", "error", *video_in, *ain, "-filter_complex", vf + ";" + ag,
+             "-map", "[vo]", "-map", "[ao]", "-t", f"{length:.2f}", "-r", str(FPS),
+             "-c:v", "libx264", "-preset", "veryfast", "-crf", "17", "-c:a", "aac", "-b:a", "160k", out])
+        segs.append(out)
+        clock[0] += length
+        return
     ag, ain = audio_graph(clips, n_video + 1, length)
     # El aviso de IA se graba en cada tramo: así al final no hay que recodificar el vídeo entero.
     vf = vf.replace("[vo]", "[vb]") + f";[vb][{n_video}]overlay=0:0,format=yuv420p[vo]"
@@ -371,9 +388,11 @@ def encode(video_in, vf, clips, length, name):
 
 
 def run_pending():
-    workers = max(2, min(len(pending), os.cpu_count() or 2))
+    if not pending:
+        return
+    workers = max(2, min(len(pending), os.cpu_count() or 2, 6))
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        for f in [ex.submit(subprocess.run, cmd, check=True) for cmd in pending]:
+        for f in [ex.submit(run, cmd) for cmd in pending]:
             f.result()
 
 
@@ -496,16 +515,27 @@ card(f"{T}/endlogo.png", 4.8, name="end", fin=1.0, fout=1.2)
 run_pending()
 with open(f"{T}/list.txt", "w") as fh:
     fh.writelines(f"file '{os.path.abspath(s)}'\n" for s in segs)
-subprocess.run([FF, "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", f"{T}/list.txt", "-c", "copy", f"{T}/joined.mp4"], check=True)
+run([FF, "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", f"{T}/list.txt", "-c", "copy", f"{T}/joined.mp4"])
 total = dur(f"{T}/joined.mp4")
 subprocess.run([sys.executable, os.path.join(HERE, "music.py"), f"{total + 1:.2f}", f"{T}/music.wav"], check=True)
 
-subprocess.run([FF, "-y", "-loglevel", "error", "-i", f"{T}/joined.mp4", "-i", f"{T}/music.wav",
-                "-filter_complex",
-                "[0:a]aresample=44100,aformat=channel_layouts=stereo,asplit=2[v1][v2];"
-                "[1:a]volume=0.30[m];"
-                "[m][v1]sidechaincompress=threshold=0.015:ratio=5:attack=40:release=900[md];"
-                f"[v2][md]amix=inputs=2:normalize=0:duration=first,afade=out:st={total - 3:.2f}:d=3[ao]",
-                "-map", "0:v", "-map", "[ao]", "-c:v", "copy",
-                "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", OUT], check=True)
+if LEGACY:
+    run([FF, "-y", "-loglevel", "error", "-i", f"{T}/joined.mp4", "-i", f"{T}/music.wav",
+         "-loop", "1", "-i", f"{T}/ailabel.png", "-filter_complex",
+         "[0:v][2:v]overlay=0:0:shortest=1,format=yuv420p[vv];"
+         "[0:a]aresample=44100,aformat=channel_layouts=stereo,asplit=2[v1][v2];"
+         "[1:a]volume=0.30[m];"
+         "[m][v1]sidechaincompress=threshold=0.015:ratio=5:attack=40:release=900[md];"
+         f"[v2][md]amix=inputs=2:normalize=0:duration=first,afade=out:st={total - 3:.2f}:d=3[ao]",
+         "-map", "[vv]", "-map", "[ao]", "-c:v", "libx264", "-crf", str(JOB.get("crf", 27)), "-preset", "medium",
+         "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", OUT])
+else:
+    subprocess.run([FF, "-y", "-loglevel", "error", "-i", f"{T}/joined.mp4", "-i", f"{T}/music.wav",
+                    "-filter_complex",
+                    "[0:a]aresample=44100,aformat=channel_layouts=stereo,asplit=2[v1][v2];"
+                    "[1:a]volume=0.30[m];"
+                    "[m][v1]sidechaincompress=threshold=0.015:ratio=5:attack=40:release=900[md];"
+                    f"[v2][md]amix=inputs=2:normalize=0:duration=first,afade=out:st={total - 3:.2f}:d=3[ao]",
+                    "-map", "0:v", "-map", "[ao]", "-c:v", "copy",
+                    "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", OUT], check=True)
 print(json.dumps({"ok": True, "segments": len(segs), "durationSec": round(dur(OUT), 1)}))
