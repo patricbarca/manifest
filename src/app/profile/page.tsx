@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { PAYMENTS_ENABLED } from "@/lib/pricing";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -19,6 +20,9 @@ import { fill } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n/locale";
 
 export const dynamic = "force-dynamic";
+
+/** Privada: fuera de Google. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 type Tab = "manifest" | "today" | "circle";
 const TABS: Tab[] = ["manifest", "today", "circle"];

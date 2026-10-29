@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { NewManifestation } from "@/components/NewManifestation";
 import { me } from "@/lib/social/me";
@@ -10,6 +11,9 @@ import { getDictionary } from "@/lib/i18n/server";
 import type { Locale } from "@/lib/i18n/locale";
 
 export const dynamic = "force-dynamic";
+
+/** Privada: fuera de Google. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 /** Nueva manifestación: escribe un deseo y se crea una escena animada tuya. */
 export default async function ManifestarPage() {

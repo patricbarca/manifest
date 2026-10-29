@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ComposeVideo } from "@/components/ComposeVideo";
@@ -8,6 +9,9 @@ import { getDictionary } from "@/lib/i18n/server";
 import type { Locale } from "@/lib/i18n/locale";
 
 export const dynamic = "force-dynamic";
+
+/** Privada: fuera de Google. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 /** Tu vídeo de manifestación: elige tus manifestaciones y se monta con ellas. */
 export default async function MiVideoPage() {
