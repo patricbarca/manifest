@@ -78,7 +78,7 @@ export function falUpload(absPath: string): Promise<string> {
  * Se añade a todo prompt de imagen y vídeo. En positivo: las negaciones el
  * modelo las lee al revés.
  */
-const SAFE_IMAGE = "Tasteful, wholesome, family-friendly photograph, everyone fully and modestly clothed, respectful and positive";
+const SAFE_IMAGE = "Tasteful, wholesome, family-friendly photograph, everyone fully and modestly clothed in well-fitted garments that fully cover the chest, clean surfaces free of lettering and digits, respectful and positive";
 const SAFE_VIDEO = "Wholesome, family-friendly, everyone stays fully and modestly clothed";
 
 /** Tamaño vertical que acepta Seedream (entre 3,7 y 16,7 Mpx). */

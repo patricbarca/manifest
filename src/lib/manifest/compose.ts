@@ -15,7 +15,7 @@ import { sendVideoReady } from "../email";
 import { manifests } from "./store";
 
 /** Asegura que el fichero /media está en disco (lo baja del bucket si hace falta). */
-async function ensureLocal(url: string | undefined): Promise<boolean> {
+export async function ensureLocal(url: string | undefined): Promise<boolean> {
   const abs = url ? localPathForMediaUrl(url) : null;
   if (!abs) return false;
   try {
