@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Project } from "@/lib/types";
+import { FREE_REGENS as MAX_REDOS } from "@/lib/regens";
 
 type Labels = {
   title: string; body: string; redo: string; redoing: string; notePlaceholder: string;
@@ -9,7 +10,6 @@ type Labels = {
   errors: Record<string, string>;
 };
 
-const MAX_REDOS = 2;
 
 /**
  * Revisión antes de animar: cada escena con su frase, un botón para rehacerla

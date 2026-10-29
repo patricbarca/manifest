@@ -8,12 +8,13 @@ import { checkBlocked } from "@/lib/safety";
 import { moderate } from "@/lib/moderation";
 import { PAYMENTS_ENABLED } from "@/lib/pricing";
 import { enqueueManifestation } from "@/lib/queue";
+import { FREE_REGENS } from "@/lib/regens";
 
 export const runtime = "nodejs";
 
 /**
  * Rehacer una manifestación (imagen, voz y animación) con un ajuste opcional.
- * Cuesta 1 manifestación del paquete; si falla, se devuelve como al crearla.
+ * Gratis dentro de las 3 regeneraciones de la escena; después, 1 manifestación. Si falla, se devuelve.
  */
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,7 +31,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const user = (await db.getUser(who.user.id)) ?? who.user;
   const photos = await livePhotos(user);
   if (!photos.length) return NextResponse.json({ error: "photos" }, { status: 409 });
-  if (PAYMENTS_ENABLED) {
+  // Las 3 primeras regeneraciones de la escena son gratis; después, 1 manifestación.
+  const free = (m.regensUsed ?? 0) < FREE_REGENS;
+  if (!free && PAYMENTS_ENABLED) {
     if ((user.credits ?? 0) < 1) return NextResponse.json({ error: "credits" }, { status: 402 });
     await db.putUser({ ...user, credits: (user.credits ?? 0) - 1 });
   }
@@ -41,7 +44,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     photoUrls: photos,
     attempts: 0,
     error: undefined,
-    paidCredit: PAYMENTS_ENABLED || undefined,
+    paidCredit: (!free && PAYMENTS_ENABLED) || undefined,
+    freeRegen: free || undefined,
+    regensUsed: (cur.regensUsed ?? 0) + (free ? 1 : 0),
   }));
   enqueueManifestation(id);
   return NextResponse.json({ manifestation: next });

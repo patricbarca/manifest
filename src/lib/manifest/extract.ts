@@ -78,6 +78,9 @@ export async function extractManifestations(project: Project, lineUrls: Record<s
         : undefined,
       sourceProjectId: project.id,
       sourceSceneIndex: i,
+      // Las regeneraciones de la revisión cuentan para las 3 gratis de la escena.
+      regensUsed: Math.max(project.redoCounts?.[scene.id] ?? 0, ...prev.map((x) => x.regensUsed ?? 0)),
+      quality: project.tier === "elevated" ? "elevated" : "standard",
       costCents: 0,
       ...(kept && kept.title !== shortTitle(kept.desire) ? { title: kept.title } : {}),
       ...(prev.some((x) => x.onProfile) ? { onProfile: true } : {}),

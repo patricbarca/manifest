@@ -13,6 +13,8 @@ import { db } from "../db/store";
 /** Si la manifestación se pagó con un paquete y falló, devuelve la unidad (solo una vez). */
 export async function refundCredit(id: string): Promise<void> {
   const m = await manifests.get(id);
+  // Regeneración gratis que falló: se devuelve al contador.
+  if (m?.freeRegen) await manifests.patch(id, (cur) => ({ ...cur, freeRegen: undefined, regensUsed: Math.max(0, (cur.regensUsed ?? 1) - 1) }));
   if (!m?.paidCredit) return;
   await manifests.patch(id, (cur) => ({ ...cur, paidCredit: undefined }));
   const user = await db.getUser(m.ownerId);
@@ -87,7 +89,7 @@ export async function runManifestation(id: string): Promise<void> {
       durationSec: secs,
       projectId: id,
       sceneId,
-      quality: "standard",
+      quality: start.quality ?? "standard",
     });
     cents += clip.costCents;
 
@@ -107,6 +109,7 @@ export async function runManifestation(id: string): Promise<void> {
       draftImageUrl: undefined,
       draftNote: undefined,
       draftTries: undefined,
+      freeRegen: undefined,
       costCents: +((start.costCents ?? 0) + cents).toFixed(2),
     }));
     // Al rehacerla, la versión anterior ya no se ve en ningún sitio: se borran sus ficheros.

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { FREE_REGENS as MAX_REDOS } from "@/lib/regens";
 import { db } from "@/lib/db/store";
 import { currentUser } from "@/lib/db/session";
 import { checkBlocked } from "@/lib/safety";
@@ -10,7 +11,7 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 /** Veces que se puede rehacer cada escena en la revisión (cada una ~0,04 $). */
-const MAX_REDOS = 2;
+
 
 /** Rehacer la imagen de una escena antes de animar, con un ajuste opcional. */
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
