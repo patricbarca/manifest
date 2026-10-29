@@ -415,6 +415,7 @@ export const en = {
     "I expressly consent to my face photos being processed with AI only to create my scenes. They are sent to fal.ai and the models it runs (ByteDance, MiniMax, ElevenLabs), on servers outside my country; they are not used to train models or to identify me, and they are deleted within 30 days at most. I can withdraw consent by deleting my videos.",
   biometricMore: "Learn more",
   aiLabel: "AI-generated",
+  access: { placeholder: "Invite code", submit: "Enter", bad: "That code isn't valid." },
   safety: {
     tooShort: "Tell us a little more: at least one full sentence.",
     tooLong: "Too long. Sum it up in a few sentences.",

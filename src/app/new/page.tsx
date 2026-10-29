@@ -37,6 +37,7 @@ export default async function ManifestarPage() {
           photosTitle: m.photosTitle, photosHint: m.photosHint, consent: t.consent, biometric: t.biometricConsent,
           upload: m.upload, uploading: m.uploading, photosOk: m.photosOk, waiver: t.create.waiver,
           create: m.create, creating: m.creating, credits: m.credits, noCredits: m.noCredits, buy: m.buy, each: m.each,
+          accessForm: t.access,
           errors: { ...t.aura.errors, photos: m.errPhotos, credits: m.noCredits, access: m.errAccess, payments_off: m.errPayments, ...t.safety },
         }}
       />

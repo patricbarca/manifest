@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { AccessCodeForm } from "./AccessCodeForm";
 import type { Locale } from "@/lib/i18n/locale";
 
 type Voice = { id: string; label: string };
@@ -9,7 +10,7 @@ type Pack = { qty: number; priceUsd: number };
 type Labels = {
   desire: string; desirePlaceholder: string; language: string; voice: string; photosTitle: string; photosHint: string;
   consent: string; biometric: string; upload: string; uploading: string; photosOk: string; waiver: string; create: string; creating: string;
-  credits: string; noCredits: string; buy: string; each: string; errors: Record<string, string>;
+  credits: string; noCredits: string; buy: string; each: string; errors: Record<string, string>; accessForm: { placeholder: string; submit: string; bad: string };
 };
 
 /** Crear una manifestación nueva: un deseo → una escena animada tuya. */
@@ -156,7 +157,12 @@ export function NewManifestation({
         <span>{t.waiver}</span>
       </label>
 
-      {error && <p className="t-sub text-rose-300">{error}</p>}
+      {error && (
+        <div className="t-sub text-rose-300">
+          {error}
+          {error === t.errors.access && <AccessCodeForm t={t.accessForm} onDone={() => setError(undefined)} />}
+        </div>
+      )}
 
       <button type="button" disabled={!canCreate} onClick={create} className="interactive w-full rounded-full bg-white px-6 py-3 text-[15px] font-medium text-black disabled:opacity-30">
         {busy ? t.creating : t.create}

@@ -14,6 +14,7 @@ import type {
   VoiceTone,
 } from "@/lib/types";
 import { formatUsd } from "@/lib/pricing";
+import { AccessCodeForm } from "./AccessCodeForm";
 import { PALETTE_SWATCH } from "@/lib/palettes";
 import { fill, type Dictionary, type Locale } from "@/lib/i18n";
 import { Icon } from "./Icon";
@@ -836,9 +837,13 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
       )}
 
       {error && (
-        <p className="t-sub mt-6 rounded-[var(--radius-ctl)] border border-red-500/25 bg-red-500/[0.08] p-4 text-red-300">
+        <div className="t-sub mt-6 rounded-[var(--radius-ctl)] border border-red-500/25 bg-red-500/[0.08] p-4 text-red-300">
           {error}
-        </p>
+          {/* Beta privada: se puede escribir el código aquí mismo y seguir. */}
+          {error === t.errors.betaOnly && (
+            <AccessCodeForm t={t.access} onDone={() => setError(undefined)} />
+          )}
+        </div>
       )}
 
       {step === STEP.review && (
