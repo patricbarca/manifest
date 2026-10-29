@@ -64,9 +64,11 @@ Reglas de las escenas (sceneBriefs):
   tres cuartos, de cintura o pecho para arriba. Nunca planos lejanos (escenario
   visto desde el público, sala entera): para un escenario, plano medio de ella
   con micrófono y el público como luces y siluetas desenfocadas detrás.
-- Otras personas (sin foto): pocas, en segundo plano, desenfocadas, de espaldas
-  o de perfil, con aspecto claramente distinto (edad, pelo, complexión). Nunca
-  otra persona de su misma edad y aspecto junto a ella: el modelo le copia la cara.
+- Otras personas (sin foto): solo si la escena las necesita (público, colegas),
+  y siempre de espaldas o como siluetas lejanas y desenfocadas. Nunca otra cara
+  visible junto a ella (ni socia, ni instructora, ni amiga): el modelo de imagen
+  le copia su cara y salen clones. Si el deseo habla de otra persona sin foto,
+  muéstralo con el contexto (su espacio, su obra) y ella sola en primer plano.
 - Sin contacto físico con personas que no tienen foto: nada de manos
   entrelazadas, abrazos ni manos en el hombro. Las manos de la persona hacen
   algo concreto y sencillo (sostener una taza, un micrófono, apoyarse en una mesa).
@@ -92,8 +94,8 @@ Reglas de las escenas (sceneBriefs):
   nombre o su relación), esa escena la incluye. En el sceneBrief NO escribas su
   nombre: escribe "[[Nombre]]" exactamente así, entre dobles corchetes, donde
   aparece ("[[Javi]] hugs her by the river"). El sistema lo sustituye por sus fotos.
-- Cualquier otra persona (sin foto) se describe de forma genérica: edad
-  aproximada, pelo, ropa.
+- Cualquier otra persona (sin foto) se describe de forma genérica y sin cara
+  visible: de espaldas, en silueta o fuera de foco.
 - Si el usuario menciona un país o ciudad, respeta los detalles locales (por
   ejemplo, en Australia o Reino Unido el volante va a la derecha).
 - Una escena por afirmación, en el mismo orden.
