@@ -94,6 +94,36 @@ const SAFE_VIDEO = "Wholesome, family-friendly, everyone stays fully and modestl
 /** Tamaño vertical que acepta Seedream (entre 3,7 y 16,7 Mpx). */
 const IMAGE_SIZE = { width: 1728, height: 3072 };
 
+/**
+ * Cada familia de modelos de edición pide la entrada a su manera. El modelo se
+ * elige con FAL_IMAGE_MODEL (Seedream 4.5 por defecto). Seedream llama a las
+ * fotos "Figure 1..N"; los demás entienden mejor "reference image 1..N".
+ */
+function editInput(model: string, prompt: string, urls: string[]): Record<string, unknown> {
+  if (/gpt-image/.test(model)) {
+    return {
+      prompt: prompt.replace(/\bFigures (\d+) to (\d+)\b/g, "reference images $1 to $2").replace(/\bFigure (\d+)\b/g, "reference image $1"),
+      image_urls: urls,
+      // Tamaño explícito: el preset vertical de GPT sale a 608×1088, poco para un vídeo 1080×1920.
+      image_size: { width: Number(process.env.GPT_IMAGE_WIDTH ?? 1152), height: Number(process.env.GPT_IMAGE_HEIGHT ?? 2048) },
+      quality: process.env.GPT_IMAGE_QUALITY ?? "high",
+      output_format: "jpeg",
+      num_images: 1,
+    };
+  }
+  if (/nano-banana/.test(model)) {
+    return {
+      prompt: prompt.replace(/\bFigures (\d+) to (\d+)\b/g, "reference images $1 to $2").replace(/\bFigure (\d+)\b/g, "reference image $1"),
+      image_urls: urls,
+      aspect_ratio: "9:16",
+      resolution: "2K",
+      output_format: "jpeg",
+      num_images: 1,
+    };
+  }
+  return { prompt, image_urls: urls, image_size: IMAGE_SIZE, num_images: 1, enable_safety_checker: true };
+}
+
 export const falImage: ImageProvider = {
   name: "fal",
   async generate({ prompt: raw, referencePath, referencePaths, projectId, sceneId }) {
@@ -105,7 +135,7 @@ export const falImage: ImageProvider = {
     if (refs.length) {
       model = process.env.FAL_IMAGE_MODEL ?? "fal-ai/bytedance/seedream/v4.5/edit";
       const urls = await Promise.all(refs.slice(0, 10).map(falUpload));
-      input = { prompt, image_urls: urls, image_size: IMAGE_SIZE, num_images: 1, enable_safety_checker: true };
+      input = editInput(model, prompt, urls);
     } else {
       model = process.env.FAL_IMAGE_T2I_MODEL ?? "fal-ai/bytedance/seedream/v4.5/text-to-image";
       input = { prompt, image_size: IMAGE_SIZE, num_images: 1, enable_safety_checker: true };
