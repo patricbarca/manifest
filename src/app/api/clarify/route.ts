@@ -1,4 +1,4 @@
-import { isSignedIn } from "@/lib/db/session";
+import { canCreateNow, currentUser, isSignedIn } from "@/lib/db/session";
 import { NextResponse } from "next/server";
 import { hasAccess } from "@/lib/access";
 import { z } from "zod";
@@ -28,6 +28,10 @@ export async function POST(request: Request) {
   if (!(await hasAccess())) {
     const { t } = await getDictionary();
     return NextResponse.json({ error: t.errors.betaOnly }, { status: 403 });
+  }
+  if (!canCreateNow(await currentUser())) {
+    const { t } = await getDictionary();
+    return NextResponse.json({ error: t.errors.paymentsSoon }, { status: 402 });
   }
   const { t, locale } = await getDictionary();
   const parsed = Body.safeParse(await request.json());

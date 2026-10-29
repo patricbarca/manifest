@@ -4,7 +4,8 @@ import { db } from "./store";
 import type { User } from "../types";
 import { authUser } from "../supabase/server";
 import { authEnabled } from "../supabase/config";
-import { FREE_VIDEOS, PAYMENTS_ENABLED } from "../pricing";
+import { FREE_VIDEOS, PAYMENTS_ENABLED, PRELAUNCH_ALLOWLIST } from "../pricing";
+import { stripeEnabled } from "../stripe";
 
 /**
  * Identidad.
@@ -111,6 +112,19 @@ export async function linkAnonymousData(): Promise<void> {
   }
 }
 
+function isPrelaunchTester(user: Pick<User, "email">): boolean {
+  return !!user.email && PRELAUNCH_ALLOWLIST.has(user.email.toLowerCase());
+}
+
+/**
+ * Si este usuario puede empezar a crear ahora: Stripe está configurado, le queda un
+ * vídeo gratis o está en la lista de prueba. Se mira al entrar en /crear y
+ * antes de llamar al LLM, para no gastar ni hacerle escribir para nada.
+ */
+export function canCreateNow(user: User): boolean {
+  return stripeEnabled() || user.freeVideosUsed < FREE_VIDEOS || isPrelaunchTester(user);
+}
+
 /**
  * Cobra un vídeo, o lo deja pasar.
  *
@@ -127,7 +141,7 @@ export async function linkAnonymousData(): Promise<void> {
 export type ChargeKind = "free" | "prelaunch" | "paid";
 
 /** Clave del diccionario con el motivo, no el mensaje ya escrito. */
-type ChargeError = "noFreeLeft" | "paymentRequired";
+type ChargeError = "noFreeLeft" | "paymentRequired" | "paymentsSoon";
 
 export async function chargeForVideo(
   userId: string,
@@ -145,6 +159,7 @@ export async function chargeForVideo(
   }
 
   if (!PAYMENTS_ENABLED) {
+    if (!isPrelaunchTester(user)) return { ok: false, reason: "paymentsSoon" };
     return { ok: true, kind: "prelaunch", paidCents: 0 };
   }
 

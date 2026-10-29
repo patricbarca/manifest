@@ -130,3 +130,15 @@ export const FREE_VIDEOS = Number(process.env.FREE_VIDEOS ?? 0);
  * genera igual. Se activa poniendo PAYMENTS_ENABLED=true cuando entre Stripe.
  */
 export const PAYMENTS_ENABLED = process.env.PAYMENTS_ENABLED === "true";
+
+/**
+ * Emails que pueden generar sin pagar mientras no hay pagos (el equipo y
+ * quien prueba). Sin pagos, el resto no puede crear: cada vídeo cuesta dinero
+ * real en los proveedores. Separados por comas, en PRELAUNCH_ALLOWLIST.
+ */
+export const PRELAUNCH_ALLOWLIST = new Set(
+  (process.env.PRELAUNCH_ALLOWLIST ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean),
+);

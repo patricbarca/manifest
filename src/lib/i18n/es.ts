@@ -585,6 +585,7 @@ export const es: Dictionary = {
     previewFailed: "No se pudieron escribir las escenas. Inténtalo otra vez.",
     tooManyPreviews: "Has reescrito las escenas muchas veces esta hora. Espera un poco y vuelve a probar.",
     noFreeLeft: "Ya has usado tu vídeo gratis. Los pagos todavía no están activos.",
+    paymentsSoon: "Muy pronto podrás crear tu vídeo: estamos activando los pagos. Vuelve en unos días.",
     betaOnly: "ManifestLifeAI está en beta privada. Necesitas un enlace de invitación para crear vídeos.",
   },
 };

@@ -587,6 +587,7 @@ export const en = {
     tooManyPreviews: "You've rewritten the scenes many times this hour. Wait a bit and try again.",
     noFreeLeft:
       "You've used your free video. Payments aren't active yet.",
+    paymentsSoon: "You'll be able to create your video very soon: we're switching on payments. Check back in a few days.",
     betaOnly: "ManifestLifeAI is in private beta. You need an invite link to create videos.",
   },
 };
