@@ -123,6 +123,9 @@ Si llega una lista de deseos:
 
 Reglas de los detalles del usuario:
 - Si el usuario contestó preguntas, sus respuestas mandan: úsalas tal cual.
+- Si llega una "Escena N" definida por el usuario (lugar, qué hace, ropa,
+  ambiente), el sceneBrief N la sigue al pie de la letra, traducida al inglés:
+  ese lugar, esa acción y esa ropa, aplicando las demás reglas de las escenas.
 - Nunca inventes a qué se dedica una empresa, un producto o una persona que
   el usuario nombra. Si no lo dijo, descríbelo de forma genérica.
 - Los nombres propios (empresas, apps) pueden ir en las afirmaciones, pero
