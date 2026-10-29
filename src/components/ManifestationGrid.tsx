@@ -148,8 +148,8 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4" role="dialog" aria-modal="true" onClick={() => show(null)}>
-          <div className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex overflow-y-auto overscroll-contain bg-black/95 p-4" role="dialog" aria-modal="true" onClick={() => show(null)}>
+          <div className="m-auto w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <div className="relative aspect-[9/16] overflow-hidden rounded-2xl bg-black">
               <video key={open.id} src={open.clipUrl} poster={open.highlight?.posterUrl ?? open.imageUrl} autoPlay loop muted playsInline className="h-full w-full object-cover" />
             </div>
