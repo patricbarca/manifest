@@ -42,7 +42,10 @@ import { Icon } from "./Icon";
 import { DEFAULT_VOICE, VOICES, voiceSample } from "@/lib/voices";
 import type { Locale as VideoLocale } from "@/lib/i18n/locale";
 
-const STEP = { desires: 0, details: 1, photo: 2, people: 3, format: 4, review: 5 } as const;
+const STEP = { desires: 0, details: 1, scenes: 2, photo: 3, people: 4, format: 5, review: 6 } as const;
+
+type SceneIdea = { place: string; action: string; outfit: string; mood: string };
+const EMPTY_IDEA: SceneIdea = { place: "", action: "", outfit: "", mood: "" };
 const MAX_PEOPLE = 4;
 const MAX_PERSON_PHOTOS = 3;
 
@@ -115,8 +118,11 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
   const [questionsKey, setQuestionsKey] = useState<string>();
   const [tailored, setTailored] = useState(false);
   const [answers, setAnswers] = useState<string[]>([]);
-  // Cómo quiere verse en las escenas (ropa, colores): el guionista lo usa en todas.
-  const [outfit, setOutfit] = useState("");
+  // Una escena por deseo (lugar, qué hace, ropa, ambiente): la IA la propone y la persona la edita.
+  const [ideas, setIdeas] = useState<SceneIdea[]>([]);
+  const [ideasKey, setIdeasKey] = useState<string>();
+  const [loadingIdeas, setLoadingIdeas] = useState(false);
+  const [rethinking, setRethinking] = useState<number>();
   const [loadingQuestions, setLoadingQuestions] = useState(false);
 
   // Revisión.
@@ -138,6 +144,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
       );
     }
     if (step === STEP.details) return !loadingQuestions;
+    if (step === STEP.scenes) return !loadingIdeas && rethinking === undefined;
     if (step === STEP.people) {
       // Las personas son opcionales, pero las que se añaden van completas.
       return (
@@ -147,7 +154,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
       );
     }
     return true; // la foto es opcional, y el formato siempre es válido
-  }, [step, desires, loadingQuestions, people, peopleConsent, uploadingPerson]);
+  }, [step, desires, loadingQuestions, loadingIdeas, rethinking, people, peopleConsent, uploadingPerson]);
 
   const cleanPeople = useMemo(
     () =>
@@ -184,15 +191,35 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
     });
   }
 
+  // Las escenas que definió la persona viajan como detalles: el guionista las sigue al pie de la letra.
+  const sceneDetails: ClarifyAnswer[] = useMemo(
+    () =>
+      ideas
+        .map((idea, i) => {
+          const parts = [
+            idea.place && `${t.create.scenePlace}: ${idea.place}`,
+            idea.action && `${t.create.sceneAction}: ${idea.action}`,
+            idea.outfit && `${t.create.sceneOutfit}: ${idea.outfit}`,
+            idea.mood && `${t.create.sceneMood}: ${idea.mood}`,
+          ].filter(Boolean);
+          return {
+            question: fill(t.create.sceneQuestion, { n: i + 1, desire: (cleanDesires[i] ?? "").slice(0, 80) }).slice(0, 200),
+            answer: parts.join(". ").slice(0, 300),
+          };
+        })
+        .filter((d) => d.answer),
+    [ideas, cleanDesires, t],
+  );
+
   const details: ClarifyAnswer[] = useMemo(
     () => [
       ...(questions ?? [])
         .map((q, i) => ({ question: q.question, answer: (answers[i] ?? "").trim() }))
         .filter((d) => d.answer),
       ...corrections.map((answer) => ({ question: t.create.reviewFixQuestion, answer })),
-      ...(outfit.trim() ? [{ question: t.create.outfitQuestion, answer: outfit.trim() }] : []),
+      ...sceneDetails,
     ],
-    [questions, answers, corrections, outfit, t],
+    [questions, answers, corrections, sceneDetails, t],
   );
 
   // Todo lo que cambia el guion. Si difiere del de la revisión, esa revisión
@@ -227,13 +254,71 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
       setAnswers([]);
       setQuestionsKey(key);
       // Si no hay nada que aclarar, no se hace pasar a la persona por un paso vacío.
-      if (data.questions.length === 0) setStep(STEP.photo);
+      if (data.questions.length === 0) {
+        setStep(STEP.scenes);
+        void loadIdeas();
+      }
     } catch (err) {
       setError((err as Error).message);
       setStep(STEP.desires);
     } finally {
       setLoadingQuestions(false);
     }
+  }
+
+  /** Propuesta de escena por deseo. Se pide una vez por deseos + respuestas. */
+  async function loadIdeas() {
+    const answered = (questions ?? [])
+      .map((q, i) => ({ question: q.question, answer: (answers[i] ?? "").trim() }))
+      .filter((d) => d.answer);
+    const key = JSON.stringify({ desires: cleanDesires, answered });
+    if (key === ideasKey) return;
+    setLoadingIdeas(true);
+    setError(undefined);
+    try {
+      const res = await fetch("/api/scene-ideas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ desires: cleanDesires, details: answered }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? t.errors.createFailed);
+      setIdeas(cleanDesires.map((_, i) => ({ ...EMPTY_IDEA, ...(data.ideas?.[i] ?? {}) })));
+      setIdeasKey(key);
+    } catch (err) {
+      setError((err as Error).message);
+      setIdeas(cleanDesires.map(() => ({ ...EMPTY_IDEA })));
+    } finally {
+      setLoadingIdeas(false);
+    }
+  }
+
+  /** "Otra idea" para una sola escena. */
+  async function rethink(i: number) {
+    setRethinking(i);
+    setError(undefined);
+    try {
+      const answered = (questions ?? [])
+        .map((q, k) => ({ question: q.question, answer: (answers[k] ?? "").trim() }))
+        .filter((d) => d.answer);
+      const res = await fetch("/api/scene-ideas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ desires: cleanDesires, details: answered, index: i, avoid: ideas[i] }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? t.errors.createFailed);
+      const fresh = data.ideas?.[0];
+      if (fresh) setIdeas((prev) => prev.map((x, k) => (k === i ? { ...EMPTY_IDEA, ...fresh } : x)));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setRethinking(undefined);
+    }
+  }
+
+  function setIdea(i: number, patch: Partial<SceneIdea>) {
+    setIdeas((prev) => prev.map((x, k) => (k === i ? { ...x, ...patch } : x)));
   }
 
   async function loadPreview(extraCorrections = corrections) {
@@ -283,6 +368,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
     const target = step + 1;
     setStep(target);
     if (target === STEP.details) void loadQuestions();
+    if (target === STEP.scenes) void loadIdeas();
     if (target === STEP.review && preview?.key !== scriptKey) void loadPreview();
   }
 
@@ -418,16 +504,6 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
             {fill(t.create.desiresCount, { n: cleanDesires.length, max: MAX_DESIRES })}
           </p>
 
-          <label className="mt-8 block">
-            <span className="t-sub mb-2 block font-medium text-[var(--color-label-1)]">{t.create.outfitLabel}</span>
-            <input
-              value={outfit}
-              onChange={(e) => setOutfit(e.target.value)}
-              maxLength={160}
-              placeholder={t.create.outfitPlaceholder}
-              className="t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none transition-colors duration-200 placeholder:text-[var(--color-label-4)] focus:border-[var(--color-hairline-strong)]"
-            />
-          </label>
 
           <p className="t-sub mt-8 mb-3 text-[var(--color-label-2)]">{t.create.ideasLabel}</p>
           <div className="flex flex-wrap gap-2">
@@ -501,7 +577,58 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
         </Section>
       )}
 
-      {/* ── Paso 2: foto ───────────────────────────────────────────────── */}
+      {/* ── Paso 2: escenas ────────────────────────────────────────────── */}
+      {step === STEP.scenes && (
+        <Section title={t.create.scenesTitle} hint={t.create.scenesHint}>
+          {loadingIdeas ? (
+            <p className="t-sub pulse-soft text-[var(--color-label-2)]">{t.create.scenesLoading}</p>
+          ) : (
+            <div className="space-y-4">
+              {cleanDesires.map((desire, i) => {
+                const idea = ideas[i] ?? EMPTY_IDEA;
+                const fields: { key: keyof SceneIdea; label: string }[] = [
+                  { key: "place", label: t.create.scenePlace },
+                  { key: "action", label: t.create.sceneAction },
+                  { key: "outfit", label: t.create.sceneOutfit },
+                  { key: "mood", label: t.create.sceneMood },
+                ];
+                return (
+                  <div key={i} className="card space-y-3 rounded-[var(--radius-md)] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="t-caption text-[var(--color-label-3)]">{fill(t.create.sceneCard, { n: i + 1 })}</p>
+                        <p className="t-sub font-medium">{desire}</p>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={rethinking !== undefined}
+                        onClick={() => void rethink(i)}
+                        className="interactive t-caption shrink-0 rounded-full border border-[var(--color-hairline-strong)] px-3 py-1.5 disabled:opacity-40"
+                      >
+                        {rethinking === i ? t.create.sceneThinking : t.create.sceneAnother}
+                      </button>
+                    </div>
+                    {fields.map((f) => (
+                      <label key={f.key} className="block">
+                        <span className="t-caption mb-1 block text-[var(--color-label-2)]">{f.label}</span>
+                        <input
+                          value={idea[f.key]}
+                          onChange={(e) => setIdea(i, { [f.key]: e.target.value })}
+                          maxLength={90}
+                          disabled={rethinking === i}
+                          className="t-sub w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-3 py-2 outline-none focus:border-[var(--color-hairline-strong)] disabled:opacity-50"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Section>
+      )}
+
+      {/* ── Paso 3: foto ───────────────────────────────────────────────── */}
       {step === STEP.photo && (
         <Section
           title={t.create.photoTitle}
