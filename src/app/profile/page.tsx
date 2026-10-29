@@ -118,7 +118,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
           initial={mine}
           locale={locale}
           paymentsOn={PAYMENTS_ENABLED}
-          t={{ redo: t.manifest.redo, remove: t.manifest.remove, sceneEdit: t.manifest.sceneEdit, edit: t.manifest.edit, save: t.manifest.save, cancel: t.manifest.cancel, titleLabel: t.manifest.titleField, phraseLabel: t.manifest.phraseField, editHint: t.manifest.editHint, textBlocked: t.aura.errors.text_blocked, manifested: t.manifest.manifested, markManifested: t.manifest.markManifested, unmark: t.manifest.unmark, onProfile: t.manifest.onProfile, profileHint: t.manifest.profileHint, showOnProfile: t.manifest.showOnProfile, hideFromProfile: t.manifest.hideFromProfile, generating: t.manifest.generating, failed: t.manifest.failed, close: t.aura.close, empty: t.manifest.empty }}
+          t={{ remove: t.manifest.remove, sceneEdit: t.manifest.sceneEdit, edit: t.manifest.edit, save: t.manifest.save, cancel: t.manifest.cancel, titleLabel: t.manifest.titleField, phraseLabel: t.manifest.phraseField, editHint: t.manifest.editHint, textBlocked: t.aura.errors.text_blocked, manifested: t.manifest.manifested, markManifested: t.manifest.markManifested, unmark: t.manifest.unmark, onProfile: t.manifest.onProfile, profileHint: t.manifest.profileHint, showOnProfile: t.manifest.showOnProfile, hideFromProfile: t.manifest.hideFromProfile, generating: t.manifest.generating, failed: t.manifest.failed, close: t.aura.close, empty: t.manifest.empty }}
         />
       )}
 

@@ -5,7 +5,7 @@ import type { Manifestation } from "@/lib/types";
 import { FREE_REGENS } from "@/lib/regens";
 
 type SceneEditLabels = { open: string; hint: string; placeholder: string; change: string; changing: string; current: string; next: string; left: string; animate: string; animateFree: string; freeLeft: string; animatePaid: string; animateHint: string; discard: string; errors: Record<string, string> };
-type Labels = { redo: Record<string, string>; remove: Record<string, string>; sceneEdit: SceneEditLabels; edit: string; save: string; cancel: string; titleLabel: string; phraseLabel: string; editHint: string; textBlocked: string; manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; failed: string; close: string; empty: string };
+type Labels = { remove: Record<string, string>; sceneEdit: SceneEditLabels; edit: string; save: string; cancel: string; titleLabel: string; phraseLabel: string; editHint: string; textBlocked: string; manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; failed: string; close: string; empty: string };
 
 /**
  * Tus manifestaciones, una por tarjeta. Al tocar se ve su escena; desde ahí
@@ -17,9 +17,6 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({ title: "", affirmation: "" });
   const [err, setErr] = useState<string>();
-  const [redoing, setRedoing] = useState(false);
-  const [redoNote, setRedoNote] = useState("");
-  const [redoBusy, setRedoBusy] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [sceneOpen, setSceneOpen] = useState(false);
   const [sceneNote, setSceneNote] = useState("");
@@ -39,7 +36,6 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
   function show(m: Manifestation | null) {
     setOpen(m);
     setEditing(false);
-    setRedoing(false);
     setRemoving(false);
     setSceneOpen(false);
     setErr(undefined);
@@ -90,22 +86,6 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
     const res = await fetch(`/api/manifestations?id=${encodeURIComponent(m.id)}`, { method: "DELETE" }).catch(() => null);
     if (!res?.ok) return setErr(t.remove.failed);
     setItems((xs) => xs.filter((x) => x.id !== m.id));
-    show(null);
-  }
-
-  // Rehacer la escena entera (imagen, voz y animación). Cuesta 1 manifestación del paquete.
-  async function redo(m: Manifestation) {
-    setRedoBusy(true);
-    setErr(undefined);
-    const res = await fetch(`/api/manifestations/${m.id}/redo`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ note: redoNote.trim() || undefined }),
-    });
-    const data = await res.json().catch(() => ({}));
-    setRedoBusy(false);
-    if (!res.ok) return setErr(t.redo[data.error] ?? t.redo.failed);
-    setItems((xs) => xs.map((x) => (x.id === m.id ? data.manifestation : x)));
     show(null);
   }
 
@@ -265,36 +245,13 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
                 <button type="button" onClick={() => setSceneOpen(false)} className="t-caption underline text-[var(--color-label-3)]">{t.cancel}</button>
               </div>
             ) : (
-              !redoing && !removing && open.imageUrl && open.status === "ready" && (
+              !removing && open.imageUrl && open.status === "ready" && (
                 <button type="button" onClick={() => { setSceneOpen(true); setSceneNote(""); setErr(undefined); }} className="t-caption mr-4 mt-3 underline text-[var(--color-label-1)]">
                   ✎ {t.sceneEdit.open}
                 </button>
               )
             )}
-            {sceneOpen ? null : redoing ? (
-              <div className="mt-4 space-y-2 rounded-[var(--radius-md)] border border-[var(--color-hairline)] p-3">
-                <p className="t-caption text-[var(--color-label-2)]">{paymentsOn && (open.regensUsed ?? 0) >= FREE_REGENS ? t.redo.hintPaid : t.redo.hint}</p>
-                <p className="t-caption text-[var(--color-label-3)]">{t.sceneEdit.freeLeft.replace("{n}", String(Math.max(0, FREE_REGENS - (open.regensUsed ?? 0))))}</p>
-                <input
-                  value={redoNote}
-                  onChange={(e) => setRedoNote(e.target.value)}
-                  maxLength={160}
-                  placeholder={t.redo.placeholder}
-                  className="t-caption w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-3 py-2 outline-none"
-                />
-                <div className="flex gap-2">
-                  <button type="button" disabled={redoBusy} onClick={() => redo(open)} className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 font-medium text-black disabled:opacity-40">
-                    {(open.regensUsed ?? 0) < FREE_REGENS ? t.redo.confirmFree : paymentsOn ? t.redo.confirmPaid : t.redo.confirm}
-                  </button>
-                  <button type="button" onClick={() => setRedoing(false)} className="t-sub rounded-full bg-white/10 px-4 py-2">{t.cancel}</button>
-                </div>
-              </div>
-            ) : removing ? null : (
-              <button type="button" onClick={() => { setRedoing(true); setRedoNote(""); setErr(undefined); }} className="t-caption mt-3 underline text-[var(--color-label-2)]">
-                ↻ {t.redo.open}
-              </button>
-            )}
-            {err && (redoing || removing || sceneOpen) && <p className="t-caption mt-2 text-rose-300">{err}</p>}
+            {err && (removing || sceneOpen) && <p className="t-caption mt-2 text-rose-300">{err}</p>}
             {removing ? (
               <div className="mt-4 space-y-2 rounded-[var(--radius-md)] border border-rose-400/40 p-3">
                 <p className="t-caption text-[var(--color-label-2)]">{t.remove.confirm}</p>
@@ -304,7 +261,7 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
                 </div>
               </div>
             ) : (
-              !redoing && !sceneOpen && (
+              !sceneOpen && (
                 <button type="button" onClick={() => { setRemoving(true); setErr(undefined); }} className="t-caption ml-4 mt-3 underline text-rose-300/80">
                   {t.remove.open}
                 </button>
