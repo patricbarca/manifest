@@ -149,6 +149,8 @@ export interface Manifestation {
   quality?: "standard" | "elevated";
   /** Cambios de imagen hechos desde la última animación (máximo 3). */
   draftTries?: number;
+  /** Edición de escena desde el perfil ya pagada (1 manifestación cubre hasta 3 imágenes y la animación). */
+  editPaid?: boolean;
   /** En cola solo para animar el borrador (sin guion ni imagen nuevos). */
   animateOnly?: boolean;
   /** Cuándo la marcó como cumplida. */

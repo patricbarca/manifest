@@ -17,7 +17,7 @@ export async function refundCredit(id: string): Promise<void> {
   // Regeneración gratis que falló: se devuelve al contador.
   if (m?.freeRegen) await manifests.patch(id, (cur) => ({ ...cur, freeRegen: undefined, regensUsed: Math.max(0, (cur.regensUsed ?? 1) - 1) }));
   if (!m?.paidCredit) return;
-  await manifests.patch(id, (cur) => ({ ...cur, paidCredit: undefined }));
+  await manifests.patch(id, (cur) => ({ ...cur, paidCredit: undefined, editPaid: undefined }));
   const user = await db.getUser(m.ownerId);
   if (user) await db.putUser({ ...user, credits: (user.credits ?? 0) + 1 });
 }
@@ -111,6 +111,7 @@ export async function runManifestation(id: string): Promise<void> {
       draftNote: undefined,
       draftTries: undefined,
       freeRegen: undefined,
+      editPaid: undefined,
       costCents: +((start.costCents ?? 0) + cents).toFixed(2),
     }));
     // Al rehacerla, la versión anterior ya no se ve en ningún sitio: se borran sus ficheros.

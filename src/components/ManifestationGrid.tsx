@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type { Manifestation } from "@/lib/types";
-import { FREE_REGENS } from "@/lib/regens";
 
-type SceneEditLabels = { open: string; hint: string; placeholder: string; change: string; changing: string; current: string; next: string; left: string; animate: string; animateFree: string; freeLeft: string; animatePaid: string; animateHint: string; discard: string; errors: Record<string, string> };
+type SceneEditLabels = { open: string; hint: string; placeholder: string; change: string; changing: string; current: string; next: string; left: string; animate: string; changePaid: string; costNote: string; paidNote: string; discardNote: string; animatePaid: string; animateHint: string; discard: string; errors: Record<string, string> };
 type Labels = { remove: Record<string, string>; sceneEdit: SceneEditLabels; edit: string; save: string; cancel: string; titleLabel: string; phraseLabel: string; editHint: string; textBlocked: string; manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; waitingFunds: string; failed: string; close: string; empty: string };
 
 /**
@@ -215,7 +214,9 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
                   </div>
                 )}
                 <p className="t-caption text-[var(--color-label-2)]">{t.sceneEdit.hint}</p>
-                <p className="t-caption text-[var(--color-label-2)]">{t.sceneEdit.freeLeft.replace("{n}", String(Math.max(0, FREE_REGENS - (open.regensUsed ?? 0))))}</p>
+                {paymentsOn && (
+                  <p className="t-caption text-amber-200/90">{open.editPaid ? t.sceneEdit.paidNote : t.sceneEdit.costNote}</p>
+                )}
                 {(open.draftTries ?? 0) < 3 && (
                   <>
                     <input
@@ -226,7 +227,7 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
                       className="t-caption w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-3 py-2 outline-none"
                     />
                     <button type="button" disabled={sceneBusy || sceneNote.trim().length < 2} onClick={() => changeImage(open)} className="interactive t-sub w-full rounded-full bg-white/10 px-4 py-2 font-medium disabled:opacity-40">
-                      {sceneBusy ? t.sceneEdit.changing : t.sceneEdit.change}
+                      {sceneBusy ? t.sceneEdit.changing : paymentsOn && !open.editPaid ? t.sceneEdit.changePaid : t.sceneEdit.change}
                     </button>
                   </>
                 )}
@@ -236,10 +237,11 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
                     <p className="t-caption text-[var(--color-label-2)]">{t.sceneEdit.animateHint}</p>
                     <div className="flex gap-2">
                       <button type="button" disabled={sceneBusy} onClick={() => animateDraft(open)} className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 font-medium text-black disabled:opacity-40">
-                        {(open.regensUsed ?? 0) < FREE_REGENS ? t.sceneEdit.animateFree : paymentsOn ? t.sceneEdit.animatePaid : t.sceneEdit.animate}
+                        {paymentsOn && !open.editPaid ? t.sceneEdit.animatePaid : t.sceneEdit.animate}
                       </button>
                       <button type="button" disabled={sceneBusy} onClick={() => discardDraft(open)} className="t-sub rounded-full bg-white/10 px-4 py-2">{t.sceneEdit.discard}</button>
                     </div>
+                    {paymentsOn && open.editPaid && <p className="t-caption text-[var(--color-label-3)]">{t.sceneEdit.discardNote}</p>}
                   </>
                 )}
                 <button type="button" onClick={() => setSceneOpen(false)} className="t-caption underline text-[var(--color-label-3)]">{t.cancel}</button>
