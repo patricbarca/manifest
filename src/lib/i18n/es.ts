@@ -126,6 +126,7 @@ export const es: Dictionary = {
     photoN: "Foto {n}",
     consentTitle: "Antes de usar tus fotos",
     consentAccept: "Aceptar y continuar",
+    consentWho: "Ver quién las recibe",
     tipsBubble: "Antes de subir tus fotos:",
     close: "Cerrar",
   },
@@ -565,7 +566,7 @@ export const es: Dictionary = {
   consent:
     "Confirmo que las fotos son mías, que soy mayor de edad y que autorizo a usarlas para generar mi vídeo.",
   biometricConsent:
-    "Doy mi consentimiento expreso para que mis fotos de cara se procesen con IA solo para crear mis escenas. Se envían a fal.ai y a los modelos que ejecuta (OpenAI, Google, ByteDance, MiniMax, Kuaishou/Kling, ElevenLabs), con servidores fuera de mi país; no se usan para entrenar modelos ni para identificarme, y se borran como mucho a los 30 días. Puedo retirar el consentimiento borrando mis vídeos.",
+    "Doy mi consentimiento expreso para que mis fotos de cara se procesen con IA solo para crear mis escenas. Se envían a proveedores de IA con servidores fuera de mi país; no se usan para entrenar modelos ni para identificarme y se borran como mucho a los 30 días. Puedo retirarlo borrando mis fotos y vídeos.",
   biometricMore: "Más información",
   aiLabel: "Generado con IA",
   review: {
