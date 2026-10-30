@@ -231,7 +231,7 @@ export function FaceCapture({
 
   // Encima de toda la web (cabecera y pie incluidos), no dentro de la sección.
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex flex-col overflow-y-auto bg-black text-white">
+    <div data-dark className="fixed inset-0 z-[100] flex flex-col overflow-y-auto bg-black text-white">
       <div className="flex items-center justify-between px-4 pb-2 pt-[max(12px,env(safe-area-inset-top))]">
         <span className="t-caption text-white/70">{done ? "" : `${step + 1}/${slots.length}`}</span>
         <button type="button" onClick={onClose} className="t-sub rounded-full bg-white/10 px-3 py-1">

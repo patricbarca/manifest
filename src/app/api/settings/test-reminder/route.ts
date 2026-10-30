@@ -31,7 +31,7 @@ export async function POST() {
     locale: user.locale === "es" ? "es" : "en",
     streak: Math.max(1, stats.streak),
     url: last ? `${site}/video/${last.id}` : `${site}/profile?tab=today`,
-    settingsUrl: `${site}/profile/edit`,
+    settingsUrl: `${site}/settings`,
     thumb,
   });
   return NextResponse.json({ sent, thumb: !!thumb }, { status: sent ? 200 : 502 });

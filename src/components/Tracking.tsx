@@ -126,7 +126,7 @@ export function Tracking({ cfg, t, privacyHref }: { cfg: TrackingConfig; t: Labe
 
   if (!ask) return null;
   return (
-    <div role="dialog" aria-live="polite" className="fixed inset-x-3 bottom-3 z-[60] mx-auto max-w-lg rounded-[var(--radius-md)] border border-[var(--color-hairline-strong)] bg-[#141018]/95 p-4 shadow-2xl backdrop-blur sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2">
+    <div data-dark role="dialog" aria-live="polite" className="fixed inset-x-3 bottom-3 z-[60] mx-auto max-w-lg rounded-[var(--radius-md)] border border-[var(--color-hairline-strong)] bg-[#141018]/95 p-4 shadow-2xl backdrop-blur sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2">
       <p className="t-caption text-[var(--color-label-2)]">
         {t.text}{" "}
         <a href={privacyHref} className="underline">{t.more}</a>

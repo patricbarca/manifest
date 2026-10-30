@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { appBase, isAppHostHeader, siteBase } from "@/lib/hosts";
 import { NavPills } from "@/components/NavPills";
 import "@fontsource-variable/inter";
@@ -12,6 +12,9 @@ import { authEnabled } from "@/lib/supabase/config";
 import { getDictionary } from "@/lib/i18n/server";
 import { trackingConfig } from "@/lib/tracking";
 import { CookieSettingsLink, Tracking } from "@/components/Tracking";
+import { Icon } from "@/components/Icon";
+import { ThemeSync } from "@/components/ThemeSync";
+import { THEME_COLOR, THEME_COOKIE, THEME_SCRIPT, parseTheme } from "@/lib/theme";
 
 /** Correo de contacto público: solo se muestra si está configurado. */
 const CONTACT = process.env.CONTACT_EMAIL;
@@ -25,7 +28,19 @@ export const metadata: Metadata = {
     "Upload a photo and get a visualization video with your face, your script and a voice that guides you while you repeat your affirmations out loud.",
 };
 
-export const viewport: Viewport = { themeColor: "#0a0a0b" };
+/** Color de la barra del navegador según el tema elegido en Ajustes. */
+export async function generateViewport(): Promise<Viewport> {
+  const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
+  if (theme === "system") {
+    return {
+      themeColor: [
+        { media: "(prefers-color-scheme: light)", color: THEME_COLOR.light },
+        { media: "(prefers-color-scheme: dark)", color: THEME_COLOR.dark },
+      ],
+    };
+  }
+  return { themeColor: THEME_COLOR[theme] };
+}
 
 export default async function RootLayout({
   children,
@@ -42,6 +57,7 @@ export default async function RootLayout({
   const app = splitHosts && !inApp ? appBase() : ""; // enlaces de la web a la app
   const site = inApp ? siteBase() : ""; // enlaces de la app a la web
   const tracking = trackingConfig();
+  const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
 
   // Menú de la web pública (sin "Crear": ese es el botón de la derecha, que lleva a la app).
   const nav = [
@@ -52,8 +68,13 @@ export default async function RootLayout({
   ];
 
   return (
-    <html lang={locale}>
+    // "system" se resuelve en el navegador antes de pintar (THEME_SCRIPT).
+    <html lang={locale} data-theme={theme === "system" ? undefined : theme} data-theme-pref={theme} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="grain min-h-dvh">
+        <ThemeSync pref={theme} />
         <header className="material-chrome sticky top-0 z-40 border-b border-[var(--color-hairline)]">
           <div className="mx-auto flex h-14 max-w-[1120px] items-center justify-between gap-4 px-6">
             <Link href={inApp ? "/profile" : "/"} aria-label="ManifestLifeAI">
@@ -89,9 +110,17 @@ export default async function RootLayout({
                   </a>
                 </>
               ) : signedIn ? (
-                // Con sesión: perfil y crear otra visualización. Idioma y salir están en Editar perfil.
+                // Con sesión: feed, perfil, ajustes y crear otra visualización.
                 <>
                   <NavPills feed={t.nav.feed} profile={t.aura.nav} />
+                  <Link
+                    href="/settings"
+                    aria-label={t.settings.title}
+                    title={t.settings.title}
+                    className="interactive grid h-8 w-8 place-items-center rounded-full text-[var(--color-label-2)] hover:text-[var(--color-label-1)]"
+                  >
+                    <Icon name="settings" size={19} />
+                  </Link>
                   <Link
                     href="/create"
                     className="interactive rounded-full bg-white px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-black hover:bg-white/90"

@@ -232,3 +232,88 @@ body {
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
+
+/*
+  ─────────────────────────────────────────────────────────────────────────
+  TEMA CLARO
+
+  Se activa con <html data-theme="light"> (Ajustes → Apariencia). Cambia los
+  tokens y "traduce" los blancos fijos de la interfaz a sus equivalentes
+  oscuros. Lo que va sobre fotos o vídeo (visor, reproductor, cámara, avisos
+  sobre la imagen) se marca con [data-dark] y se queda como en el tema oscuro.
+  ─────────────────────────────────────────────────────────────────────────
+*/
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-surface-1: #f5f5f7;
+  --color-surface-2: #ffffff;
+  --color-surface-3: #ececf0;
+  --color-label-1: rgba(0, 0, 0, 0.88);
+  --color-label-2: rgba(0, 0, 0, 0.58);
+  --color-label-3: rgba(0, 0, 0, 0.4);
+  --color-label-4: rgba(0, 0, 0, 0.2);
+  --color-hairline: rgba(0, 0, 0, 0.09);
+  --color-hairline-strong: rgba(0, 0, 0, 0.18);
+  --color-accent: #111111;
+}
+/* Zonas sobre imagen o vídeo: siempre oscuras, también en el tema claro. */
+:root[data-theme="light"] [data-dark] {
+  color-scheme: dark;
+  --color-surface-1: #0a0a0b;
+  --color-surface-2: #141416;
+  --color-surface-3: #1d1d20;
+  --color-label-1: rgba(255, 255, 255, 0.95);
+  --color-label-2: rgba(255, 255, 255, 0.58);
+  --color-label-3: rgba(255, 255, 255, 0.32);
+  --color-label-4: rgba(255, 255, 255, 0.18);
+  --color-hairline: rgba(255, 255, 255, 0.10);
+  --color-hairline-strong: rgba(255, 255, 255, 0.18);
+  --color-accent: #ffffff;
+}
+
+:root[data-theme="light"] .material:not([data-dark] *) { background: rgba(255, 255, 255, 0.7); }
+:root[data-theme="light"] .material-chrome:not([data-dark] *) { background: rgba(245, 245, 247, 0.78); }
+:root[data-theme="light"] .is-selected:not([data-dark] *) {
+  border-color: rgba(0, 0, 0, 0.55) !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+:root[data-theme="light"] :focus-visible { outline-color: rgba(0, 0, 0, 0.6); }
+:root[data-theme="light"] .grain::after { opacity: 0.02; }
+
+/* Botón principal: blanco sobre oscuro → negro sobre claro. */
+:root[data-theme="light"] :is(.bg-white, .bg-white\/90).text-black:not([data-dark] *),
+:root[data-theme="light"] :is(.hover\:bg-white\/90).text-black:not([data-dark] *):hover {
+  background-color: #111111;
+  color: #ffffff;
+}
+
+/* Rellenos translúcidos blancos → negros, algo más suaves. */
+:root[data-theme="light"] .bg-white\/5:not([data-dark] *),
+:root[data-theme="light"] .bg-white\/\[0\.04\]:not([data-dark] *),
+:root[data-theme="light"] .bg-white\/\[0\.045\]:not([data-dark] *),
+:root[data-theme="light"] .hover\:bg-white\/5:hover:not([data-dark] *) { background-color: rgba(0, 0, 0, 0.035); }
+:root[data-theme="light"] .bg-white\/\[0\.06\]:not([data-dark] *),
+:root[data-theme="light"] .bg-white\/\[0\.07\]:not([data-dark] *),
+:root[data-theme="light"] .bg-white\/10:not([data-dark] *),
+:root[data-theme="light"] .hover\:bg-white\/10:hover:not([data-dark] *) { background-color: rgba(0, 0, 0, 0.06); }
+:root[data-theme="light"] .bg-white\/12:not([data-dark] *),
+:root[data-theme="light"] .bg-white\/15:not([data-dark] *) { background-color: rgba(0, 0, 0, 0.08); }
+:root[data-theme="light"] .bg-white\/20:not([data-dark] *) { background-color: rgba(0, 0, 0, 0.11); }
+:root[data-theme="light"] .bg-white\/30:not([data-dark] *),
+:root[data-theme="light"] .bg-white\/45:not([data-dark] *) { background-color: rgba(0, 0, 0, 0.16); }
+
+/* Texto, bordes y anillos blancos sobre la página (no sobre fotos con fondo negro). */
+:root[data-theme="light"] .text-white:not([class*="bg-black"]):not([data-dark] *) { color: var(--color-label-1); }
+:root[data-theme="light"] :is(.text-white\/90, .text-white\/85, .text-white\/80):not([class*="bg-black"]):not([data-dark] *) { color: var(--color-label-1); }
+:root[data-theme="light"] :is(.text-white\/70, .text-white\/65, .text-white\/55):not([class*="bg-black"]):not([data-dark] *) { color: var(--color-label-2); }
+:root[data-theme="light"] .border-white:not([data-dark] *) { border-color: rgba(0, 0, 0, 0.85); }
+:root[data-theme="light"] :is(.border-white\/70, .border-white\/25):not([data-dark] *) { border-color: rgba(0, 0, 0, 0.45); }
+:root[data-theme="light"] .ring-white:not([data-dark] *) { --tw-ring-color: rgba(0, 0, 0, 0.85); }
+:root[data-theme="light"] .ring-white\/10:not([data-dark] *) { --tw-ring-color: rgba(0, 0, 0, 0.08); }
+
+/* Colores pastel pensados para fondo oscuro → tonos con contraste sobre claro. */
+:root[data-theme="light"] .text-emerald-300:not([data-dark] *),
+:root[data-theme="light"] .text-emerald-300\/90:not([data-dark] *) { color: #047857; }
+:root[data-theme="light"] :is(.text-rose-300, .text-red-300, .text-rose-100):not([data-dark] *) { color: #be123c; }
+:root[data-theme="light"] :is(.text-amber-200, .text-amber-200\/90):not([data-dark] *) { color: #b45309; }
+:root[data-theme="light"] .text-sky-300:not([data-dark] *) { color: #0369a1; }

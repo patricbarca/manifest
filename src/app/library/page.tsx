@@ -82,7 +82,7 @@ export default async function BibliotecaPage() {
                   <span className="t-eyebrow absolute left-3 top-3 rounded-full bg-black/40 px-2.5 py-1.5 text-white/85 backdrop-blur-md">
                     {t.library.status[p.status]}
                   </span>
-                  <div className="absolute inset-x-0 bottom-0 p-4">
+                  <div data-dark className="absolute inset-x-0 bottom-0 p-4 text-[var(--color-label-1)]">
                     <p className="t-sub truncate font-medium">{p.title}</p>
                     <p className="t-caption mt-0.5 text-white/55">
                       {t.products[p.tier].name} · {p.durationSec} {t.common.seconds} ·{" "}

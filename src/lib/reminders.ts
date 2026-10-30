@@ -37,7 +37,7 @@ export async function runReminders(): Promise<void> {
       streak: stats.streak,
       url: last ? `${site}/video/${last.id}` : `${site}/profile?tab=today`,
       thumb: last ? await videoThumb(last) : undefined,
-      settingsUrl: `${site}/profile/edit`,
+      settingsUrl: `${site}/settings`,
     });
     if (sent) await db.putUser({ ...user, lastReminder: today });
   }
