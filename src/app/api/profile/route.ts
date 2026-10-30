@@ -5,6 +5,7 @@ import { social } from "@/lib/social/store";
 import { HANDLE_RE } from "@/lib/social/aura";
 import { checkBlocked } from "@/lib/safety";
 import { moderate } from "@/lib/moderation";
+import { AURA_COLORS, AURA_MOTIONS } from "@/lib/social/aura-style";
 
 export const runtime = "nodejs";
 
@@ -21,6 +22,7 @@ const Patch = z.object({
     .max(200)
     .refine((v) => v === "" || /^https?:\/\/[^\s]+\.[^\s]+$/i.test(v), "link")
     .optional(),
+  highlightAura: z.object({ color: z.enum(AURA_COLORS), motion: z.enum(AURA_MOTIONS) }).optional(),
 });
 
 export async function GET() {
@@ -48,6 +50,7 @@ export async function PATCH(request: Request) {
     next.handle = body.data.handle;
   }
   if (body.data.visibility) next.visibility = body.data.visibility;
+  if (body.data.highlightAura) next.highlightAura = body.data.highlightAura;
   // Textos libres: vacío borra el campo.
   for (const k of ["bio", "mantra", "location", "link"] as const) {
     const v = body.data[k];

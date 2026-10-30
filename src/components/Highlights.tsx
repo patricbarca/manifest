@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { AuraRing } from "./AuraRing";
+import { DEFAULT_AURA, type AuraStyle } from "@/lib/social/aura-style";
 
 export type HighlightItem = { videoUrl: string; posterUrl: string; label?: string; caption?: string };
 export type HighlightGroup = { id: string; title: string; items: HighlightItem[] };
@@ -9,25 +11,40 @@ export type HighlightGroup = { id: string; title: string; items: HighlightItem[]
  * Highlights como en Instagram: un círculo por escena (cada deseo animado).
  * Al tocar se ven a pantalla completa, sin sonido, y siguen con las demás.
  */
-export function Highlights({ groups, closeLabel, aiLabel }: { groups: HighlightGroup[]; closeLabel: string; aiLabel: string }) {
+export function Highlights({
+  groups,
+  closeLabel,
+  aiLabel,
+  aura = DEFAULT_AURA,
+  extra,
+}: {
+  groups: HighlightGroup[];
+  closeLabel: string;
+  aiLabel: string;
+  /** Aura que eligió el dueño del perfil. */
+  aura?: AuraStyle;
+  /** Círculo extra al final (en tu perfil: "Editar"). */
+  extra?: ReactNode;
+}) {
   const [open, setOpen] = useState<number | null>(null);
   // Todas las escenas visibles, en orden, como una sola secuencia de historias.
   const all: HighlightGroup = {
     id: "all",
     title: "",
-    items: groups.flatMap((g) => g.items.map((it) => ({ ...it, caption: it.label, label: it.label || g.title }))),
+    items: groups.flatMap((g) => g.items.map((it) => ({ ...it, caption: it.label || g.title, label: it.label || g.title }))),
   };
   return (
-    <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-1">
+    <div className="-mx-1 flex gap-4 overflow-x-auto px-2 pb-2 pt-2">
       {all.items.map((it, i) => (
         <button key={it.posterUrl} type="button" onClick={() => setOpen(i)} className="interactive flex w-[76px] shrink-0 flex-col items-center gap-1.5">
-          <span className="rounded-full bg-gradient-to-tr from-amber-300 via-rose-400 to-fuchsia-500 p-[2px]">
+          <AuraRing style={aura}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={it.posterUrl} alt="" className="h-[68px] w-[68px] rounded-full border-2 border-[var(--color-bg,#000)] object-cover" />
-          </span>
+            <img src={it.posterUrl} alt="" className="block h-[66px] w-[66px] rounded-full border-2 border-[var(--color-surface-1)] object-cover" />
+          </AuraRing>
           <span className="t-caption w-full truncate text-center text-[var(--color-label-2)]">{it.caption ?? "\u00a0"}</span>
         </button>
       ))}
+      {extra}
       {open !== null && <Viewer group={all} start={open} onClose={() => setOpen(null)} closeLabel={closeLabel} aiLabel={aiLabel} />}
     </div>
   );

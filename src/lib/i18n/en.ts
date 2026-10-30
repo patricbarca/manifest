@@ -33,6 +33,21 @@ export const en = {
     account: "Account",
     editProfile: "Edit public profile",
   },
+  highlights: {
+    edit: "Edit",
+    add: "Add",
+    title: "Your highlights",
+    pick: "What shows on your profile",
+    pickHint: "Tap to show or hide. Only the animated scene shows, muted and without your phrase.",
+    none: "You don't have animated manifestations yet. Once you create one, you can add it here.",
+    auraTitle: "Your aura",
+    color: "Colour",
+    motion: "Motion",
+    colors: { sunset: "Sunset", gold: "Gold", rose: "Rose", violet: "Violet", emerald: "Emerald", sky: "Sky", silver: "Silver", rainbow: "Rainbow" },
+    motions: { breathe: "Breathe", spin: "Spin", still: "Still" },
+    done: "Done",
+    error: "Couldn't save. Please try again.",
+  },
   footer: {
     disclaimer:
       "ManifestLifeAI is a visualization and focus tool. It does not replace medical treatment or financial advice, and it does not guarantee results.",

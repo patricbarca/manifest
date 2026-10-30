@@ -6,7 +6,8 @@ import { ProfileHeader } from "@/components/ProfileHeader";
 import { ShareProfileButton } from "@/components/ShareProfileButton";
 import { CirclePanel } from "@/components/CirclePanel";
 import { PeopleSearch } from "@/components/PeopleSearch";
-import { Highlights } from "@/components/Highlights";
+import { MyHighlights } from "@/components/MyHighlights";
+import { DEFAULT_AURA } from "@/lib/social/aura-style";
 import { manifestPosts } from "@/lib/social/feed";
 import { manifests } from "@/lib/manifest/store";
 import { ManifestationGrid } from "@/components/ManifestationGrid";
@@ -89,7 +90,15 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
         </Link>
       )}
 
-      {groups.length > 0 && <Highlights groups={groups} closeLabel={t.aura.close} aiLabel={t.aiLabel} />}
+      <MyHighlights
+        initial={mine
+          .filter((m) => m.status === "ready" && m.highlight)
+          .map((m) => ({ id: m.id, title: m.title, videoUrl: m.highlight!.videoUrl, posterUrl: m.highlight!.posterUrl, onProfile: !!m.onProfile }))}
+        aura={who.profile.highlightAura ?? DEFAULT_AURA}
+        closeLabel={t.aura.close}
+        aiLabel={t.aiLabel}
+        t={t.highlights}
+      />
 
       <nav className="flex border-b border-[var(--color-hairline)]">
         {TABS.map((k) => (

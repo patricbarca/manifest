@@ -32,6 +32,21 @@ export const es: Dictionary = {
     account: "Cuenta",
     editProfile: "Editar perfil público",
   },
+  highlights: {
+    edit: "Editar",
+    add: "Añadir",
+    title: "Tus highlights",
+    pick: "Qué se ve en tu perfil",
+    pickHint: "Toca para mostrar u ocultar. Solo se ve la escena animada, sin sonido y sin tu frase.",
+    none: "Aún no tienes manifestaciones animadas. Cuando crees una, podrás añadirla aquí.",
+    auraTitle: "Tu aura",
+    color: "Color",
+    motion: "Movimiento",
+    colors: { sunset: "Atardecer", gold: "Dorada", rose: "Rosa", violet: "Violeta", emerald: "Esmeralda", sky: "Cielo", silver: "Plata", rainbow: "Arcoíris" },
+    motions: { breathe: "Respira", spin: "Gira", still: "Quieta" },
+    done: "Listo",
+    error: "No se pudo guardar. Inténtalo de nuevo.",
+  },
   footer: {
     disclaimer:
       "ManifestLifeAI es una herramienta de visualización y enfoque. No sustituye tratamiento médico ni asesoramiento financiero, y no garantiza resultados.",
