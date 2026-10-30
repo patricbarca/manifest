@@ -663,12 +663,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
               consent={{
                 given: consent && bioConsent,
                 text: t.consent,
-                biometric: (
-                  <>
-                    {t.biometricConsent}{" "}
-                    <a href="/privacy" target="_blank" className="underline">{t.biometricMore}</a>
-                  </>
-                ),
+                biometric: t.biometricConsent,
                 onGive: () => {
                   setConsent(true);
                   setBioConsent(true);

@@ -51,6 +51,7 @@ export type PhotoGuideLabels = {
   photoN: string;
   consentTitle: string;
   consentAccept: string;
+  consentWho: string;
   tipsBubble: string;
   close: string;
 };
@@ -243,7 +244,11 @@ export function PhotoSlots({
               </label>
               <label className="t-sub flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
                 <input type="checkbox" checked={ticks.b} onChange={(e) => setTicks((x) => ({ ...x, b: e.target.checked }))} className="mt-[3px] h-4 w-4 shrink-0 accent-emerald-500" />
-                <span>{consent.biometric}</span>
+                <span>
+                  {consent.biometric}{" "}
+                  {/* La lista de proveedores, en la política de privacidad (se actualiza sin volver a pedir esto). */}
+                  <a href="/privacy#providers" target="_blank" className="underline">{t.consentWho}</a>
+                </span>
               </label>
               <button
                 type="button"

@@ -127,6 +127,7 @@ export const en = {
     photoN: "Photo {n}",
     consentTitle: "Before we use your photos",
     consentAccept: "Accept and continue",
+    consentWho: "See who receives them",
     tipsBubble: "Before you upload your photos:",
     close: "Close",
   },
@@ -566,7 +567,7 @@ export const en = {
   consent:
     "I confirm these photos are of me, that I am over 18, and I authorize their use to generate my video.",
   biometricConsent:
-    "I expressly consent to my face photos being processed with AI only to create my scenes. They are sent to fal.ai and the models it runs (OpenAI, Google, ByteDance, MiniMax, Kuaishou/Kling, ElevenLabs), on servers outside my country; they are not used to train models or to identify me, and they are deleted within 30 days at most. I can withdraw consent by deleting my videos.",
+    "I expressly consent to my face photos being processed with AI only to create my scenes. They are sent to AI providers with servers outside my country; they are not used to train models or to identify me, and they are deleted within 30 days at most. I can withdraw it by deleting my photos and videos.",
   biometricMore: "Learn more",
   aiLabel: "AI-generated",
   review: {
