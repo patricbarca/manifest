@@ -128,7 +128,7 @@ export default async function RootLayout({
           </div>
           {/* Con sesión: Feed, Perfil, Crear y Ajustes, debajo de la marca. */}
           {signedIn && !(splitHosts && !inApp) && (
-            <NavPills feed={t.nav.feed} profile={t.aura.nav} create={t.nav.newShort} settings={t.settings.title} />
+            <NavPills feed={t.nav.feed} profile={t.aura.nav} create={t.nav.newShort} settings={t.settings.title} search={t.nav.search} />
           )}
           {/* En el móvil, el menú de la web va en una segunda fila (en la app no hay). */}
           {!inApp && (

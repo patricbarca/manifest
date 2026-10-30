@@ -41,6 +41,8 @@ function Preview({ poster, video }: { poster?: string; video?: string }) {
 function Slide({ m, active, near, onSeen }: { m: Manifestation; active: boolean; near: boolean; onSeen: (id: string) => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const vid = useRef<HTMLVideoElement>(null);
+  // El vídeo aparece (fundido) solo cuando ya puede pintar: hasta entonces se ve su primera imagen.
+  const [ready, setReady] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -54,15 +56,26 @@ function Slide({ m, active, near, onSeen }: { m: Manifestation; active: boolean;
     if (active) void v.play().catch(() => {});
     else v.pause();
   }, [active]);
-  const poster = m.highlight?.posterUrl ?? m.imageUrl;
+  // La imagen de la escena ES el primer fotograma de la animación (y en buena calidad).
+  const first = m.imageUrl ?? m.highlight?.posterUrl;
+  const media = "absolute inset-0 m-auto h-full w-full object-cover sm:max-w-md sm:rounded-2xl";
   return (
-    <div ref={ref} data-id={m.id} className="relative flex h-dvh w-full snap-start snap-always items-center justify-center">
-      {/* Solo la que se ve y sus vecinas cargan el vídeo: el resto, solo la foto. */}
-      {near ? (
-        <video ref={vid} src={m.clipUrl} poster={poster} loop muted playsInline preload={active ? "auto" : "metadata"} className="h-full w-full object-cover sm:max-w-md sm:rounded-2xl" />
-      ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        poster && <img src={poster} alt="" className="h-full w-full object-cover sm:max-w-md" />
+    <div ref={ref} data-id={m.id} className="relative h-dvh w-full snap-start snap-always">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {first && <img src={first} alt="" decoding="async" className={media} />}
+      {/* Solo la que se ve y sus vecinas cargan el vídeo (copia ligera si la hay). */}
+      {near && (
+        <video
+          ref={vid}
+          src={m.playUrl ?? m.clipUrl}
+          loop
+          muted
+          playsInline
+          preload="auto"
+          onLoadedData={() => setReady(true)}
+          onPlaying={() => setReady(true)}
+          className={`${media} transition-opacity duration-300 ${ready ? "opacity-100" : "opacity-0"}`}
+        />
       )}
     </div>
   );

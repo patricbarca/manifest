@@ -13,6 +13,7 @@ export const es: Dictionary = {
     openApp: "Abrir la app",
     login: "Entrar",
     newShort: "Crear",
+    search: "Buscar personas",
     feed: "Feed",
   },
   settings: {
@@ -721,7 +722,7 @@ export const es: Dictionary = {
     market: "Market",
   },
   aura: {
-    toast: { earned: "+{n} aura", already: "Hoy ya sumaste tu aura por ver tu vídeo", streak: "racha de {n} días", streakOne: "racha de 1 día" },
+    toast: { earned: "+{n} aura", already: "Hoy ya sumaste tu aura por ver tu vídeo", streak: "racha de {n} días", streakOne: "racha de 1 día", noSkip: "Para ganar aura, míralo sin adelantar." },
     nav: "Perfil",
     title: "Tu perfil",
     aura: "Aura",
@@ -733,7 +734,7 @@ export const es: Dictionary = {
     best: "Mejor racha: {n} días",
     bestOne: "Mejor racha: 1 día",
     howTitle: "Cómo se gana aura",
-    how: "+10 de aura el día que ves completo uno de tus vídeos, y +5 si lo ves fuera de la app (máximo +15 al día). Lo que suma es el hábito: verlo cada día mantiene tu racha.",
+    how: "+10 de aura el día que ves completo uno de tus vídeos en la app, sin adelantarlo (una vez al día). Lo que suma es el hábito: verlo cada día mantiene tu racha.",
     achievements: "Logros",
     manifestations: "Tus manifestaciones",
     noManifestations: "Aún no tienes vídeos.",
@@ -807,7 +808,6 @@ export const es: Dictionary = {
     remindersHint: "Si tienes racha y a las 19:00 aún no has visto tu vídeo, te avisamos. Uno al día como mucho.",
     installTitle: "Tenerla como app",
     installHow: "iPhone: en Safari, toca Compartir → «Añadir a pantalla de inicio». Android: en Chrome, menú ⋮ → «Instalar aplicación».",
-    checkin: { checkin: "Lo vi hoy fuera de la app (+5)", done: "+5 aura · racha guardada", already: "Hoy ya sumaste este aura", hint: "Verlo aquí completo da +10." },
     hiddenScene: "Oculta",
     labelPlaceholder: "Nombre",
     tapToHide: "Toca para mostrar u ocultar",

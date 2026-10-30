@@ -1,6 +1,5 @@
 "use client";
 
-import { CheckinButton } from "./CheckinButton";
 import { ShareVideoButton } from "./ShareVideoButton";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -87,7 +86,6 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
             <VisualizationPlayer project={project} t={t} />
           )}
           <p className="t-caption mt-2 text-center text-[var(--color-label-3)]">✦ {t.aiLabel}</p>
-          {project.status === "ready" && <CheckinButton projectId={project.id} t={t.aura.checkin} />}
         </div>
 
         <div className="space-y-8">

@@ -128,6 +128,8 @@ export interface Manifestation {
   imageUrl?: string;
   /** Clip de la escena a calidad completa: es lo que se reutiliza al montar. */
   clipUrl?: string;
+  /** Copia ligera del clip (720 px, índice al principio) para verlo en la app. */
+  playUrl?: string;
   /** Voz de la afirmación (con la voz y el idioma de arriba). */
   voiceUrl?: string;
   highlight?: Highlight;
