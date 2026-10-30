@@ -72,9 +72,11 @@ type Props = {
   /** El diccionario llega por prop: este componente corre en el cliente. */
   t: Dictionary;
   locale: Locale;
+  /** Ya dio el consentimiento de fotos (no se vuelve a pedir). */
+  consented?: boolean;
 };
 
-export function CreateWizard({ initialArea, template, freeLeft, prices, initialTier, t, locale }: Props) {
+export function CreateWizard({ initialArea, template, freeLeft, prices, initialTier, t, locale, consented = false }: Props) {
   const router = useRouter();
 
   const [step, setStep] = useState<number>(STEP.desires);
@@ -93,9 +95,9 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
   const [palette, setPalette] = useState<Palette>("dusk");
   const [videoLocale, setVideoLocale] = useState<VideoLocale>(locale as VideoLocale);
   const [voice, setVoice] = useState<string>(DEFAULT_VOICE);
-  const [consent, setConsent] = useState(false);
+  const [consent, setConsent] = useState(consented);
   // Consentimiento aparte para tratar las fotos de cara (dato biométrico): proveedores, plazo y uso.
-  const [bioConsent, setBioConsent] = useState(false);
+  const [bioConsent, setBioConsent] = useState(consented);
   // UE: para generar ya hay que pedirlo expresamente y aceptar perder el desistimiento de 14 días.
   const [waiver, setWaiver] = useState(false);
   const [people, setPeople] = useState<PersonDraft[]>([]);
@@ -656,32 +658,25 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
               urls={slotUrls}
               onPick={(file, slot, scanned) => upload(file, slot, scanned)}
               onRemove={(slot) => setSlotUrls((prev) => prev.map((u, i) => (i === slot ? undefined : u)))}
-              disabled={!consent || !bioConsent || uploading}
+              disabled={uploading}
               busySlot={uploadingSlot}
+              consent={{
+                given: consent && bioConsent,
+                text: t.consent,
+                biometric: (
+                  <>
+                    {t.biometricConsent}{" "}
+                    <a href="/privacy" target="_blank" className="underline">{t.biometricMore}</a>
+                  </>
+                ),
+                onGive: () => {
+                  setConsent(true);
+                  setBioConsent(true);
+                },
+              }}
               t={t.photoGuide}
             />
 
-            <label className="t-sub flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
-              <input
-                type="checkbox"
-                checked={consent}
-                onChange={(e) => setConsent(e.target.checked)}
-                className="mt-[3px] h-4 w-4 accent-white"
-              />
-              <span>{t.consent}</span>
-            </label>
-            <label className="t-sub flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
-              <input
-                type="checkbox"
-                checked={bioConsent}
-                onChange={(e) => setBioConsent(e.target.checked)}
-                className="mt-[3px] h-4 w-4 accent-white"
-              />
-              <span>
-                {t.biometricConsent}{" "}
-                <a href="/privacy" target="_blank" className="underline">{t.biometricMore}</a>
-              </span>
-            </label>
 
             <p className="t-caption text-[var(--color-label-3)]">
               {uploading ? t.create.uploading : fill(t.create.photoCount, { n: photoUrls.length })}

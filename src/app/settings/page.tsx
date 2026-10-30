@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { hasPhotoConsent } from "@/lib/consent";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { MyPhotos } from "@/components/MyPhotos";
@@ -69,6 +70,7 @@ export default async function SettingsPage() {
       <MyPhotos
         initial={photos}
         guide={t.photoGuide}
+        consented={hasPhotoConsent(user)}
         t={{ title: t.settings.photos, hint: t.manifest.myPhotosHint, empty: t.manifest.noPhotos, remove: t.manifest.removePhoto, upload: t.manifest.upload, uploading: t.manifest.uploading, consent: t.consent, biometric: t.biometricConsent, error: t.aura.errors.invalid }}
       />
 
