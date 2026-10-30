@@ -12,7 +12,6 @@ import { authEnabled } from "@/lib/supabase/config";
 import { getDictionary } from "@/lib/i18n/server";
 import { trackingConfig } from "@/lib/tracking";
 import { CookieSettingsLink, Tracking } from "@/components/Tracking";
-import { Icon } from "@/components/Icon";
 import { ThemeSync } from "@/components/ThemeSync";
 import { THEME_COLOR, THEME_COOKIE, THEME_SCRIPT, parseTheme } from "@/lib/theme";
 
@@ -78,7 +77,7 @@ export default async function RootLayout({
         <header className="material-chrome sticky top-0 z-40 border-b border-[var(--color-hairline)]">
           <div className="mx-auto flex h-14 max-w-[1120px] items-center justify-between gap-4 px-6">
             <Link href={inApp ? "/profile" : "/"} aria-label="ManifestLifeAI">
-              <Logo size={26} compact={signedIn} />
+              <Logo size={26} />
             </Link>
 
             <nav className={`absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 ${inApp ? "" : "md:flex"}`}>
@@ -110,25 +109,8 @@ export default async function RootLayout({
                   </a>
                 </>
               ) : signedIn ? (
-                // Con sesión: feed, perfil, ajustes y crear otra visualización.
-                <>
-                  <NavPills feed={t.nav.feed} profile={t.aura.nav} />
-                  <Link
-                    href="/settings"
-                    aria-label={t.settings.title}
-                    title={t.settings.title}
-                    className="interactive grid h-8 w-8 place-items-center rounded-full text-[var(--color-label-2)] hover:text-[var(--color-label-1)]"
-                  >
-                    <Icon name="settings" size={19} />
-                  </Link>
-                  <Link
-                    href="/create"
-                    className="interactive rounded-full bg-white px-4 py-1.5 text-[13px] font-medium tracking-[-0.01em] text-black hover:bg-white/90"
-                  >
-                    + <span className="sm:hidden">{t.nav.newShort}</span>
-                    <span className="hidden sm:inline">{t.nav.newVisualization}</span>
-                  </Link>
-                </>
+                // Con sesión, arriba solo la marca: la navegación va en la fila de abajo.
+                null
               ) : (
                 // Sin sesión no hay "Entrar" aparte: "Empezar" ya pide entrar
                 // (/create redirige a /entrar y vuelve), y dos botones al mismo sitio confunden.
@@ -144,6 +126,10 @@ export default async function RootLayout({
               )}
             </div>
           </div>
+          {/* Con sesión: Feed, Perfil, Crear y Ajustes, debajo de la marca. */}
+          {signedIn && !(splitHosts && !inApp) && (
+            <NavPills feed={t.nav.feed} profile={t.aura.nav} create={t.nav.newShort} settings={t.settings.title} />
+          )}
           {/* En el móvil, el menú de la web va en una segunda fila (en la app no hay). */}
           {!inApp && (
             <nav className="flex gap-5 overflow-x-auto border-t border-[var(--color-hairline)] px-6 py-2 md:hidden">
