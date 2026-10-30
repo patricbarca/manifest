@@ -91,6 +91,9 @@ export const es: Dictionary = {
     builds: { slim: "Delgada", average: "Media", athletic: "Atlética", curvy: "Con curvas", plus: "Talla grande" },
     heights: { short: "Baja", average: "Media", tall: "Alta" },
     bodySkip: "Prefiero no decirlo",
+    photoN: "Foto {n}",
+    tipsBubble: "Antes de subir tus fotos:",
+    close: "Cerrar",
   },
   cookies: {
     text: "Usamos cookies de Google y TikTok para saber qué anuncios funcionan. Solo si aceptas.",

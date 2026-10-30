@@ -74,7 +74,10 @@ export async function POST(request: Request) {
   // Sus selfies pasan el pre-análisis: una mala referencia deforma la cara en todas las escenas.
   const self = form.get("kind") === "self";
   // El hueco 4 (índice 3) es de medio cuerpo: ahí la cara puede salir más pequeña.
-  const quality = self ? await assessSelfie(abs, form.get("slot") === "3" ? "body" : "face") : null;
+  // Si la hizo el escáner, el detector del móvil ya comprobó que hay una sola cara.
+  const quality = self
+    ? await assessSelfie(abs, form.get("slot") === "3" ? "body" : "face", { oneFace: form.get("scan") === "1" })
+    : null;
   if (quality && quality.score < SELFIE_MIN_SCORE) {
     await rm(abs, { force: true });
     const tips = quality.issues.map((i) => t.selfieIssues[i]).filter(Boolean);

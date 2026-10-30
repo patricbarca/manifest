@@ -197,7 +197,12 @@ export function FaceCapture({
               const px = ctx.getImageData(0, 0, 24, 24).data;
               let sum = 0;
               for (let i = 0; i < px.length; i += 4) sum += 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
-              lastDark.current = { at: now, dark: sum / (px.length / 4) < 70 };
+              // Escena entera: la luz del sitio, no el tono de piel (una piel oscura bien iluminada no es "oscura").
+              ctx.drawImage(v, c.x, c.y, c.w, c.h, 0, 0, 24, 24);
+              const all = ctx.getImageData(0, 0, 24, 24).data;
+              let sumAll = 0;
+              for (let i = 0; i < all.length; i += 4) sumAll += 0.299 * all[i] + 0.587 * all[i + 1] + 0.114 * all[i + 2];
+              lastDark.current = { at: now, dark: sum / (px.length / 4) < 55 || sumAll / (all.length / 4) < 85 };
             }
             if (lastDark.current.dark) problem = t.scanDark;
           }

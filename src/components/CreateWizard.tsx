@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { PhotoSlots } from "./PhotoSlots";
+import { PhotoSlots, type SlotResult } from "./PhotoSlots";
 import { trackEvent } from "@/lib/track-client";
 import { useMemo, useState } from "react";
 import { PALETTES, TIERS, type Palette } from "@/lib/types";
@@ -402,13 +402,29 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
     }
   }
 
-  async function upload(file: File, slot: number) {
+  /** Selfie de un hueco: el veredicto (borde y mensaje) lo enseña PhotoSlots. */
+  async function upload(file: File, slot: number, scanned = false): Promise<SlotResult> {
     setUploading(true);
     setUploadingSlot(slot);
-    const url = await sendPhoto(file, consent, true, slot);
-    if (url) setSlotUrls((prev) => prev.map((u, i) => (i === slot ? url : u)));
+    const body = new FormData();
+    body.append("selfie", file);
+    body.append("consent", String(consent));
+    body.append("biometric", String(bioConsent));
+    body.append("kind", "self");
+    body.append("slot", String(slot));
+    if (scanned) body.append("scan", "1");
+    let result: SlotResult;
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.url) setSlotUrls((prev) => prev.map((u, i) => (i === slot ? data.url : u)));
+      result = { ok: res.ok, warn: !!data.warning, message: res.ok ? data.warning : (data.error ?? t.errors.uploadFailed) };
+    } catch {
+      result = { ok: false, message: t.errors.uploadFailed };
+    }
     setUploadingSlot(undefined);
     setUploading(false);
+    return result;
   }
 
   async function uploadPersonPhotos(i: number, files: File[]) {
@@ -638,7 +654,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
           <div className="space-y-5">
             <PhotoSlots
               urls={slotUrls}
-              onPick={(file, slot) => upload(file, slot)}
+              onPick={(file, slot, scanned) => upload(file, slot, scanned)}
               onRemove={(slot) => setSlotUrls((prev) => prev.map((u, i) => (i === slot ? undefined : u)))}
               disabled={!consent || !bioConsent || uploading}
               busySlot={uploadingSlot}
