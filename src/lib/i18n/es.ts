@@ -785,6 +785,7 @@ export const es: Dictionary = {
     viewProfile: "Ver mi perfil",
     account: "Cuenta",
     reminders: "Recordatorio diario por email",
+    reminderTest: { send: "Enviarme uno de prueba", sending: "Enviando…", sent: "Enviado. Mira tu correo.", tooSoon: "Espera unos minutos para pedir otro.", failed: "No se pudo enviar." },
     remindersHint: "Si tienes racha y a las 19:00 aún no has visto tu vídeo, te avisamos. Uno al día como mucho.",
     installTitle: "Tenerla como app",
     installHow: "iPhone: en Safari, toca Compartir → «Añadir a pantalla de inicio». Android: en Chrome, menú ⋮ → «Instalar aplicación».",

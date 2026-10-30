@@ -6,6 +6,7 @@ import { MyPhotos } from "@/components/MyPhotos";
 import { livePhotos } from "@/lib/manifest/photos";
 import { LocaleToggle } from "@/components/LocaleToggle";
 import { ReminderToggle } from "@/components/ReminderToggle";
+import { ReminderTest } from "@/components/ReminderTest";
 import { fill } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n/locale";
 import { db } from "@/lib/db/store";
@@ -48,6 +49,7 @@ export default async function EditarPerfilPage() {
         <div className="mt-5 border-t border-[var(--color-hairline)] pt-5">
           <ReminderToggle initial={who.user.reminders !== false} label={t.aura.reminders} />
           <p className="t-caption mt-1 text-[var(--color-label-3)]">{t.aura.remindersHint}</p>
+          <ReminderTest t={t.aura.reminderTest} />
         </div>
         <div className="mt-5 border-t border-[var(--color-hairline)] pt-5">
           <p className="t-sub text-[var(--color-label-2)]">{t.aura.installTitle}</p>

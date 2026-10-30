@@ -431,4 +431,6 @@ export interface User {
   photoUrls?: string[];
   /** Complexión y estatura elegidas con botones (opcional): se añaden al prompt de las escenas. */
   body?: import("./body").BodyFeatures;
+  /** Último recordatorio de prueba pedido desde Ajustes (para limitarlo). */
+  lastTestReminder?: number;
 }

@@ -786,6 +786,7 @@ export const en = {
     viewProfile: "View my profile",
     account: "Account",
     reminders: "Daily reminder email",
+    reminderTest: { send: "Send me a test", sending: "Sending…", sent: "Sent. Check your inbox.", tooSoon: "Wait a few minutes before asking again.", failed: "Couldn't send it." },
     remindersHint: "If you have a streak and haven't watched your video by 7 pm, we'll remind you. At most once a day.",
     installTitle: "Use it as an app",
     installHow: "iPhone: in Safari, tap Share → \"Add to Home Screen\". Android: in Chrome, menu ⋮ → \"Install app\".",
