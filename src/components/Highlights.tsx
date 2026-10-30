@@ -52,7 +52,7 @@ export function Viewer({ group, start, onClose, closeLabel, aiLabel }: { group: 
 
   const item = group.items[i];
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95" role="dialog" aria-modal="true">
+    <div data-dark className="fixed inset-0 z-50 flex items-center justify-center bg-black/95" role="dialog" aria-modal="true">
       <div className="relative aspect-[9/16] h-full max-h-[100dvh] w-auto max-w-full overflow-hidden sm:max-h-[90dvh] sm:rounded-2xl">
         <video
           ref={ref}

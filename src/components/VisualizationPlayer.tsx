@@ -217,6 +217,7 @@ export function VisualizationPlayer({ project, t }: Props) {
     <div className="mx-auto w-full max-w-[380px]">
       <div
         ref={shellRef}
+        data-dark
         className="relative aspect-[9/16] w-full overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-hairline)] bg-black shadow-[0_40px_90px_-24px_rgba(0,0,0,0.95)]"
       >
         {/* Escena */}
