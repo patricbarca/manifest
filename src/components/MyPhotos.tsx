@@ -55,7 +55,7 @@ export function MyPhotos({ initial, t, guide }: { initial: string[]; t: Labels; 
       <p className="t-caption mb-4 mt-1 text-[var(--color-label-3)]">{t.hint}</p>
       <PhotoSlots
         urls={[0, 1, 2, 3].map((i) => photos[i])}
-        onPick={(file, slot) => void upload([file], slot)}
+        onPick={(file, slot) => upload([file], slot)}
         onRemove={(i) => photos[i] && void remove(photos[i])}
         disabled={!consent || !bio || busy}
         t={guide}

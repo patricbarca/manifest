@@ -638,7 +638,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
           <div className="space-y-5">
             <PhotoSlots
               urls={slotUrls}
-              onPick={(file, slot) => void upload(file, slot)}
+              onPick={(file, slot) => upload(file, slot)}
               onRemove={(slot) => setSlotUrls((prev) => prev.map((u, i) => (i === slot ? undefined : u)))}
               disabled={!consent || !bioConsent || uploading}
               busySlot={uploadingSlot}

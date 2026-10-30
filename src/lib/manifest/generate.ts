@@ -10,6 +10,7 @@ import { deleteMediaUrl, offloadProject } from "../cleanup";
 import { manifests } from "./store";
 import { ensureLocal } from "./compose";
 import { db } from "../db/store";
+import { bodyClause } from "../body";
 
 /** Si la manifestación se pagó con un paquete y falló, devuelve la unidad (solo una vez). */
 export async function refundCredit(id: string): Promise<void> {
@@ -62,7 +63,8 @@ export async function runManifestation(id: string): Promise<void> {
       brief = script.result.sceneBriefs[0] ?? start.desire;
       affirmation = script.result.affirmations[0] ?? start.desire;
       const photos = (start.photoUrls ?? []).map((u) => localPathForMediaUrl(u)).filter((p): p is string => !!p);
-      const [scene] = buildScenes([brief], start.style ?? "cinematic", photos.length > 0, 8, photos.length);
+      const owner = await db.getUser(start.ownerId);
+      const [scene] = buildScenes([brief], start.style ?? "cinematic", photos.length > 0, 8, photos.length, bodyClause(owner?.body));
 
       // 2. Imagen con su cara.
       const prompt = start.redoNote ? `${scene.prompt}. Change requested by the person (apply it exactly): ${start.redoNote}` : scene.prompt;

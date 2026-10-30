@@ -429,4 +429,6 @@ export interface User {
   creditSessions?: string[];
   /** Sus últimas fotos (para crear manifestaciones sin volver a subirlas mientras existan). */
   photoUrls?: string[];
+  /** Complexión y estatura elegidas con botones (opcional): se añaden al prompt de las escenas. */
+  body?: import("./body").BodyFeatures;
 }
