@@ -47,7 +47,14 @@ export type PhotoGuideLabels = {
   builds: Record<BodyBuild, string>;
   heights: Record<BodyHeight, string>;
   bodySkip: string;
+  photoN: string;
+  tipsBubble: string;
+  close: string;
 };
+
+/** Resultado del análisis de una foto recién subida (lo devuelve onPick). */
+export type SlotResult = { ok: boolean; warn?: boolean; message?: string };
+type SlotStatus = { state: "ok" | "bad"; message?: string; preview?: string };
 
 /** Huecos de cara (0–2): se pueden hacer con el escáner. El 3 es de medio cuerpo. */
 const FACE_SLOTS = [0, 1, 2];
@@ -70,7 +77,8 @@ export function PhotoSlots({
   t,
 }: {
   urls: (string | undefined)[];
-  onPick: (file: File, slot: number) => void | Promise<void>;
+  /** Sube la foto; `scanned` = la hizo el escáner (ya comprobó que hay una sola cara). */
+  onPick: (file: File, slot: number, scanned?: boolean) => Promise<SlotResult | void>;
   onRemove?: (slot: number) => void;
   disabled?: boolean;
   busySlot?: number;
@@ -79,14 +87,38 @@ export function PhotoSlots({
   const [open, setOpen] = useState<number>();
   const [tips, setTips] = useState(false);
   const [scan, setScan] = useState<number[]>();
+  const [status, setStatus] = useState<Record<number, SlotStatus>>({});
+  const [bubble, setBubble] = useState(true);
   const camera = useRef<HTMLInputElement>(null);
   const gallery = useRef<HTMLInputElement>(null);
 
+  /** Sube y guarda el veredicto del hueco: borde verde o rojo y su mensaje debajo. */
+  async function send(file: File, slot: number, scanned = false) {
+    setBubble(false);
+    const res = await onPick(file, slot, scanned);
+    if (!res) return;
+    setStatus((prev) => {
+      if (prev[slot]?.preview) URL.revokeObjectURL(prev[slot].preview!);
+      const good = res.ok && !res.warn;
+      // Rechazada: se enseña igual (en rojo) para que vea cuál era y por qué.
+      return { ...prev, [slot]: { state: good ? "ok" : "bad", message: good ? undefined : res.message, preview: res.ok ? undefined : URL.createObjectURL(file) } };
+    });
+  }
+
   function pick(files: FileList | null) {
     const file = files?.[0];
-    if (file && open !== undefined) onPick(file, open);
+    if (file && open !== undefined) void send(file, open);
     setOpen(undefined);
   }
+
+  const clear = (slot: number) =>
+    setStatus((prev) => {
+      const next = { ...prev };
+      delete next[slot];
+      return next;
+    });
+  const notes = Object.entries(status).filter(([, st]) => st.state === "bad" && st.message);
+  const empty = urls.every((u) => !u) && !Object.keys(status).length;
 
   return (
     <div className="space-y-3">
@@ -109,26 +141,45 @@ export function PhotoSlots({
           onClose={() => setScan(undefined)}
           onDone={async (shots) => {
             setScan(undefined);
-            for (const s of shots) await onPick(s.file, s.slot);
+            for (const s of shots) await send(s.file, s.slot, true);
           }}
         />
       )}
+      {empty && bubble && (
+        <div className="relative rounded-[var(--radius-md)] bg-[var(--color-surface-2)] p-3 pr-8 shadow-lg ring-1 ring-[var(--color-hairline-strong)]">
+          <p className="t-caption mb-1 font-medium text-[var(--color-label-1)]">{t.tipsBubble}</p>
+          <ul className="t-caption space-y-0.5 text-[var(--color-label-2)]">
+            {t.good.map((g) => <li key={g}>✓ {g}</li>)}
+          </ul>
+          <button type="button" aria-label={t.close} onClick={() => setBubble(false)} className="absolute right-2 top-2 text-[var(--color-label-3)]">
+            ✕
+          </button>
+          {/* Pico de la burbuja apuntando a las fotos. */}
+          <span className="absolute -bottom-1.5 left-8 h-3 w-3 rotate-45 bg-[var(--color-surface-2)] ring-1 ring-[var(--color-hairline-strong)] [clip-path:polygon(100%_0,100%_100%,0_100%)]" />
+        </div>
+      )}
       <div className="grid grid-cols-4 gap-2.5">
         {t.slots.map((slot, i) => {
-          const url = urls[i];
+          const st = status[i];
+          const url = urls[i] ?? st?.preview;
+          const rejected = !urls[i] && !!st?.preview;
+          const frame = st?.state === "ok" && urls[i] ? "border-2 border-emerald-400" : st?.state === "bad" ? "border-2 border-rose-500" : url ? "border-transparent" : "border-dashed border-[var(--color-hairline-strong)] bg-[var(--color-surface-2)]";
           return (
             <div key={i} className="space-y-1">
               <button
                 type="button"
                 disabled={disabled && !url}
-                onClick={() => (url ? undefined : setOpen(open === i ? undefined : i))}
-                className={`relative block aspect-[3/4] w-full overflow-hidden rounded-[var(--radius-md)] border ${
-                  url ? "border-transparent" : "border-dashed border-[var(--color-hairline-strong)] bg-[var(--color-surface-2)]"
-                } ${open === i ? "ring-2 ring-white" : ""} disabled:opacity-50`}
+                onClick={() => (urls[i] ? undefined : setOpen(open === i ? undefined : i))}
+                className={`relative block aspect-[3/4] w-full overflow-hidden rounded-[var(--radius-md)] border ${frame} ${open === i ? "ring-2 ring-white" : ""} disabled:opacity-50`}
               >
+                {st && (
+                  <span className={`absolute right-1 top-1 z-10 grid h-5 w-5 place-items-center rounded-full text-[11px] font-bold text-black ${st.state === "ok" ? "bg-emerald-400" : "bg-rose-500"}`}>
+                    {st.state === "ok" ? "✓" : rejected ? "✗" : "!"}
+                  </span>
+                )}
                 {url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={url} alt="" className="h-full w-full object-cover" />
+                  <img src={url} alt="" className={`h-full w-full object-cover ${rejected ? "opacity-60" : ""}`} />
                 ) : (
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -141,8 +192,8 @@ export function PhotoSlots({
                   <span className="t-caption pulse-soft absolute inset-0 grid place-items-center bg-black/60 text-white">{t.uploading}</span>
                 )}
               </button>
-              {url && onRemove ? (
-                <button type="button" onClick={() => onRemove(i)} className="t-caption w-full text-center text-[var(--color-label-3)] underline">
+              {urls[i] && onRemove ? (
+                <button type="button" onClick={() => { clear(i); onRemove(i); }} className="t-caption w-full text-center text-[var(--color-label-3)] underline">
                   {t.remove}
                 </button>
               ) : (
@@ -152,6 +203,17 @@ export function PhotoSlots({
           );
         })}
       </div>
+
+      {/* Qué falla en cada foto, justo debajo de las fotos. */}
+      {notes.length > 0 && (
+        <ul className="space-y-1.5">
+          {notes.map(([slot, st]) => (
+            <li key={slot} className="t-caption rounded-[var(--radius-md)] border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-rose-100">
+              <strong>{t.photoN.replace("{n}", String(Number(slot) + 1))}:</strong> {st.message}
+            </li>
+          ))}
+        </ul>
+      )}
 
       {disabled && <p className="t-caption text-[var(--color-label-3)]">{t.needConsent}</p>}
 

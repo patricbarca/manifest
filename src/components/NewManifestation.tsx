@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { PhotoSlots, type PhotoGuideLabels } from "./PhotoSlots";
+import { PhotoSlots, type SlotResult, type PhotoGuideLabels } from "./PhotoSlots";
 import { trackEvent } from "@/lib/track-client";
 import { useState } from "react";
 import { AccessCodeForm } from "./AccessCodeForm";
@@ -52,11 +52,12 @@ export function NewManifestation({
   const canCreate = desire.trim().length >= 3 && photos > 0 && waiver && (!paymentsOn || credits > 0) && !busy;
   const input = "t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none focus:border-[var(--color-hairline-strong)]";
 
-  async function upload(files: File[], slot = 0) {
+  async function upload(files: File[], slot = 0, scanned = false): Promise<SlotResult | undefined> {
     setUploading(true);
     setBusySlot(slot);
     setError(undefined);
     setNote(undefined);
+    let result: SlotResult | undefined;
     for (const file of files.slice(0, 4)) {
       const body = new FormData();
       body.append("selfie", file);
@@ -64,20 +65,22 @@ export function NewManifestation({
       body.append("biometric", String(bio));
       body.append("kind", "self");
       body.append("slot", String(slot));
+      if (scanned) body.append("scan", "1");
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) setError(data.error ?? t.errors.invalid);
-      else {
+      // El veredicto de cada foto se enseña debajo de las fotos (PhotoSlots).
+      result = { ok: res.ok, warn: !!data.warning, message: res.ok ? data.warning : (data.error ?? t.errors.invalid) };
+      if (res.ok) {
         setPhotos((n) => n + 1);
         setSlotUrls((prev) => {
           const next = [...prev];
           next[slot] = data.url;
           return next;
         });
-        if (data.warning) setNote(data.warning);
       }
     }
     setUploading(false);
+    return result;
   }
 
   async function buy(qty: number) {
@@ -145,7 +148,7 @@ export function NewManifestation({
           </label>
           <PhotoSlots
             urls={slotUrls}
-            onPick={(file, slot) => upload([file], slot)}
+            onPick={(file, slot, scanned) => upload([file], slot, scanned)}
             disabled={!consent || !bio || uploading}
             busySlot={uploading ? busySlot : undefined}
             t={guide}

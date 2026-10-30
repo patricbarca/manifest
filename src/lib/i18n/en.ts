@@ -92,6 +92,9 @@ export const en = {
     builds: { slim: "Slim", average: "Average", athletic: "Athletic", curvy: "Curvy", plus: "Plus-size" },
     heights: { short: "Short", average: "Average", tall: "Tall" },
     bodySkip: "Prefer not to say",
+    photoN: "Photo {n}",
+    tipsBubble: "Before you upload your photos:",
+    close: "Close",
   },
   cookies: {
     text: "We use Google and TikTok cookies to know which ads work. Only if you accept.",
