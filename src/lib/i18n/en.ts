@@ -14,6 +14,7 @@ export const en = {
     openApp: "Open the app",
     login: "Log in",
     newShort: "Create",
+    search: "Find people",
     feed: "Feed",
   },
   settings: {
@@ -722,7 +723,7 @@ export const en = {
     market: "Market",
   },
   aura: {
-    toast: { earned: "+{n} aura", already: "You already earned today's aura for watching", streak: "{n}-day streak", streakOne: "1-day streak" },
+    toast: { earned: "+{n} aura", already: "You already earned today's aura for watching", streak: "{n}-day streak", streakOne: "1-day streak", noSkip: "To earn aura, watch it without skipping ahead." },
     nav: "Profile",
     title: "Your profile",
     aura: "Aura",
@@ -734,7 +735,7 @@ export const en = {
     best: "Best streak: {n} days",
     bestOne: "Best streak: 1 day",
     howTitle: "How you earn aura",
-    how: "+10 aura on any day you watch one of your videos to the end, and +5 if you watch it outside the app (up to +15 a day). The habit is what counts: watching every day keeps your streak.",
+    how: "+10 aura on any day you watch one of your videos to the end in the app, without skipping ahead (once a day). The habit is what counts: watching every day keeps your streak.",
     achievements: "Achievements",
     manifestations: "Your manifestations",
     noManifestations: "You don't have any videos yet.",
@@ -808,7 +809,6 @@ export const en = {
     remindersHint: "If you have a streak and haven't watched your video by 7 pm, we'll remind you. At most once a day.",
     installTitle: "Use it as an app",
     installHow: "iPhone: in Safari, tap Share → \"Add to Home Screen\". Android: in Chrome, menu ⋮ → \"Install app\".",
-    checkin: { checkin: "I watched it today outside the app (+5)", done: "+5 aura · streak saved", already: "You already earned this aura today", hint: "Watching it fully here gives +10." },
     hiddenScene: "Hidden",
     labelPlaceholder: "Name",
     tapToHide: "Tap to show or hide",

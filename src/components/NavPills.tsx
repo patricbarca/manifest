@@ -6,9 +6,9 @@ import { Icon } from "./Icon";
 
 /**
  * Segunda fila de la cabecera en la app: Feed, Perfil y Crear a partes
- * iguales, con la actual marcada, y Ajustes (engranaje) al final.
+ * iguales, con la actual marcada, y luego Buscar (lupa) y Ajustes (engranaje).
  */
-export function NavPills({ feed, profile, create, settings }: { feed: string; profile: string; create: string; settings: string }) {
+export function NavPills({ feed, profile, create, settings, search }: { feed: string; profile: string; create: string; settings: string; search: string }) {
   const path = usePathname();
   const items = [
     { href: "/feed", label: feed, active: path.startsWith("/feed") },
@@ -31,6 +31,22 @@ export function NavPills({ feed, profile, create, settings }: { feed: string; pr
           </Link>
         ))}
       </nav>
+      {[
+        { href: "/search", icon: "search" as const, label: search },
+      ].map((b) => (
+        <Link
+          key={b.href}
+          href={b.href}
+          aria-label={b.label}
+          title={b.label}
+          aria-current={path.startsWith(b.href) ? "page" : undefined}
+          className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[var(--color-hairline)] transition-colors ${
+            path.startsWith(b.href) ? "bg-white/15 text-[var(--color-label-1)]" : "text-[var(--color-label-2)] hover:text-[var(--color-label-1)]"
+          }`}
+        >
+          <Icon name={b.icon} size={18} />
+        </Link>
+      ))}
       <Link
         href="/settings"
         aria-label={settings}

@@ -10,6 +10,7 @@ import { deleteMediaUrl, offloadProject } from "../cleanup";
 import { manifests } from "./store";
 import { ensureLocal } from "./compose";
 import { db } from "../db/store";
+import { makePlayCopy } from "../playback";
 import { bodyClause } from "../body";
 
 /** Si la manifestación se pagó con un paquete y falló, devuelve la unidad (solo una vez). */
@@ -96,8 +97,9 @@ export async function runManifestation(id: string): Promise<void> {
     });
     cents += clip.costCents;
 
-    // 5. Highlight para el perfil.
+    // 5. Highlight para el perfil y copia ligera para el visor.
     const hl = await makeHighlights({ id, scenes: [{ videoUrl: clip.result.url }] } as unknown as Project).catch(() => undefined);
+    const playUrl = await makePlayCopy(clip.result.url);
 
     await manifests.patch(id, (m) => ({
       ...m,
@@ -107,6 +109,7 @@ export async function runManifestation(id: string): Promise<void> {
       imageUrl,
       voiceUrl,
       clipUrl: clip.result.url,
+      playUrl,
       highlight: hl?.[0],
       animateOnly: undefined,
       draftImageUrl: undefined,
@@ -118,8 +121,8 @@ export async function runManifestation(id: string): Promise<void> {
     }));
     // Al rehacerla, la versión anterior ya no se ve en ningún sitio: se borran sus ficheros.
     if (start.clipUrl) {
-      const now = new Set([imageUrl, clip.result.url, voiceUrl, hl?.[0]?.videoUrl, hl?.[0]?.posterUrl]);
-      for (const url of [start.imageUrl, start.draftImageUrl, start.clipUrl, start.voiceUrl, start.highlight?.videoUrl, start.highlight?.posterUrl]) {
+      const now = new Set([imageUrl, clip.result.url, playUrl, voiceUrl, hl?.[0]?.videoUrl, hl?.[0]?.posterUrl]);
+      for (const url of [start.imageUrl, start.draftImageUrl, start.clipUrl, start.playUrl, start.voiceUrl, start.highlight?.videoUrl, start.highlight?.posterUrl]) {
         if (url && !now.has(url)) await deleteMediaUrl(url);
       }
     }

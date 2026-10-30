@@ -28,7 +28,8 @@ export type IconName =
   | "heart"
   | "person"
   | "compass"
-  | "settings";
+  | "settings"
+  | "search";
 
 type Props = {
   name: IconName;
@@ -139,6 +140,12 @@ export function Icon({ name, size = 20, className, title }: Props) {
         <>
           <circle cx="12" cy="8" r="3.6" {...stroke} />
           <path d="M4.8 20a7.2 7.2 0 0 1 14.4 0" {...stroke} />
+        </>
+      )}
+      {name === "search" && (
+        <>
+          <circle cx="11" cy="11" r="6.5" {...stroke} />
+          <path d="m16 16 4 4" {...stroke} />
         </>
       )}
       {name === "settings" && (

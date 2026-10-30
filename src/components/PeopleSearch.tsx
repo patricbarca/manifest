@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 type Person = { handle: string; displayName: string; avatarUrl?: string; visibility: "circle" | "public" };
 
 /** Buscador de personas para unirse a su círculo. */
-export function PeopleSearch({ t }: { t: { placeholder: string; none: string; circleOnly: string } }) {
+export function PeopleSearch({ t, autoFocus = false }: { t: { placeholder: string; none: string; circleOnly: string }; autoFocus?: boolean }) {
   const [q, setQ] = useState("");
   const [people, setPeople] = useState<Person[]>([]);
   const [searched, setSearched] = useState(false);
@@ -36,6 +36,9 @@ export function PeopleSearch({ t }: { t: { placeholder: string; none: string; ci
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder={t.placeholder}
+        autoFocus={autoFocus}
+        type="search"
+        enterKeyHint="search"
         className="t-body w-full rounded-full border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-2.5 outline-none focus:border-[var(--color-hairline-strong)]"
       />
       {searched && people.length === 0 && <p className="t-caption mt-3 text-[var(--color-label-3)]">{t.none}</p>}
