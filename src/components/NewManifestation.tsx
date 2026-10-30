@@ -25,6 +25,7 @@ export function NewManifestation({
   locale,
   t,
   guide,
+  consented = false,
 }: {
   initialPhotos: number;
   credits: number;
@@ -34,14 +35,15 @@ export function NewManifestation({
   locale: Locale;
   t: Labels;
   guide: PhotoGuideLabels;
+  consented?: boolean;
 }) {
   const router = useRouter();
   const [desire, setDesire] = useState("");
   const [lang, setLang] = useState<Locale>(locale);
   const [voice, setVoice] = useState(voices[0]?.id ?? "Sarah");
   const [photos, setPhotos] = useState(initialPhotos);
-  const [consent, setConsent] = useState(false);
-  const [bio, setBio] = useState(false);
+  const [consent, setConsent] = useState(consented);
+  const [bio, setBio] = useState(consented);
   const [waiver, setWaiver] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -138,19 +140,12 @@ export function NewManifestation({
         <div className="card space-y-3 rounded-[var(--radius-lg)] p-5">
           <p className="t-sub font-medium">{t.photosTitle}</p>
           <p className="t-caption text-[var(--color-label-3)]">{t.photosHint}</p>
-          <label className="t-caption flex items-start gap-2 text-[var(--color-label-2)]">
-            <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-[2px] h-4 w-4 accent-white" />
-            <span>{t.consent}</span>
-          </label>
-          <label className="t-caption flex items-start gap-2 text-[var(--color-label-2)]">
-            <input type="checkbox" checked={bio} onChange={(e) => setBio(e.target.checked)} className="mt-[2px] h-4 w-4 accent-white" />
-            <span>{t.biometric}</span>
-          </label>
           <PhotoSlots
             urls={slotUrls}
             onPick={(file, slot, scanned) => upload([file], slot, scanned)}
-            disabled={!consent || !bio || uploading}
+            disabled={uploading}
             busySlot={uploading ? busySlot : undefined}
+            consent={{ given: consent && bio, text: t.consent, biometric: t.biometric, onGive: () => { setConsent(true); setBio(true); } }}
             t={guide}
           />
         </div>

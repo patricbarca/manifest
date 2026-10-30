@@ -1,4 +1,5 @@
 import { isSignedIn } from "@/lib/db/session";
+import { PHOTO_CONSENT_VERSION } from "@/lib/consent";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { photoLooksUnsafe } from "@/lib/photo-safety";
 import { assessSelfie, SELFIE_MIN_SCORE } from "@/lib/selfie-check";
@@ -12,7 +13,6 @@ import { sweepStorage } from "@/lib/cleanup";
 import { db } from "@/lib/db/store";
 
 /** Cambia si cambia el texto del consentimiento de fotos (para volver a pedirlo y saber cuál aceptó). */
-const PHOTO_CONSENT_VERSION = "2026-10-26";
 
 export const runtime = "nodejs";
 

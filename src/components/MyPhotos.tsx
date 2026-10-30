@@ -9,10 +9,10 @@ type Labels = { title: string; hint: string; empty: string; remove: string; uplo
  * Tus selfies guardadas: se usan para crear manifestaciones sin volver a
  * subirlas. Puedes añadir (hasta 4) y borrar; caducan solas a los 30 días.
  */
-export function MyPhotos({ initial, t, guide }: { initial: string[]; t: Labels; guide: PhotoGuideLabels }) {
+export function MyPhotos({ initial, t, guide, consented = false }: { initial: string[]; t: Labels; guide: PhotoGuideLabels; consented?: boolean }) {
   const [photos, setPhotos] = useState(initial);
-  const [consent, setConsent] = useState(false);
-  const [bio, setBio] = useState(false);
+  const [consent, setConsent] = useState(consented);
+  const [bio, setBio] = useState(consented);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [note, setNote] = useState<string>();
@@ -59,19 +59,10 @@ export function MyPhotos({ initial, t, guide }: { initial: string[]; t: Labels; 
         urls={[0, 1, 2, 3].map((i) => photos[i])}
         onPick={(file, slot, scanned) => upload([file], slot, scanned)}
         onRemove={(i) => photos[i] && void remove(photos[i])}
-        disabled={!consent || !bio || busy}
+        disabled={busy}
+        consent={{ given: consent && bio, text: t.consent, biometric: t.biometric, onGive: () => { setConsent(true); setBio(true); } }}
         t={guide}
       />
-      <div className="mt-5 space-y-2">
-        <label className="t-caption flex items-start gap-2 text-[var(--color-label-2)]">
-          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-[2px] h-4 w-4 accent-white" />
-          <span>{t.consent}</span>
-        </label>
-        <label className="t-caption flex items-start gap-2 text-[var(--color-label-2)]">
-          <input type="checkbox" checked={bio} onChange={(e) => setBio(e.target.checked)} className="mt-[2px] h-4 w-4 accent-white" />
-          <span>{t.biometric}</span>
-        </label>
-      </div>
       {error && <p className="t-caption mt-2 text-rose-300">{error}</p>}
       {note && <p className="t-caption mt-2 text-amber-200">{note}</p>}
     </section>

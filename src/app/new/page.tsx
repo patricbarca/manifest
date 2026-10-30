@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { hasPhotoConsent } from "@/lib/consent";
 import { NewManifestation } from "@/components/NewManifestation";
 import { me } from "@/lib/social/me";
 import { db } from "@/lib/db/store";
@@ -37,6 +38,7 @@ export default async function ManifestarPage({ searchParams }: { searchParams: P
         voices={VOICES.map((v) => ({ id: v.id, label: v.label[locale as Locale] }))}
         locale={locale as Locale}
         guide={t.photoGuide}
+        consented={hasPhotoConsent(user)}
         t={{
           desire: m.desire, desirePlaceholder: m.desirePlaceholder, language: m.language, voice: m.voice,
           photosTitle: m.photosTitle, photosHint: m.photosHint, consent: t.consent, biometric: t.biometricConsent,

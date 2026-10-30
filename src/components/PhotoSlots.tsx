@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import type { BodyBuild, BodyHeight } from "@/lib/body";
 import { BodyFeatures } from "./BodyFeatures";
 import { FaceCapture } from "./FaceCapture";
@@ -48,6 +49,8 @@ export type PhotoGuideLabels = {
   heights: Record<BodyHeight, string>;
   bodySkip: string;
   photoN: string;
+  consentTitle: string;
+  consentAccept: string;
   tipsBubble: string;
   close: string;
 };
@@ -74,6 +77,7 @@ export function PhotoSlots({
   onRemove,
   disabled,
   busySlot,
+  consent,
   t,
 }: {
   urls: (string | undefined)[];
@@ -82,6 +86,11 @@ export function PhotoSlots({
   onRemove?: (slot: number) => void;
   disabled?: boolean;
   busySlot?: number;
+  /**
+   * Consentimiento para usar fotos de su cara. Si aún no lo dio, se le pide
+   * en una ventana al tocar una foto o el escáner (antes de que nada salga del móvil).
+   */
+  consent?: { given: boolean; text: ReactNode; biometric: ReactNode; onGive: () => void };
   t: PhotoGuideLabels;
 }) {
   const [open, setOpen] = useState<number>();
@@ -89,6 +98,10 @@ export function PhotoSlots({
   const [scan, setScan] = useState<number[]>();
   const [status, setStatus] = useState<Record<number, SlotStatus>>({});
   const [bubble, setBubble] = useState(true);
+  // Lo que quería hacer cuando se le pidió el consentimiento (se hace al aceptar).
+  const [pending, setPending] = useState<(() => void) | null>(null);
+  const [ticks, setTicks] = useState({ a: false, b: false });
+  const guard = (action: () => void) => (consent && !consent.given ? setPending(() => action) : action());
   const camera = useRef<HTMLInputElement>(null);
   const gallery = useRef<HTMLInputElement>(null);
 
@@ -126,7 +139,7 @@ export function PhotoSlots({
         <div className="space-y-1">
           <button
             type="button"
-            onClick={() => setScan(FACE_SLOTS.filter((i) => !urls[i]))}
+            onClick={() => guard(() => setScan(FACE_SLOTS.filter((i) => !urls[i])))}
             className="interactive t-sub w-full rounded-full bg-white px-4 py-2.5 font-medium text-black"
           >
             ◎ {t.scanStart}
@@ -169,7 +182,7 @@ export function PhotoSlots({
               <button
                 type="button"
                 disabled={disabled && !url}
-                onClick={() => (urls[i] ? undefined : setOpen(open === i ? undefined : i))}
+                onClick={() => (urls[i] ? undefined : guard(() => setOpen(open === i ? undefined : i)))}
                 className={`relative block aspect-[3/4] w-full overflow-hidden rounded-[var(--radius-md)] border ${frame} ${open === i ? "ring-2 ring-white" : ""} disabled:opacity-50`}
               >
                 {st && (
@@ -215,7 +228,43 @@ export function PhotoSlots({
         </ul>
       )}
 
-      {disabled && <p className="t-caption text-[var(--color-label-3)]">{t.needConsent}</p>}
+      {pending &&
+        consent &&
+        createPortal(
+          <div className="fixed inset-0 z-[90] flex items-end bg-black/60 sm:items-center" role="dialog" aria-modal="true" onClick={() => setPending(null)}>
+            <div
+              className="w-full space-y-4 rounded-t-[var(--radius-xl)] bg-[var(--color-surface-2)] p-5 pb-[max(20px,env(safe-area-inset-bottom))] text-[var(--color-label-1)] sm:mx-auto sm:max-w-md sm:rounded-[var(--radius-xl)]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="t-headline">{t.consentTitle}</p>
+              <label className="t-sub flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
+                <input type="checkbox" checked={ticks.a} onChange={(e) => setTicks((x) => ({ ...x, a: e.target.checked }))} className="mt-[3px] h-4 w-4 shrink-0 accent-emerald-500" />
+                <span>{consent.text}</span>
+              </label>
+              <label className="t-sub flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
+                <input type="checkbox" checked={ticks.b} onChange={(e) => setTicks((x) => ({ ...x, b: e.target.checked }))} className="mt-[3px] h-4 w-4 shrink-0 accent-emerald-500" />
+                <span>{consent.biometric}</span>
+              </label>
+              <button
+                type="button"
+                disabled={!ticks.a || !ticks.b}
+                onClick={() => {
+                  const go = pending;
+                  consent.onGive();
+                  setPending(null);
+                  go();
+                }}
+                className="interactive t-sub w-full rounded-full bg-white px-4 py-2.5 font-medium text-black disabled:opacity-40"
+              >
+                {t.consentAccept}
+              </button>
+              <button type="button" onClick={() => setPending(null)} className="t-caption w-full text-center text-[var(--color-label-3)] underline">
+                {t.cancel}
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
 
       {open !== undefined && !disabled && (
         <div className="space-y-2 rounded-[var(--radius-md)] border border-[var(--color-hairline-strong)] bg-[var(--color-surface-2)] p-3">
