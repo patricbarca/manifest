@@ -1,6 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
+import type { BodyBuild, BodyHeight } from "@/lib/body";
+import { BodyFeatures } from "./BodyFeatures";
+import { FaceCapture } from "./FaceCapture";
 
 export type PhotoGuideLabels = {
   slots: { title: string; hint: string }[];
@@ -16,7 +19,38 @@ export type PhotoGuideLabels = {
   example: string;
   badLabels: string[];
   aiNote: string;
+  scanStart: string;
+  scanHint: string;
+  scanSteps: string[];
+  scanNoFace: string;
+  scanOneFace: string;
+  scanCloser: string;
+  scanFarther: string;
+  scanCenter: string;
+  scanFront: string;
+  scanTurn: string;
+  scanTurnLess: string;
+  scanDark: string;
+  scanHold: string;
+  scanShutter: string;
+  scanLoading: string;
+  scanDenied: string;
+  scanManual: string;
+  scanUse: string;
+  scanRetake: string;
+  scanClose: string;
+  guidedCamera: string;
+  bodyTitle: string;
+  bodyHint: string;
+  bodyBuild: string;
+  bodyHeight: string;
+  builds: Record<BodyBuild, string>;
+  heights: Record<BodyHeight, string>;
+  bodySkip: string;
 };
+
+/** Huecos de cara (0–2): se pueden hacer con el escáner. El 3 es de medio cuerpo. */
+const FACE_SLOTS = [0, 1, 2];
 
 /** Fotos de ejemplo (persona ficticia generada con IA), en el mismo orden que los huecos. */
 const GOOD = ["good-smile", "good-soft", "good-three-quarter", "good-waist"];
@@ -36,7 +70,7 @@ export function PhotoSlots({
   t,
 }: {
   urls: (string | undefined)[];
-  onPick: (file: File, slot: number) => void;
+  onPick: (file: File, slot: number) => void | Promise<void>;
   onRemove?: (slot: number) => void;
   disabled?: boolean;
   busySlot?: number;
@@ -44,6 +78,7 @@ export function PhotoSlots({
 }) {
   const [open, setOpen] = useState<number>();
   const [tips, setTips] = useState(false);
+  const [scan, setScan] = useState<number[]>();
   const camera = useRef<HTMLInputElement>(null);
   const gallery = useRef<HTMLInputElement>(null);
 
@@ -55,6 +90,29 @@ export function PhotoSlots({
 
   return (
     <div className="space-y-3">
+      {!disabled && FACE_SLOTS.some((i) => !urls[i]) && (
+        <div className="space-y-1">
+          <button
+            type="button"
+            onClick={() => setScan(FACE_SLOTS.filter((i) => !urls[i]))}
+            className="interactive t-sub w-full rounded-full bg-white px-4 py-2.5 font-medium text-black"
+          >
+            ◎ {t.scanStart}
+          </button>
+          <p className="t-caption text-center text-[var(--color-label-3)]">{t.scanHint}</p>
+        </div>
+      )}
+      {scan && (
+        <FaceCapture
+          slots={scan}
+          t={t}
+          onClose={() => setScan(undefined)}
+          onDone={async (shots) => {
+            setScan(undefined);
+            for (const s of shots) await onPick(s.file, s.slot);
+          }}
+        />
+      )}
       <div className="grid grid-cols-4 gap-2.5">
         {t.slots.map((slot, i) => {
           const url = urls[i];
@@ -102,8 +160,20 @@ export function PhotoSlots({
           <p className="t-caption text-[var(--color-label-2)]">
             <strong className="text-[var(--color-label-1)]">{t.slots[open].title}:</strong> {t.slots[open].hint}
           </p>
-          <div className="flex gap-2">
-            <button type="button" onClick={() => camera.current?.click()} className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 font-medium text-black">
+          <div className="flex flex-wrap gap-2">
+            {FACE_SLOTS.includes(open) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setScan([open]);
+                  setOpen(undefined);
+                }}
+                className="interactive t-sub w-full rounded-full bg-white px-4 py-2 font-medium text-black"
+              >
+                ◎ {t.guidedCamera}
+              </button>
+            )}
+            <button type="button" onClick={() => camera.current?.click()} className="interactive t-sub flex-1 rounded-full bg-white/10 px-4 py-2 font-medium">
               📷 {t.camera}
             </button>
             <button type="button" onClick={() => gallery.current?.click()} className="interactive t-sub flex-1 rounded-full bg-white/10 px-4 py-2 font-medium">
@@ -119,6 +189,8 @@ export function PhotoSlots({
       {/* La cámara frontal en el móvil; en el ordenador abre el selector de archivos. */}
       <input ref={camera} type="file" accept="image/*" capture="user" className="hidden" onChange={(e) => { pick(e.target.files); e.target.value = ""; }} />
       <input ref={gallery} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => { pick(e.target.files); e.target.value = ""; }} />
+
+      <BodyFeatures t={t} />
 
       <button type="button" onClick={() => setTips((v) => !v)} className="t-caption text-[var(--color-label-2)] underline">
         {tips ? "−" : "+"} {t.tipsTitle}

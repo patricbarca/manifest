@@ -99,5 +99,5 @@ function canonicalHost(): string | null {
 
 export const config = {
   // Todo menos ficheros estáticos, media y el webhook de Stripe.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|opengraph-image|brand/|videos/|voices/|media/|api/stripe/|api/admin/).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|opengraph-image|brand/|videos/|voices/|media/|mediapipe/|models/|api/stripe/|api/admin/).*)"],
 };

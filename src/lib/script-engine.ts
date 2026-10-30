@@ -378,6 +378,7 @@ export function buildScenePrompt(
   style: VisualStyle,
   hasSelfie: boolean,
   photoCount = 1,
+  body = "",
 ): string {
   const styleDef = VISUAL_STYLES.find((s) => s.id === style) ?? VISUAL_STYLES[0];
   // Escena subjetiva: se ve desde los ojos de la persona, así que no hay
@@ -389,7 +390,7 @@ export function buildScenePrompt(
   const identity = isPovBrief(brief)
     ? "First-person point of view through the person's own eyes, only their hands visible"
     : hasSelfie
-      ? `The main subject is exactly the person in ${figures}, with their own face, hair and features, natural likeness. ${ALONE}`
+      ? `The main subject is exactly the person in ${figures}, with their own face, hair and features, natural likeness.${body ? ` ${body}.` : ""} ${ALONE}`
       : "A person seen from behind or at a distance";
   // Todo en positivo: las negaciones ("no text") el modelo las lee al revés.
   return [
@@ -405,11 +406,12 @@ export function buildScenes(
   hasSelfie: boolean,
   durationSec: number,
   photoCount = 1,
+  body = "",
 ): Scene[] {
   const slot = durationSec / Math.max(1, briefs.length);
   return briefs.map((brief, i) => ({
     id: `sc_${i + 1}`,
-    prompt: buildScenePrompt(brief, style, hasSelfie, photoCount),
+    prompt: buildScenePrompt(brief, style, hasSelfie, photoCount, body),
     pov: isPovBrief(brief) || undefined,
     startSec: +(i * slot).toFixed(2),
     endSec: +((i + 1) * slot).toFixed(2),

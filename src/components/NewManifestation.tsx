@@ -145,7 +145,7 @@ export function NewManifestation({
           </label>
           <PhotoSlots
             urls={slotUrls}
-            onPick={(file, slot) => void upload([file], slot)}
+            onPick={(file, slot) => upload([file], slot)}
             disabled={!consent || !bio || uploading}
             busySlot={uploading ? busySlot : undefined}
             t={guide}
