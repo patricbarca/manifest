@@ -381,7 +381,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
   }
 
   /** Sube una foto y devuelve su URL, o undefined si falló (el error ya se muestra). */
-  async function sendPhoto(file: File, agreed: boolean, self = false): Promise<string | undefined> {
+  async function sendPhoto(file: File, agreed: boolean, self = false, slot?: number): Promise<string | undefined> {
     setError(undefined);
     setPhotoNote(undefined);
     const body = new FormData();
@@ -389,6 +389,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
     body.append("consent", String(agreed));
     body.append("biometric", String(bioConsent));
     if (self) body.append("kind", "self");
+    if (slot !== undefined) body.append("slot", String(slot));
     try {
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json();
@@ -404,7 +405,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
   async function upload(file: File, slot: number) {
     setUploading(true);
     setUploadingSlot(slot);
-    const url = await sendPhoto(file, consent, true);
+    const url = await sendPhoto(file, consent, true, slot);
     if (url) setSlotUrls((prev) => prev.map((u, i) => (i === slot ? url : u)));
     setUploadingSlot(undefined);
     setUploading(false);
