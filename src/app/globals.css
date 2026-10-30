@@ -317,3 +317,37 @@ body {
 :root[data-theme="light"] :is(.text-rose-300, .text-red-300, .text-rose-100):not([data-dark] *) { color: #be123c; }
 :root[data-theme="light"] :is(.text-amber-200, .text-amber-200\/90):not([data-dark] *) { color: #b45309; }
 :root[data-theme="light"] .text-sky-300:not([data-dark] *) { color: #0369a1; }
+
+/*
+  AURA DE LOS HIGHLIGHTS
+  Anillo de color (conic-gradient) con halo. Movimiento: respira (el halo
+  late), gira (el anillo da vueltas) o quieto. Colores en src/lib/social/aura-style.ts.
+*/
+.aura-ring {
+  position: relative;
+  display: inline-block;
+  border-radius: 9999px;
+  padding: 3px;
+  isolation: isolate;
+  box-shadow: 0 0 10px 0 var(--aura-glow);
+}
+.aura-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--aura-ring);
+}
+.aura-breathe { animation: aura-breathe 3.2s ease-in-out infinite; }
+.aura-spin::before { animation: aura-spin 5s linear infinite; }
+@keyframes aura-breathe {
+  0%, 100% { box-shadow: 0 0 6px 0 var(--aura-glow); }
+  50% { box-shadow: 0 0 18px 4px var(--aura-glow); }
+}
+@keyframes aura-spin {
+  to { transform: rotate(1turn); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aura-breathe, .aura-spin::before { animation: none; }
+}

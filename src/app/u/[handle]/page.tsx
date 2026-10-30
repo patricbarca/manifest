@@ -79,7 +79,7 @@ export default async function UserPage({ params }: { params: Promise<{ handle: s
         }
       />
       {posts.length > 0 ? (
-        <Highlights groups={posts} closeLabel={t.aura.close} aiLabel={t.aiLabel} />
+        <Highlights groups={posts} aura={profile.highlightAura} closeLabel={t.aura.close} aiLabel={t.aiLabel} />
       ) : (
         <p className="t-sub py-8 text-center text-[var(--color-label-2)]">{t.aura.noPosts}</p>
       )}
