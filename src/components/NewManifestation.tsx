@@ -63,6 +63,7 @@ export function NewManifestation({
       body.append("consent", String(consent));
       body.append("biometric", String(bio));
       body.append("kind", "self");
+      body.append("slot", String(slot));
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) setError(data.error ?? t.errors.invalid);

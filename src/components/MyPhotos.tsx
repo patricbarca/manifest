@@ -29,7 +29,7 @@ export function MyPhotos({ initial, t, guide }: { initial: string[]; t: Labels; 
     else setError(t.error);
   }
 
-  async function upload(files: File[]) {
+  async function upload(files: File[], slot?: number) {
     setBusy(true);
     setError(undefined);
     setNote(undefined);
@@ -39,6 +39,7 @@ export function MyPhotos({ initial, t, guide }: { initial: string[]; t: Labels; 
       body.append("consent", String(consent));
       body.append("biometric", String(bio));
       body.append("kind", "self");
+      if (slot !== undefined) body.append("slot", String(slot));
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) setError(data.error ?? t.error);
@@ -54,7 +55,7 @@ export function MyPhotos({ initial, t, guide }: { initial: string[]; t: Labels; 
       <p className="t-caption mb-4 mt-1 text-[var(--color-label-3)]">{t.hint}</p>
       <PhotoSlots
         urls={[0, 1, 2, 3].map((i) => photos[i])}
-        onPick={(file) => void upload([file])}
+        onPick={(file, slot) => void upload([file], slot)}
         onRemove={(i) => photos[i] && void remove(photos[i])}
         disabled={!consent || !bio || busy}
         t={guide}
