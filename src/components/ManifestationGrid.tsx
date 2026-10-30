@@ -77,6 +77,14 @@ function Slide({ m, active, near, onSeen }: { m: Manifestation; active: boolean;
           className={`${media} transition-opacity duration-300 ${ready ? "opacity-100" : "opacity-0"}`}
         />
       )}
+      {/* Rueda de carga sobre la primera imagen mientras llega la animación. */}
+      {active && !ready && (
+        <span role="status" aria-live="polite" className="pointer-events-none absolute inset-0 grid place-items-center">
+          <span className="rounded-full bg-black/40 p-2.5 backdrop-blur-sm">
+            <span className="block h-9 w-9 animate-spin rounded-full border-[3px] border-white/25 border-t-white" />
+          </span>
+        </span>
+      )}
     </div>
   );
 }
