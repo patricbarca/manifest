@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { isSignedIn } from "@/lib/db/session";
+import { currentUser, isSignedIn } from "@/lib/db/session";
+import { allowFor } from "@/lib/rate-limit";
 import { hasAccess } from "@/lib/access";
 import { Desires, Details } from "@/lib/api-schemas";
 import { getDictionary } from "@/lib/i18n/server";
@@ -24,6 +25,7 @@ export async function POST(request: Request) {
   const { t, locale } = await getDictionary();
   if (!(await isSignedIn())) return NextResponse.json({ error: t.errors.signInRequired }, { status: 401 });
   if (!(await hasAccess())) return NextResponse.json({ error: t.errors.betaOnly }, { status: 403 });
+  if (!allowFor("sceneIdeas", (await currentUser()).id)) return NextResponse.json({ error: t.errors.rateLimited }, { status: 429 });
   const parsed = Body.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: t.errors.incomplete }, { status: 400 });
   const { desires, details, index, avoid } = parsed.data;

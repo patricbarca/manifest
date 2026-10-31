@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { allowFor } from "@/lib/rate-limit";
 import { z } from "zod";
 import { me } from "@/lib/social/me";
 import { manifests } from "@/lib/manifest/store";
@@ -90,6 +91,7 @@ export async function POST(request: Request) {
   const who = await me();
   if (!who) return NextResponse.json({ error: "signin" }, { status: 401 });
   if (!(await hasAccess())) return NextResponse.json({ error: "access" }, { status: 403 });
+  if (!allowFor("createManifestation", who.user.id)) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   const body = Create.safeParse(await request.json().catch(() => ({})));
   if (!body.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
   let verdict = checkDesires([body.data.desire]);

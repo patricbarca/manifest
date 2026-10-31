@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DeleteAccount } from "@/components/DeleteAccount";
 import { hasPhotoConsent } from "@/lib/consent";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -88,17 +89,21 @@ export default async function SettingsPage() {
           {tracking && <CookieSettingsLink label={t.cookies.settings} domain={tracking.cookieDomain} />}
           {CONTACT && <a href={`mailto:${CONTACT}`} className={link}>{t.footer.contact}</a>}
         </div>
-        {CONTACT && (
-          <div className="mt-5 border-t border-[var(--color-hairline)] pt-5">
-            <a
-              href={`mailto:${CONTACT}?subject=${encodeURIComponent(t.settings.deleteAccount)}`}
-              className="t-sub text-rose-300 underline-offset-4 hover:underline"
-            >
-              {t.settings.deleteAccount}
-            </a>
-            <p className="t-caption mt-1 text-[var(--color-label-3)]">{t.settings.deleteHint}</p>
-          </div>
-        )}
+        <div className="mt-5 border-t border-[var(--color-hairline)] pt-5">
+          <DeleteAccount
+            t={{
+              open: t.settings.deleteAccount,
+              hint: t.settings.deleteHint,
+              confirm: t.settings.deleteConfirm,
+              word: t.settings.deleteWord,
+              button: t.settings.deleteButton,
+              deleting: t.settings.deleting,
+              busy: t.settings.deleteBusy,
+              failed: t.settings.deleteFailed,
+              cancel: t.manifest.cancel,
+            }}
+          />
+        </div>
       </Section>
 
       <Section title={t.settings.account}>
