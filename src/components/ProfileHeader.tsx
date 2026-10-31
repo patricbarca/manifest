@@ -36,7 +36,7 @@ export function ProfileHeader({
       <div className="flex items-center gap-5 sm:gap-8">
         {profile.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={profile.avatarUrl} alt="" referrerPolicy="no-referrer" className="h-20 w-20 shrink-0 rounded-full object-cover ring-2 ring-white/10 sm:h-24 sm:w-24" />
+          <img src={profile.avatarUrl} alt={profile.displayName} referrerPolicy="no-referrer" className="h-20 w-20 shrink-0 rounded-full object-cover ring-2 ring-white/10 sm:h-24 sm:w-24" />
         ) : (
           <span className="grid h-20 w-20 shrink-0 place-items-center rounded-full bg-white/10 text-3xl sm:h-24 sm:w-24">{(profile.displayName || "?")[0].toUpperCase()}</span>
         )}
@@ -49,10 +49,10 @@ export function ProfileHeader({
       </div>
 
       <div className="mt-4">
-        <p className="t-headline flex flex-wrap items-center gap-2">
+        <h1 className="t-headline flex flex-wrap items-center gap-2">
           {profile.displayName}
           <span className="t-caption rounded-full bg-gradient-to-r from-[#FFB27A]/25 via-[#F2B8A6]/25 to-[#8B78C4]/25 px-2.5 py-0.5 text-[var(--color-label-1)]">✨ {level.name[locale]}</span>
-        </p>
+        </h1>
         <p className="t-caption text-[var(--color-label-3)]">
           @{profile.handle}
           {profile.location && <> · {profile.location}</>}

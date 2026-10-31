@@ -3,8 +3,12 @@ import { Icon } from "@/components/Icon";
 import { PRODUCTS, creditPacks, formatUsd } from "@/lib/pricing";
 import { TIERS } from "@/lib/types";
 import { getDictionary } from "@/lib/i18n/server";
+import { clip, pageMeta } from "@/lib/seo";
 
-export const metadata = { title: "Pricing — ManifestLifeAI" };
+export async function generateMetadata() {
+  const { t } = await getDictionary();
+  return pageMeta({ title: `${t.pricing.title} — ManifestLifeAI`, description: clip(t.pricing.lede), path: "/pricing" });
+}
 
 export default async function PreciosPage() {
   const { t } = await getDictionary();

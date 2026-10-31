@@ -25,6 +25,8 @@ export const metadata: Metadata = {
   title: "ManifestLifeAI — see yourself living it",
   description:
     "Upload a photo and get a visualization video with your face, your script and a voice that guides you while you repeat your affirmations out loud.",
+  openGraph: { type: "website", siteName: "ManifestLifeAI" },
+  twitter: { card: "summary_large_image" },
 };
 
 /** Color de la barra del navegador según el tema elegido en Ajustes. */

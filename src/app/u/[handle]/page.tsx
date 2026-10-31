@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ProfileHeader } from "@/components/ProfileHeader";
 import { CircleRequestButton } from "@/components/CircleRequestButton";
@@ -8,9 +9,24 @@ import { me } from "@/lib/social/me";
 import { social } from "@/lib/social/store";
 import { canSee, localDay, statsFrom } from "@/lib/social/aura";
 import { getDictionary } from "@/lib/i18n/server";
+import { clip, pageMeta } from "@/lib/seo";
 import type { Locale } from "@/lib/i18n/locale";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
+  const { handle } = await params;
+  const profile = await social.getProfileByHandle(handle);
+  if (!profile) return { robots: { index: false } };
+  const title = `${profile.displayName} (@${profile.handle}) — ManifestLifeAI`;
+  // Solo los perfiles públicos van a Google; los de círculo o privados, no.
+  if (profile.visibility !== "public") return { title, robots: { index: false, follow: false } };
+  return pageMeta({
+    title,
+    description: clip(profile.mantra || profile.bio || `${profile.displayName} on ManifestLifeAI.`),
+    path: `/u/${profile.handle}`,
+  });
+}
 
 /**
  * Perfil público de alguien. Los visitantes ven sus datos, aura y solo los

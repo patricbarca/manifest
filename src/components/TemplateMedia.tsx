@@ -16,11 +16,14 @@ export function TemplateMedia({
   template,
   variant,
   className = "",
+  alt = "",
 }: {
   template: Pick<Template, "slug" | "tier" | "cover">;
   /** Por defecto, la del producto de la plantilla. */
   variant?: PreviewVariant;
   className?: string;
+  /** Vacío si el título ya está al lado (tarjetas); con texto en la ficha. */
+  alt?: string;
 }) {
   const { video: standard, poster, still, hd } = templatePreview(template.slug);
   const background = `linear-gradient(150deg, ${template.cover.from}, ${template.cover.to})`;
@@ -32,7 +35,7 @@ export function TemplateMedia({
       <div className={`overflow-hidden ${className}`} style={{ background }}>
         {src && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt="" className="kb-loop h-full w-full object-cover" />
+          <img src={src} alt={alt} className="kb-loop h-full w-full object-cover" />
         )}
       </div>
     );
