@@ -63,7 +63,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
             { h: "Fotos de otras personas", p: [
               "Solo puedes subir fotos de alguien si te ha dado permiso y es mayor de edad. Si alguien aparece en un vídeo sin haberlo autorizado, escríbenos y lo borramos.",
             ] },
-            { h: "Tus derechos", p: [`Puedes pedir acceso, corrección o borrado de tus datos, u oponerte a su uso, escribiendo a ${c}. También puedes reclamar ante la autoridad de protección de datos de tu país.`] },
+            { h: "Tus derechos", p: ["Puedes borrar tu cuenta y todos tus datos cuando quieras desde Ajustes → Privacidad y legal → Borrar mi cuenta. Los datos de los pagos los conserva Stripe el tiempo que exige la ley.", `Puedes pedir acceso, corrección o borrado de tus datos, u oponerte a su uso, escribiendo a ${c}. También puedes reclamar ante la autoridad de protección de datos de tu país.`] },
             { h: "Menores", p: ["ManifestLifeAI es para mayores de 18 años."] },
           ]
         : [
@@ -93,7 +93,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
             { h: "Photos of other people", p: [
               "You may only upload someone's photos if they've given you permission and are an adult. If someone appears in a video without having agreed to it, write to us and we'll delete it.",
             ] },
-            { h: "Your rights", p: [`You can ask to access, correct or delete your data, or object to its use, by writing to ${c}. You can also complain to the data protection authority in your country.`] },
+            { h: "Your rights", p: ["You can delete your account and all your data at any time from Settings → Privacy and legal → Delete my account. Payment records are kept by Stripe for as long as the law requires.", `You can ask to access, correct or delete your data, or object to its use, by writing to ${c}. You can also complain to the data protection authority in your country.`] },
             { h: "Minors", p: ["ManifestLifeAI is for people aged 18 and over."] },
           ],
     };

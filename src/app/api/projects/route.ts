@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { allowFor } from "@/lib/rate-limit";
 import { isSignedIn } from "@/lib/db/session";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -63,6 +64,7 @@ export async function POST(request: Request) {
   if (!(await hasAccess())) {
     return NextResponse.json({ error: t.errors.betaOnly }, { status: 403 });
   }
+  if (!allowFor("createProject", user.id)) return NextResponse.json({ error: t.errors.rateLimited }, { status: 429 });
   const parsed = CreateProject.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json(

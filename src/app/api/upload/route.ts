@@ -1,4 +1,5 @@
 import { isSignedIn } from "@/lib/db/session";
+import { allowFor } from "@/lib/rate-limit";
 import { PHOTO_CONSENT_VERSION } from "@/lib/consent";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { photoLooksUnsafe } from "@/lib/photo-safety";
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
   void sweepStorage();
   const user = await currentUser();
   const { t } = await getDictionary();
+  if (!allowFor("upload", user.id)) return NextResponse.json({ error: t.errors.rateLimited }, { status: 429 });
   const form = await request.formData();
   const file = form.get("selfie");
   const consent = form.get("consent");
