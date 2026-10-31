@@ -93,7 +93,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
       <MyHighlights
         initial={mine
           .filter((m) => m.status === "ready" && m.highlight)
-          .map((m) => ({ id: m.id, title: m.title, videoUrl: m.highlight!.videoUrl, posterUrl: m.highlight!.posterUrl, onProfile: !!m.onProfile }))}
+          .map((m) => ({ id: m.id, title: m.title, videoUrl: m.highlight!.videoUrl, posterUrl: m.highlight!.posterUrl, onProfile: !!m.onProfile, label: m.highlight!.label }))}
         aura={who.profile.highlightAura ?? DEFAULT_AURA}
         closeLabel={t.aura.close}
         aiLabel={t.aiLabel}

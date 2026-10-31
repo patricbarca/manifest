@@ -31,7 +31,8 @@ export function Highlights({
   const all: HighlightGroup = {
     id: "all",
     title: "",
-    items: groups.flatMap((g) => g.items.map((it) => ({ ...it, caption: it.label || g.title, label: it.label || g.title }))),
+    // Bajo el círculo, solo lo que eligió (emoji, palabra o nada); en el visor, el título.
+    items: groups.flatMap((g) => g.items.map((it) => ({ ...it, caption: it.label, label: g.title }))),
   };
   return (
     <div className="no-scrollbar -mx-1 flex gap-4 overflow-x-auto px-2 pb-2 pt-2">
@@ -41,7 +42,7 @@ export function Highlights({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={it.posterUrl} alt="" className="block h-[66px] w-[66px] rounded-full border-2 border-[var(--color-surface-1)] object-cover" />
           </AuraRing>
-          <span className="t-caption w-full truncate text-center text-[var(--color-label-2)]">{it.caption ?? "\u00a0"}</span>
+          {it.caption && <span className="t-caption w-full truncate text-center text-[var(--color-label-2)]">{it.caption}</span>}
         </button>
       ))}
       {extra}

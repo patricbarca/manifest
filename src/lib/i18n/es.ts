@@ -38,6 +38,8 @@ export const es: Dictionary = {
     title: "Tus highlights",
     pick: "Qué se ve en tu perfil",
     pickHint: "Toca para mostrar u ocultar. Solo se ve la escena animada, sin sonido y sin tu frase.",
+    labelHint: "Debajo de cada círculo puedes poner un emoji o una palabra, o dejarlo vacío.",
+    labelPlaceholder: "Ej. 🎓",
     none: "Aún no tienes manifestaciones animadas. Cuando crees una, podrás añadirla aquí.",
     auraTitle: "Tu aura",
     color: "Color",

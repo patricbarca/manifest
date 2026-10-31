@@ -30,6 +30,8 @@ const Patch = z.object({
   title: z.string().trim().min(1).max(60).optional(),
   /** La frase que se dice y se ve sobre la escena. La escena no se regenera. */
   affirmation: z.string().trim().min(3).max(120).optional(),
+  /** Texto bajo su círculo de highlight: un emoji, una palabra o nada (""). */
+  highlightLabel: z.string().trim().max(14).optional(),
 });
 
 /** Marcar como cumplida, mostrar en el perfil, renombrar o cambiar su frase. */
@@ -40,7 +42,7 @@ export async function PATCH(request: Request) {
   if (!body.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
   const cur = await manifests.get(body.data.id);
   if (!cur || cur.ownerId !== who.user.id) return NextResponse.json({ error: "not_found" }, { status: 404 });
-  const texts = [body.data.title, body.data.affirmation].filter((x): x is string => !!x);
+  const texts = [body.data.title, body.data.affirmation, body.data.highlightLabel].filter((x): x is string => !!x);
   if (texts.length && (texts.some((x) => !checkBlocked(x).ok) || !(await moderate(texts)).ok)) {
     return NextResponse.json({ error: "text_blocked" }, { status: 422 });
   }
@@ -51,6 +53,9 @@ export async function PATCH(request: Request) {
     ...(body.data.affirmation && body.data.affirmation !== m.affirmation ? { affirmation: body.data.affirmation, voiceUrl: undefined } : {}),
     ...(body.data.onProfile !== undefined ? { onProfile: body.data.onProfile || undefined } : {}),
     ...(body.data.manifested !== undefined ? { manifestedAt: body.data.manifested ? Date.now() : undefined } : {}),
+    ...(body.data.highlightLabel !== undefined && m.highlight
+      ? { highlight: { ...m.highlight, label: body.data.highlightLabel || undefined } }
+      : {}),
   }));
   return NextResponse.json({ manifestation: next });
 }
