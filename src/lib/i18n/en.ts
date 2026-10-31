@@ -39,6 +39,8 @@ export const en = {
     title: "Your highlights",
     pick: "What shows on your profile",
     pickHint: "Tap to show or hide. Only the animated scene shows, muted and without your phrase.",
+    labelHint: "Under each circle you can add an emoji or a word, or leave it empty.",
+    labelPlaceholder: "e.g. 🎓",
     none: "You don't have animated manifestations yet. Once you create one, you can add it here.",
     auraTitle: "Your aura",
     color: "Colour",
