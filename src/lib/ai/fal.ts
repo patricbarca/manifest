@@ -31,8 +31,15 @@ function fal(): FalClient {
 async function run<T>(endpoint: string, input: Record<string, unknown>): Promise<T> {
   try {
     // Lo que genera fal (imágenes con su cara, clips, voces) caduca allí en 1 día:
-    // nosotros lo copiamos a nuestro almacenamiento al momento.
-    const res = await fal().subscribe(endpoint, { input, logs: false, storageSettings: { expiresIn: FAL_EXPIRES } });
+    // nosotros lo copiamos a nuestro almacenamiento al momento. Y que no guarde
+    // la petición (entradas y salidas, con los enlaces a las selfies) en su
+    // historial: por defecto lo guarda (X-Fal-Store-IO).
+    const res = await fal().subscribe(endpoint, {
+      input,
+      logs: false,
+      storageSettings: { expiresIn: FAL_EXPIRES },
+      headers: { "X-Fal-Store-IO": "0" },
+    });
     return res.data as T;
   } catch (err) {
     // fal responde 422 content_policy_violation si su filtro (o el del modelo)
