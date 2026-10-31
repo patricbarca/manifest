@@ -34,7 +34,7 @@ export function Highlights({
     items: groups.flatMap((g) => g.items.map((it) => ({ ...it, caption: it.label || g.title, label: it.label || g.title }))),
   };
   return (
-    <div className="-mx-1 flex gap-4 overflow-x-auto px-2 pb-2 pt-2">
+    <div className="no-scrollbar -mx-1 flex gap-4 overflow-x-auto px-2 pb-2 pt-2">
       {all.items.map((it, i) => (
         <button key={it.posterUrl} type="button" onClick={() => setOpen(i)} className="interactive flex w-[76px] shrink-0 flex-col items-center gap-1.5">
           <AuraRing style={aura}>
