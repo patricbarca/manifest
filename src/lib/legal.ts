@@ -27,8 +27,13 @@ function contact(locale: Locale): string {
 
 export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; updated: string; sections: LegalSection[] } {
   const c = contact(locale);
-  const OWNER = process.env.LEGAL_NAME ?? "ManifestLifeAI";
   const es = locale === "es";
+  // Titular: con LEGAL_NAME (y LEGAL_ABN) sale "Nombre (ABN …), operando como ManifestLifeAI".
+  const name = process.env.LEGAL_NAME?.trim();
+  const abn = process.env.LEGAL_ABN?.trim();
+  const OWNER = name
+    ? `${name}${abn ? ` (ABN ${abn})` : ""}${name === "ManifestLifeAI" ? "" : es ? ", operando como ManifestLifeAI" : ", trading as ManifestLifeAI"}`
+    : "ManifestLifeAI";
   const updated = es ? `Última actualización: ${LEGAL_UPDATED}` : `Last updated: ${LEGAL_UPDATED}`;
 
   if (doc === "privacy") {
@@ -105,6 +110,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
       updated,
       sections: es
         ? [
+            { h: "Quién te lo vende", p: [`ManifestLifeAI lo ofrece ${OWNER}. Contacto: ${c}.`] },
             { h: "Qué es ManifestLifeAI", p: ["Una herramienta que crea vídeos de visualización con inteligencia artificial a partir de tus fotos y tus deseos. Es una herramienta de enfoque y motivación: no garantiza ningún resultado y no sustituye ayuda médica, psicológica, legal ni financiera."] },
             { h: "Quién puede usarla", p: ["Personas mayores de 18 años. Al usarla confirmas que lo eres."] },
             { h: "Lo que subes", p: [
@@ -123,6 +129,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
             { h: "Contacto", p: [`Para cualquier duda escribe a ${c}.`] },
           ]
         : [
+            { h: "Who sells it", p: [`ManifestLifeAI is provided by ${OWNER}. Contact: ${c}.`] },
             { h: "What ManifestLifeAI is", p: ["A tool that creates visualization videos with artificial intelligence from your photos and your desires. It's a focus and motivation tool: it doesn't guarantee any result and doesn't replace medical, psychological, legal or financial help."] },
             { h: "Who can use it", p: ["People aged 18 and over. By using it you confirm you are."] },
             { h: "What you upload", p: [
