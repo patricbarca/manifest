@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CirclePostCard, MarketCard } from "@/components/FeedCards";
@@ -14,6 +15,9 @@ import type { Profile } from "@/lib/social/types";
 import type { FeedPost } from "@/lib/social/feed";
 
 export const dynamic = "force-dynamic";
+
+/** Privada: fuera de Google. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 type Item = { kind: "post"; author: Profile; post: FeedPost } | { kind: "market"; slug: string };
 const MARKET_EVERY = 2;

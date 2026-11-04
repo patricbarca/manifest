@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { clip, pageMeta } from "@/lib/seo";
 import { templatePreview } from "@/lib/templates";
 import { TemplateMedia } from "@/components/TemplateMedia";
 import { notFound } from "next/navigation";
@@ -10,6 +12,19 @@ import { getDictionary } from "@/lib/i18n/server";
 
 export function generateStaticParams() {
   return TEMPLATES.map((t) => ({ slug: t.slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const bp = templateBySlug(slug);
+  if (!bp) return {};
+  const { locale } = await getDictionary();
+  return pageMeta({
+    title: `${bp.title[locale]} — ManifestLifeAI`,
+    description: clip(bp.summary[locale]),
+    path: `/market/${bp.slug}`,
+    image: templatePreview(bp.slug).still,
+  });
 }
 
 export default async function TemplatePage({
@@ -54,6 +69,7 @@ export default async function TemplatePage({
                 <TemplateMedia
                   template={bp}
                   variant={variant}
+                  alt={`${bp.title[locale]} — ${t.products[tier].name}`}
                   className="aspect-[9/16] w-full rounded-[var(--radius-lg)] ring-1 ring-[var(--color-hairline)]"
                 />
                 <Link
