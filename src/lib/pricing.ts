@@ -130,8 +130,9 @@ export function creatorPayoutUsd(tier: Tier): number {
 }
 
 /** Lo que se muestra en dólares, sin decimales cuando son redondos. */
+/** Precio en dólares estadounidenses, explícito ("US$39"): la tienda es australiana y cobra en USD. */
 export function formatUsd(amount: number): string {
-  return Number.isInteger(amount) ? `$${amount}` : `$${amount.toFixed(2)}`;
+  return Number.isInteger(amount) ? `US$${amount}` : `US$${amount.toFixed(2)}`;
 }
 
 /**
