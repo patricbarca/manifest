@@ -351,3 +351,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .aura-breathe, .aura-spin::before { animation: none; }
 }
+
+/* Gráficos del panel: una sola serie (azul de la paleta de datos validada). */
+:root { --viz-1: #3987e5; }
+:root[data-theme="light"] { --viz-1: #2a78d6; }
