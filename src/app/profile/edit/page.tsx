@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -6,6 +7,9 @@ import { me } from "@/lib/social/me";
 import { getDictionary } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
+
+/** Privada: fuera de Google. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 /** Ajustes del perfil: foto, datos, visibilidad y qué vídeos se muestran. */
 export default async function EditarPerfilPage() {
