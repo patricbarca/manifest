@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { isAdmin } from "@/lib/admin";
 import { DeleteAccount } from "@/components/DeleteAccount";
 import { hasPhotoConsent } from "@/lib/consent";
 import { cookies } from "next/headers";
@@ -52,6 +53,13 @@ export default async function SettingsPage() {
         <h1 className="t-headline">{t.settings.title}</h1>
         <span className="w-14" />
       </div>
+
+      {isAdmin(user.email) && (
+        <Link href="/admin" className="card t-sub flex items-center justify-between rounded-[var(--radius-lg)] p-5 font-medium">
+          <span>📊 Panel: visitas, usuarios e ingresos</span>
+          <span className="text-[var(--color-label-3)]">→</span>
+        </Link>
+      )}
 
       <Section title={t.settings.appearance}>
         <ThemePicker current={theme} labels={t.settings.themes} />
