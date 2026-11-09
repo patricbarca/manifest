@@ -123,6 +123,7 @@ export default async function HomePage() {
         <p className="t-sub mt-8 text-center text-[var(--color-label-2)]">
           {t.home.freeAfterProducts}
         </p>
+        <p className="t-caption mt-2 text-center text-[var(--color-label-3)]">{t.common.pricesUsd}</p>
       </section>
 
       {/* ── Áreas ────────────────────────────────────────────────────────── */}

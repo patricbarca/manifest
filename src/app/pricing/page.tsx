@@ -20,6 +20,7 @@ export default async function PreciosPage() {
         <p className="t-body mx-auto mt-6 text-pretty text-[var(--color-label-2)]">
           {t.pricing.lede}
         </p>
+        <p className="t-caption mt-3 text-[var(--color-label-3)]">{t.common.pricesUsd}</p>
       </header>
 
       <div className="mx-auto mt-16 grid max-w-5xl gap-4 md:grid-cols-3">

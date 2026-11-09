@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { formatUsd } from "@/lib/pricing";
 import { PhotoSlots, type SlotResult, type PhotoGuideLabels } from "./PhotoSlots";
 import { trackEvent } from "@/lib/track-client";
 import { useState } from "react";
@@ -157,7 +158,7 @@ export function NewManifestation({
           <div className="flex flex-wrap gap-2">
             {packs.map((p) => (
               <button key={p.qty} type="button" onClick={() => buy(p.qty)} className="interactive t-sub rounded-full border border-[var(--color-hairline-strong)] px-4 py-2 hover:bg-white/5">
-                {t.buy.replace("{n}", String(p.qty))} · ${p.priceUsd}
+                {t.buy.replace("{n}", String(p.qty))} · {formatUsd(p.priceUsd)}
                 {p.qty > 1 && <span className="t-caption ml-1 text-[var(--color-label-3)]">({t.each.replace("{p}", (p.priceUsd / p.qty).toFixed(2))})</span>}
               </button>
             ))}

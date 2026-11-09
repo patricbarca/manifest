@@ -51,6 +51,7 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
         </div>
         <div className="mt-8">{cta}</div>
         <p className="t-caption mt-3 text-[var(--color-label-3)]">{fill(L.priceNote, { price })}</p>
+        <p className="t-caption mt-1 text-[var(--color-label-3)]">{t.common.pricesUsd}</p>
         <p className="t-caption mt-1 text-emerald-300/90">✓ {L.guarantee}</p>
       </section>
 

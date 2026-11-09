@@ -17,6 +17,8 @@ import { THEME_COLOR, THEME_COOKIE, THEME_SCRIPT, parseTheme } from "@/lib/theme
 
 /** Correo de contacto público: solo se muestra si está configurado. */
 const CONTACT = process.env.CONTACT_EMAIL;
+/** Token público de Cloudflare Web Analytics (no es secreto: va en la página). */
+const CF_BEACON = process.env.CF_ANALYTICS_TOKEN;
 const SITE_URL = process.env.SITE_URL ?? "https://manifestlife.ai";
 
 export const metadata: Metadata = {
@@ -147,6 +149,10 @@ export default async function RootLayout({
 
         <main className="relative z-10">{children}</main>
         {tracking && <Tracking cfg={tracking} t={t.cookies} privacyHref={`${site}/privacy`} />}
+        {/* Estadística de visitas (Cloudflare Web Analytics): sin cookies ni datos personales, así que no necesita aviso. */}
+        {CF_BEACON && (
+          <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({ token: CF_BEACON })} />
+        )}
 
         <footer className={`relative z-10 ${inApp ? "mt-16" : "mt-32"} border-t border-[var(--color-hairline)]`}>
           <div className="mx-auto flex max-w-[1120px] flex-col gap-5 px-6 py-12 sm:flex-row sm:items-start sm:justify-between">
