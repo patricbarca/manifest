@@ -1,4 +1,6 @@
-import { PAYMENTS_ENABLED } from "@/lib/pricing";
+import { PAYMENTS_ENABLED, creditPacks } from "@/lib/pricing";
+import { stripeEnabled } from "@/lib/stripe";
+import { BuyCredits } from "@/components/BuyCredits";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -114,6 +116,13 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
         ))}
       </nav>
 
+      {tab === "manifest" && stripeEnabled() && (
+        <BuyCredits
+          credits={(await db.getUser(who.user.id))?.credits ?? 0}
+          packs={creditPacks()}
+          t={{ title: t.manifest.buyTitle, credits: t.manifest.credits, none: t.manifest.buyNone, buy: t.manifest.buy, each: t.manifest.each, error: t.manifest.buyError, note: t.manifest.buyNote }}
+        />
+      )}
       {tab === "manifest" && (
         <div className="flex gap-2">
           <Link href="/new" className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 text-center font-medium text-black">+ {t.manifest.newButton}</Link>
