@@ -9,6 +9,14 @@ import type { Tier } from "@/lib/types";
 import { isDemoMode } from "@/lib/ai";
 import { type Dictionary, type Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/server";
+import { pageMeta, siteJsonLd } from "@/lib/seo";
+
+export const metadata = pageMeta({
+  title: "ManifestLifeAI — see yourself living it",
+  description:
+    "Upload a photo and get a visualization video with your face, your script and a voice that guides you while you repeat your affirmations out loud.",
+  path: "/",
+});
 
 export default async function HomePage() {
   const { t, locale } = await getDictionary();
@@ -16,6 +24,7 @@ export default async function HomePage() {
 
   return (
     <div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd()) }} />
       {demo && (
         <div className="border-b border-[var(--color-hairline)] px-6 py-2.5 text-center">
           <p className="t-caption text-[var(--color-label-3)]">{t.home.demoBanner}</p>

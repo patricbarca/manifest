@@ -5,7 +5,7 @@ import { TEMPLATES } from "@/lib/templates";
 // Se genera en cada petición: SITE_URL llega en tiempo de ejecución, no al compilar.
 export const dynamic = "force-dynamic";
 
-const PAGES_UPDATED = "2026-10-25";
+const PAGES_UPDATED = "2026-10-29";
 
 /** Mapa del sitio: solo páginas públicas e indexables. */
 export default function sitemap(): MetadataRoute.Sitemap {

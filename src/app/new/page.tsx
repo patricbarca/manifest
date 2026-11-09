@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { hasPhotoConsent } from "@/lib/consent";
 import { NewManifestation } from "@/components/NewManifestation";
@@ -12,6 +13,9 @@ import type { Locale } from "@/lib/i18n/locale";
 import { TrackPurchase } from "@/components/Tracking";
 
 export const dynamic = "force-dynamic";
+
+/** Privada: fuera de Google. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 /** Nueva manifestación: escribe un deseo y se crea una escena animada tuya. */
 export default async function ManifestarPage({ searchParams }: { searchParams: Promise<{ bought?: string; sid?: string }> }) {

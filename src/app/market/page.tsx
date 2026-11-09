@@ -5,8 +5,12 @@ import { CREATOR_SHARE, PRODUCTS, formatUsd } from "@/lib/pricing";
 import { LIFE_AREAS, type LifeArea } from "@/lib/types";
 import { fill } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/server";
+import { clip, pageMeta } from "@/lib/seo";
 
-export const metadata = { title: "Market — ManifestLifeAI" };
+export async function generateMetadata() {
+  const { t } = await getDictionary();
+  return pageMeta({ title: `${t.market.title} — ManifestLifeAI`, description: clip(t.market.lede), path: "/market" });
+}
 
 export default async function MarketPage({
   searchParams,
