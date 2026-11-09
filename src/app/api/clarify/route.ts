@@ -1,4 +1,5 @@
-import { isSignedIn } from "@/lib/db/session";
+import { currentUser, isSignedIn } from "@/lib/db/session";
+import { allowFor } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 import { hasAccess } from "@/lib/access";
 import { z } from "zod";
@@ -29,6 +30,10 @@ export async function POST(request: Request) {
   if (!(await hasAccess())) {
     const { t } = await getDictionary();
     return NextResponse.json({ error: t.errors.betaOnly }, { status: 403 });
+  }
+  if (!allowFor("clarify", (await currentUser()).id)) {
+    const { t } = await getDictionary();
+    return NextResponse.json({ error: t.errors.rateLimited }, { status: 429 });
   }
   const { t, locale } = await getDictionary();
   const parsed = Body.safeParse(await request.json());

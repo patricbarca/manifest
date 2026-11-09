@@ -104,7 +104,8 @@ export async function GET(
         status: obj.status,
         headers: {
           "Content-Type": contentTypeFor(absolute),
-          "Cache-Control": "private, max-age=3600",
+          // El nombre de fichero nunca se reutiliza: puede guardarse en caché para siempre.
+          "Cache-Control": "private, max-age=31536000, immutable",
           "Accept-Ranges": "bytes",
           "X-Content-Type-Options": "nosniff",
           ...(obj.length !== undefined ? { "Content-Length": String(obj.length) } : {}),

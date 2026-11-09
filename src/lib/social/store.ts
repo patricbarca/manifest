@@ -1,4 +1,5 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { parseAura, type AuraStyle } from "./aura-style";
 import path from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { dbDir } from "../paths";
@@ -42,7 +43,7 @@ function ok<T>(r: { data: T; error: { message: string; code?: string } | null },
   return r.data;
 }
 
-type ProfileRow = { user_id: string; handle: string; display_name: string; avatar_url: string | null; visibility: Visibility; created_at: string; bio?: string | null; mantra?: string | null; link?: string | null; location?: string | null };
+type ProfileRow = { user_id: string; handle: string; display_name: string; avatar_url: string | null; visibility: Visibility; created_at: string; bio?: string | null; mantra?: string | null; link?: string | null; location?: string | null; highlight_aura?: AuraStyle | null };
 const toProfile = (r: ProfileRow): Profile => ({
   userId: r.user_id,
   handle: r.handle,
@@ -54,6 +55,7 @@ const toProfile = (r: ProfileRow): Profile => ({
   location: r.location ?? undefined,
   visibility: r.visibility,
   createdAt: Date.parse(r.created_at),
+  highlightAura: r.highlight_aura ? parseAura(r.highlight_aura) : undefined,
 });
 type LinkRow = { owner_id: string; member_id: string; status: "pending" | "accepted"; created_at: string };
 const toLink = (r: LinkRow): CircleLink => ({ ownerId: r.owner_id, memberId: r.member_id, status: r.status, createdAt: Date.parse(r.created_at) });
@@ -80,6 +82,7 @@ const supabaseSocial: SocialStore = {
         location: p.location ?? null,
         visibility: p.visibility,
         created_at: new Date(p.createdAt).toISOString(),
+        highlight_aura: p.highlightAura ?? null,
       }),
       "guardar perfil",
     );

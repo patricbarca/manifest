@@ -4,6 +4,7 @@ import { speakLinesCached } from "./voice-cache";
 import { appBase } from "./hosts";
 import { providers } from "./ai";
 import { db } from "./db/store";
+import { bodyClause } from "./body";
 import { applyCast, buildScenes, layoutTimeline, narrationText, sceneCast } from "./script-engine";
 import { assembleMp4 } from "./render/assemble";
 import { canRenderGlass, mediaDuration, renderGlass } from "./render/glass";
@@ -175,6 +176,7 @@ export async function runPipeline(projectId: string): Promise<void> {
       photos.length > 0,
       start.durationSec,
       photos.length,
+      bodyClause((await db.getUser(start.ownerId))?.body),
     ).map((scene, i) => {
       const ids = people.length ? sceneCast(script.sceneBriefs[i] ?? "", start.desires?.[i], people) : [];
       const withCast: Scene = { ...scene, cast: ids.length ? ids : undefined };

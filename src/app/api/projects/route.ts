@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { allowFor } from "@/lib/rate-limit";
 import { isSignedIn } from "@/lib/db/session";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -18,6 +19,7 @@ import { hasAccess } from "@/lib/access";
 import { LOCALES } from "@/lib/i18n/locale";
 import { VOICE_IDS } from "@/lib/voices";
 import { createCheckout, siteOrigin, stripeEnabled } from "@/lib/stripe";
+import { attributionMetadata, readAttribution } from "@/lib/tracking";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -62,6 +64,7 @@ export async function POST(request: Request) {
   if (!(await hasAccess())) {
     return NextResponse.json({ error: t.errors.betaOnly }, { status: 403 });
   }
+  if (!allowFor("createProject", user.id)) return NextResponse.json({ error: t.errors.rateLimited }, { status: 429 });
   const parsed = CreateProject.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json(
@@ -123,6 +126,7 @@ export async function POST(request: Request) {
 
   const template = input.templateSlug ? templateBySlug(input.templateSlug) : undefined;
 
+  const attribution = await readAttribution();
   const project: Project = {
     id: "p_" + Date.now().toString(36) + randomBytes(5).toString("hex"),
     ownerId: user.id,
@@ -157,6 +161,7 @@ export async function POST(request: Request) {
     // pasan gratis por no haber pasarela de pago todavía.
     watermark: charge.ok && charge.kind === "free",
     waiverAt: Date.now(),
+    attribution,
   };
   if (needsCheckout) project.status = "draft";
   await db.putProject(project);
@@ -169,6 +174,7 @@ export async function POST(request: Request) {
         productName: `ManifestLifeAI · ${t.products[input.tier].name}`,
         locale,
         origin: siteOrigin(request),
+        extraMetadata: attributionMetadata(attribution),
       });
       await db.patchProject(project.id, (p) => ({ ...p, stripeSessionId: session.id }));
       return NextResponse.json({ project, checkoutUrl: session.url });

@@ -1,6 +1,9 @@
 import { isSignedIn } from "@/lib/db/session";
+import { allowFor } from "@/lib/rate-limit";
+import { PHOTO_CONSENT_VERSION } from "@/lib/consent";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { photoLooksUnsafe } from "@/lib/photo-safety";
+import { assessSelfie, SELFIE_MIN_SCORE } from "@/lib/selfie-check";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
@@ -11,7 +14,6 @@ import { sweepStorage } from "@/lib/cleanup";
 import { db } from "@/lib/db/store";
 
 /** Cambia si cambia el texto del consentimiento de fotos (para volver a pedirlo y saber cuál aceptó). */
-const PHOTO_CONSENT_VERSION = "2026-10-26";
 
 export const runtime = "nodejs";
 
@@ -34,6 +36,7 @@ export async function POST(request: Request) {
   void sweepStorage();
   const user = await currentUser();
   const { t } = await getDictionary();
+  if (!allowFor("upload", user.id)) return NextResponse.json({ error: t.errors.rateLimited }, { status: 429 });
   const form = await request.formData();
   const file = form.get("selfie");
   const consent = form.get("consent");
@@ -70,10 +73,24 @@ export async function POST(request: Request) {
     await rm(abs, { force: true });
     return NextResponse.json({ error: t.errors.photoUnsafe }, { status: 422 });
   }
+  // Sus selfies pasan el pre-análisis: una mala referencia deforma la cara en todas las escenas.
+  const self = form.get("kind") === "self";
+  // El hueco 4 (índice 3) es de medio cuerpo: ahí la cara puede salir más pequeña.
+  // Si la hizo el escáner, el detector del móvil ya comprobó que hay una sola cara.
+  const quality = self
+    ? await assessSelfie(abs, form.get("slot") === "3" ? "body" : "face", { oneFace: form.get("scan") === "1" })
+    : null;
+  if (quality && quality.score < SELFIE_MIN_SCORE) {
+    await rm(abs, { force: true });
+    const tips = quality.issues.map((i) => t.selfieIssues[i]).filter(Boolean);
+    return NextResponse.json(
+      { error: [t.selfieRejected, ...tips].join(" "), code: "selfie_quality", quality },
+      { status: 422 },
+    );
+  }
   // Registro del consentimiento expreso (fecha y versión del texto), la primera vez.
   // Sus propias fotos se recuerdan (las 4 últimas) para crear más manifestaciones
   // sin volver a subirlas, mientras existan (se borran a los 30 días).
-  const self = form.get("kind") === "self";
   const url = mediaUrl("uploads", name);
   if (self || !user.photoConsent || user.photoConsent.version !== PHOTO_CONSENT_VERSION) {
     await db.putUser({
@@ -83,5 +100,10 @@ export async function POST(request: Request) {
     });
   }
 
-  return NextResponse.json({ url: mediaUrl("uploads", name) });
+  // Aceptada pero mejorable: se avisa con los motivos.
+  const warning =
+    quality && quality.score < 7 && quality.issues.length
+      ? [t.selfieWeak, ...quality.issues.map((i) => t.selfieIssues[i]).filter(Boolean)].join(" ")
+      : undefined;
+  return NextResponse.json({ url: mediaUrl("uploads", name), quality, warning });
 }

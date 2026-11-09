@@ -11,6 +11,8 @@ export interface Profile {
   location?: string;
   visibility: Visibility;
   createdAt: number;
+  /** Color y movimiento del aura de sus círculos de highlights. */
+  highlightAura?: import("./aura-style").AuraStyle;
 }
 
 export interface AuraView {

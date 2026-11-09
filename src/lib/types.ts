@@ -128,6 +128,8 @@ export interface Manifestation {
   imageUrl?: string;
   /** Clip de la escena a calidad completa: es lo que se reutiliza al montar. */
   clipUrl?: string;
+  /** Copia ligera del clip (720 px, índice al principio) para verlo en la app. */
+  playUrl?: string;
   /** Voz de la afirmación (con la voz y el idioma de arriba). */
   voiceUrl?: string;
   highlight?: Highlight;
@@ -149,6 +151,8 @@ export interface Manifestation {
   quality?: "standard" | "elevated";
   /** Cambios de imagen hechos desde la última animación (máximo 3). */
   draftTries?: number;
+  /** Edición de escena desde el perfil ya pagada (1 manifestación cubre hasta 3 imágenes y la animación). */
+  editPaid?: boolean;
   /** En cola solo para animar el borrador (sin guion ni imagen nuevos). */
   animateOnly?: boolean;
   /** Cuándo la marcó como cumplida. */
@@ -292,6 +296,8 @@ export interface Project {
   voice?: string;
   /** Sesión de Stripe Checkout con la que se pagó. */
   stripeSessionId?: string;
+  /** De qué anuncio vino (utm_*, gclid, ttclid), si aceptó las cookies. */
+  attribution?: Record<string, string>;
   /** Frase de apertura elegida para este vídeo (id de lib/quotes). */
   quoteId?: string;
   /** Veces que se relanzó tras un reinicio del servidor. */
@@ -425,4 +431,8 @@ export interface User {
   creditSessions?: string[];
   /** Sus últimas fotos (para crear manifestaciones sin volver a subirlas mientras existan). */
   photoUrls?: string[];
+  /** Complexión y estatura elegidas con botones (opcional): se añaden al prompt de las escenas. */
+  body?: import("./body").BodyFeatures;
+  /** Último recordatorio de prueba pedido desde Ajustes (para limitarlo). */
+  lastTestReminder?: number;
 }

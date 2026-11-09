@@ -1,4 +1,5 @@
 import { CreateWizard } from "@/components/CreateWizard";
+import { hasPhotoConsent } from "@/lib/consent";
 import { currentUser, freeVideosLeft, isSignedIn } from "@/lib/db/session";
 import { redirect } from "next/navigation";
 import { templateBySlug } from "@/lib/templates";
@@ -36,6 +37,7 @@ export default async function CrearPage({
       template={template ? templateBySlug(template) : undefined}
       initialTier={TIERS.find((x) => x === tier)}
       freeLeft={freeVideosLeft(user)}
+      consented={hasPhotoConsent(user)}
       prices={{ vision: PRODUCTS.vision.priceUsd, cinematic: PRODUCTS.cinematic.priceUsd, elevated: PRODUCTS.elevated.priceUsd }}
       t={t}
       locale={locale}

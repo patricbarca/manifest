@@ -1,42 +1,41 @@
-# Qué falta antes de que esto vea un usuario real
+# Qué falta para lanzar y cobrar
 
-Ordenado por lo que bloquea. Lo de arriba no es opcional.
+Actualizado el 2026-10-31. Ordenado por lo que bloquea.
 
-## Bloqueante para cobrar
+## Bloqueante para cobrar (depende de Patric)
 
-| # | Qué | Por qué |
+| # | Qué | Estado |
 |---|---|---|
-| 1 | **Auth real** (Supabase Auth / Clerk / NextAuth) | Ahora la identidad es una cookie anónima. Sustituye `src/lib/db/session.ts`. |
-| 2 | **Base de datos real** (Postgres) | El store JSON no aguanta dos procesos. Sustituye `src/lib/db/store.ts`. |
-| 3 | **Pagos** (Stripe) | Cobro por vídeo (9 $ / 29 $), webhooks y reparto del 30 % del market vía Stripe Connect. Hasta entonces `PAYMENTS_ENABLED=false` deja generar sin cobrar. |
-| 4 | ~~**Almacenamiento privado**~~ | ✅ Hecho. Los ficheros salieron de `/public` a `DATA_DIR`, y `/media/[...path]` comprueba de quién es cada uno. Queda moverlo a un bucket cuando toque Vercel. |
-| 5 | **Borrado real** | Botón de borrar cuenta que borre de verdad fotos, escenas y vídeos. Obligación legal, no cortesía. |
+| 1 | **Empresa o ABN y nombre legal** | Pendiente. Poner `LEGAL_NAME` en Railway: es el titular que sale en términos y privacidad. |
+| 2 | **Stripe en modo real** | Pendiente. Activar la cuenta, claves reales (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`), webhook a `https://app.manifestlife.ai/api/stripe/webhook`, `PAYMENTS_ENABLED=true`. |
+| 3 | **Compra real de principio a fin** | Pendiente. Pagar, recibir el email, generar el vídeo, probar un reembolso. |
+| 4 | **Revisión legal** | Pendiente. Términos, privacidad, consentimiento de fotos y reembolsos. |
+| 5 | **GST / impuestos** | Pendiente. Confirmar con el contador; Stripe Tax puede calcularlo. |
 
-## Bloqueante para abrir Animado
+## Bloqueante para abrir a todos (quitar `ACCESS_CODE`)
 
-| # | Qué | Por qué |
+| # | Qué | Estado |
 |---|---|---|
-| 6 | **Cola de trabajos** (Inngest / Trigger.dev / QStash) | Un Animado de 60 s no cabe en el timeout de una función serverless. El pipeline ya está escrito para reanudarse. |
-| 7 | **Validar consistencia de identidad** | 50 generaciones reales, medir cuántas mantienen la cara reconocible en la escena 8. Es el riesgo número uno del producto. |
-| 8 | **Worker de render** | Contenedor con ffmpeg, o Remotion, para el MP4 descargable. |
+| 6 | Límites de uso en las rutas que gastan | ✅ `src/lib/rate-limit.ts` (en memoria, 1 réplica). Con más réplicas, pasarlo a la base de datos. |
+| 7 | Borrar la cuenta de verdad | ✅ Ajustes → Borrar mi cuenta (`/api/account`). |
+| 8 | `IMPORT_TOKEN` vacío en Railway | Pendiente de comprobar (Patric). |
+| 9 | Precios definitivos (¿suscripción?) | Pendiente de decidir. |
 
-## Bloqueante para abrir el registro
+## Muy recomendable
 
-| # | Qué | Por qué |
-|---|---|---|
-| 9 | **Moderación de imagen** | Hoy solo se filtra el texto. Falta detectar que el selfie no es de un famoso ni de un menor. |
-| 10 | **Verificación de que el selfie es tuyo** | *Liveness check* o equivalente. La casilla de consentimiento no basta. |
-| 11 | **Rate limiting** | `/api/upload` y `/api/projects` no tienen ninguno. |
+- Pedir a fal por escrito dónde procesan MiniMax y Kling, y su DPA.
+- Caducidad de archivos en el panel de fal (Settings → Storage).
+- `IMAGE_COST_CENTS` con el coste real de GPT Image (panel de fal → Usage).
+- IDs de Google Ads y TikTok si hay anuncios.
+- Detectar menores y famosos en las selfies (hoy solo desnudos).
+- Tests del recorrido completo con Playwright.
 
-## Producto, después
+## Hecho (antes en esta lista)
 
-- Rehacer una escena suelta desde la UI.
-- Clonación de voz propia (plan Creador).
-- Recordatorio diario y racha: el KPI es reproducciones por semana, no vídeos generados.
-- **Publicar tu vídeo como plantilla** — el modelo está en los tipos (`Template` con `sourceProjectId` y `creatorId`), falta el flujo y sacar las plantillas de `src/lib/templates.ts` a base de datos.
-- Medir cuánto se parece una regeneración a la vista previa del creador. De ello depende cómo se promete el market.
-- Música: catálogo con licencia además del pad generativo.
-- Idiomas: el guion ya sale en el idioma del usuario, falta la UI.
+Login real (Supabase Auth), base de datos (Supabase), pagos Stripe (modo prueba),
+almacenamiento privado y bucket, cola y reanudación, montaje con ffmpeg,
+moderación de texto e imagen (desnudos), pre-análisis de selfies, escáner de cara,
+recordatorios por email, tema claro, Ajustes.
 
 ## Aprendido por el camino
 
@@ -54,7 +53,7 @@ Ordenado por lo que bloquea. Lo de arriba no es opcional.
 
 ## Deuda técnica conocida
 
-- `src/lib/db/store.ts` — un proceso, sin transacciones.
+- El límite de uso y la cola viven en memoria: válidos con una sola réplica en Railway.
 - `src/lib/ai/fal.ts` — las imágenes viajan como data URI; con ficheros grandes va justo.
 - `src/lib/render/assemble.ts` — escrito pero **no ejecutado nunca** en el entorno de desarrollo. La imagen de Docker sí trae ffmpeg, así que el primer uso real será en Railway.
 - El `Dockerfile` **no se ha construido nunca**: no hay demonio de Docker aquí. Sí está probado el output `standalone` que corre dentro.

@@ -10,6 +10,10 @@ export async function register() {
     import("./lib/queue").then((q) => q.retryWaitingFunds()).catch((err) => console.error("[fondos] reintento:", err));
     import("./lib/queue").then((q) => q.resumeManifestations()).catch((err) => console.error("[queue] manifestaciones:", err));
   }, 5000);
+  // Copias ligeras para el visor de las manifestaciones antiguas (una vez, en segundo plano).
+  setTimeout(() => {
+    import("./lib/playback").then((p) => p.backfillPlayCopies()).catch((err) => console.error("[playback] al rellenar:", err));
+  }, 60 * 1000);
   // Recordatorio diario de racha: se mira cada 15 min (manda a las 19:00 locales, uno al día).
   const { runReminders } = await import("./lib/reminders");
   setInterval(() => {

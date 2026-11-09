@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { PhotoSlots, type SlotResult, type PhotoGuideLabels } from "./PhotoSlots";
+import { trackEvent } from "@/lib/track-client";
 import { useState } from "react";
 import { AccessCodeForm } from "./AccessCodeForm";
 import type { Locale } from "@/lib/i18n/locale";
@@ -22,6 +24,8 @@ export function NewManifestation({
   voices,
   locale,
   t,
+  guide,
+  consented = false,
 }: {
   initialPhotos: number;
   credits: number;
@@ -30,42 +34,64 @@ export function NewManifestation({
   voices: Voice[];
   locale: Locale;
   t: Labels;
+  guide: PhotoGuideLabels;
+  consented?: boolean;
 }) {
   const router = useRouter();
   const [desire, setDesire] = useState("");
   const [lang, setLang] = useState<Locale>(locale);
   const [voice, setVoice] = useState(voices[0]?.id ?? "Sarah");
   const [photos, setPhotos] = useState(initialPhotos);
-  const [consent, setConsent] = useState(false);
-  const [bio, setBio] = useState(false);
+  const [consent, setConsent] = useState(consented);
+  const [bio, setBio] = useState(consented);
   const [waiver, setWaiver] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [slotUrls, setSlotUrls] = useState<(string | undefined)[]>([]);
+  const [busySlot, setBusySlot] = useState<number>();
   const [error, setError] = useState<string>();
+  const [note, setNote] = useState<string>();
   const canCreate = desire.trim().length >= 3 && photos > 0 && waiver && (!paymentsOn || credits > 0) && !busy;
   const input = "t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none focus:border-[var(--color-hairline-strong)]";
 
-  async function upload(files: File[]) {
+  async function upload(files: File[], slot = 0, scanned = false): Promise<SlotResult | undefined> {
     setUploading(true);
+    setBusySlot(slot);
     setError(undefined);
+    setNote(undefined);
+    let result: SlotResult | undefined;
     for (const file of files.slice(0, 4)) {
       const body = new FormData();
       body.append("selfie", file);
       body.append("consent", String(consent));
       body.append("biometric", String(bio));
       body.append("kind", "self");
+      body.append("slot", String(slot));
+      if (scanned) body.append("scan", "1");
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) setError(data.error ?? t.errors.invalid);
-      else setPhotos((n) => n + 1);
+      // El veredicto de cada foto se enseña debajo de las fotos (PhotoSlots).
+      result = { ok: res.ok, warn: !!data.warning, message: res.ok ? data.warning : (data.error ?? t.errors.invalid) };
+      if (res.ok) {
+        setPhotos((n) => n + 1);
+        setSlotUrls((prev) => {
+          const next = [...prev];
+          next[slot] = data.url;
+          return next;
+        });
+      }
     }
     setUploading(false);
+    return result;
   }
 
   async function buy(qty: number) {
     const res = await fetch("/api/credits", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ qty }) });
     const data = await res.json().catch(() => ({}));
-    if (res.ok && data.url) window.location.href = data.url;
+    if (res.ok && data.url) {
+      trackEvent({ name: "begin_checkout" });
+      window.location.href = data.url;
+    }
     else setError(t.errors[data.error] ?? t.errors.invalid);
   }
 
@@ -108,33 +134,20 @@ export function NewManifestation({
         </label>
       </div>
 
-      {photos > 0 ? (
+      {photos > 0 && !slotUrls.some(Boolean) ? (
         <p className="t-caption text-emerald-300">✓ {t.photosOk}</p>
       ) : (
         <div className="card space-y-3 rounded-[var(--radius-lg)] p-5">
           <p className="t-sub font-medium">{t.photosTitle}</p>
           <p className="t-caption text-[var(--color-label-3)]">{t.photosHint}</p>
-          <label className="t-caption flex items-start gap-2 text-[var(--color-label-2)]">
-            <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-[2px] h-4 w-4 accent-white" />
-            <span>{t.consent}</span>
-          </label>
-          <label className="t-caption flex items-start gap-2 text-[var(--color-label-2)]">
-            <input type="checkbox" checked={bio} onChange={(e) => setBio(e.target.checked)} className="mt-[2px] h-4 w-4 accent-white" />
-            <span>{t.biometric}</span>
-          </label>
-          <input
-            type="file"
-            multiple
-            accept="image/jpeg,image/png,image/webp"
-            disabled={!consent || !bio || uploading}
-            onChange={(e) => {
-              const files = Array.from(e.target.files ?? []);
-              e.target.value = "";
-              void upload(files);
-            }}
-            className="t-sub block w-full text-[var(--color-label-2)] file:mr-4 file:rounded-full file:border-0 file:bg-white file:px-5 file:py-2 file:text-[13px] file:font-medium file:text-black disabled:opacity-35"
+          <PhotoSlots
+            urls={slotUrls}
+            onPick={(file, slot, scanned) => upload([file], slot, scanned)}
+            disabled={uploading}
+            busySlot={uploading ? busySlot : undefined}
+            consent={{ given: consent && bio, text: t.consent, biometric: t.biometric, onGive: () => { setConsent(true); setBio(true); } }}
+            t={guide}
           />
-          {uploading && <p className="t-caption">{t.uploading}</p>}
         </div>
       )}
 
@@ -157,6 +170,7 @@ export function NewManifestation({
         <span>{t.waiver}</span>
       </label>
 
+      {note && <p className="t-caption text-amber-200">{note}</p>}
       {error && (
         <div className="t-sub text-rose-300">
           {error}

@@ -10,6 +10,8 @@ import { deleteMediaUrl, offloadProject } from "../cleanup";
 import { manifests } from "./store";
 import { ensureLocal } from "./compose";
 import { db } from "../db/store";
+import { makePlayCopy } from "../playback";
+import { bodyClause } from "../body";
 
 /** Si la manifestación se pagó con un paquete y falló, devuelve la unidad (solo una vez). */
 export async function refundCredit(id: string): Promise<void> {
@@ -17,7 +19,7 @@ export async function refundCredit(id: string): Promise<void> {
   // Regeneración gratis que falló: se devuelve al contador.
   if (m?.freeRegen) await manifests.patch(id, (cur) => ({ ...cur, freeRegen: undefined, regensUsed: Math.max(0, (cur.regensUsed ?? 1) - 1) }));
   if (!m?.paidCredit) return;
-  await manifests.patch(id, (cur) => ({ ...cur, paidCredit: undefined }));
+  await manifests.patch(id, (cur) => ({ ...cur, paidCredit: undefined, editPaid: undefined }));
   const user = await db.getUser(m.ownerId);
   if (user) await db.putUser({ ...user, credits: (user.credits ?? 0) + 1 });
 }
@@ -62,7 +64,8 @@ export async function runManifestation(id: string): Promise<void> {
       brief = script.result.sceneBriefs[0] ?? start.desire;
       affirmation = script.result.affirmations[0] ?? start.desire;
       const photos = (start.photoUrls ?? []).map((u) => localPathForMediaUrl(u)).filter((p): p is string => !!p);
-      const [scene] = buildScenes([brief], start.style ?? "cinematic", photos.length > 0, 8, photos.length);
+      const owner = await db.getUser(start.ownerId);
+      const [scene] = buildScenes([brief], start.style ?? "cinematic", photos.length > 0, 8, photos.length, bodyClause(owner?.body));
 
       // 2. Imagen con su cara.
       const prompt = start.redoNote ? `${scene.prompt}. Change requested by the person (apply it exactly): ${start.redoNote}` : scene.prompt;
@@ -94,8 +97,9 @@ export async function runManifestation(id: string): Promise<void> {
     });
     cents += clip.costCents;
 
-    // 5. Highlight para el perfil.
+    // 5. Highlight para el perfil y copia ligera para el visor.
     const hl = await makeHighlights({ id, scenes: [{ videoUrl: clip.result.url }] } as unknown as Project).catch(() => undefined);
+    const playUrl = await makePlayCopy(clip.result.url);
 
     await manifests.patch(id, (m) => ({
       ...m,
@@ -105,18 +109,20 @@ export async function runManifestation(id: string): Promise<void> {
       imageUrl,
       voiceUrl,
       clipUrl: clip.result.url,
+      playUrl,
       highlight: hl?.[0],
       animateOnly: undefined,
       draftImageUrl: undefined,
       draftNote: undefined,
       draftTries: undefined,
       freeRegen: undefined,
+      editPaid: undefined,
       costCents: +((start.costCents ?? 0) + cents).toFixed(2),
     }));
     // Al rehacerla, la versión anterior ya no se ve en ningún sitio: se borran sus ficheros.
     if (start.clipUrl) {
-      const now = new Set([imageUrl, clip.result.url, voiceUrl, hl?.[0]?.videoUrl, hl?.[0]?.posterUrl]);
-      for (const url of [start.imageUrl, start.draftImageUrl, start.clipUrl, start.voiceUrl, start.highlight?.videoUrl, start.highlight?.posterUrl]) {
+      const now = new Set([imageUrl, clip.result.url, playUrl, voiceUrl, hl?.[0]?.videoUrl, hl?.[0]?.posterUrl]);
+      for (const url of [start.imageUrl, start.draftImageUrl, start.clipUrl, start.playUrl, start.voiceUrl, start.highlight?.videoUrl, start.highlight?.posterUrl]) {
         if (url && !now.has(url)) await deleteMediaUrl(url);
       }
     }

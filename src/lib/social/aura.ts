@@ -4,8 +4,6 @@ import { social } from "./store";
 
 /** Aura por ver un vídeo completo, una vez al día por vídeo. */
 export const AURA_PER_VIEW = 10;
-/** Lo visto fuera de la app (vídeo descargado): no se puede comprobar, así que vale menos. */
-export const AURA_PER_CHECKIN = 5;
 /** Parte del vídeo que hay que ver para que cuente. */
 export const VIEW_THRESHOLD = 0.8;
 

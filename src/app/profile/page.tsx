@@ -7,7 +7,8 @@ import { ProfileHeader } from "@/components/ProfileHeader";
 import { ShareProfileButton } from "@/components/ShareProfileButton";
 import { CirclePanel } from "@/components/CirclePanel";
 import { PeopleSearch } from "@/components/PeopleSearch";
-import { Highlights } from "@/components/Highlights";
+import { MyHighlights } from "@/components/MyHighlights";
+import { DEFAULT_AURA } from "@/lib/social/aura-style";
 import { manifestPosts } from "@/lib/social/feed";
 import { manifests } from "@/lib/manifest/store";
 import { ManifestationGrid } from "@/components/ManifestationGrid";
@@ -93,7 +94,15 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
         </Link>
       )}
 
-      {groups.length > 0 && <Highlights groups={groups} closeLabel={t.aura.close} aiLabel={t.aiLabel} />}
+      <MyHighlights
+        initial={mine
+          .filter((m) => m.status === "ready" && m.highlight)
+          .map((m) => ({ id: m.id, title: m.title, videoUrl: m.highlight!.videoUrl, posterUrl: m.highlight!.posterUrl, onProfile: !!m.onProfile, label: m.highlight!.label }))}
+        aura={who.profile.highlightAura ?? DEFAULT_AURA}
+        closeLabel={t.aura.close}
+        aiLabel={t.aiLabel}
+        t={t.highlights}
+      />
 
       <nav className="flex border-b border-[var(--color-hairline)]">
         {TABS.map((k) => (
@@ -122,7 +131,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
           initial={mine}
           locale={locale}
           paymentsOn={PAYMENTS_ENABLED}
-          t={{ remove: t.manifest.remove, sceneEdit: t.manifest.sceneEdit, edit: t.manifest.edit, save: t.manifest.save, cancel: t.manifest.cancel, titleLabel: t.manifest.titleField, phraseLabel: t.manifest.phraseField, editHint: t.manifest.editHint, textBlocked: t.aura.errors.text_blocked, manifested: t.manifest.manifested, markManifested: t.manifest.markManifested, unmark: t.manifest.unmark, onProfile: t.manifest.onProfile, profileHint: t.manifest.profileHint, showOnProfile: t.manifest.showOnProfile, hideFromProfile: t.manifest.hideFromProfile, generating: t.manifest.generating, waitingFunds: t.manifest.waitingFunds, failed: t.manifest.failed, close: t.aura.close, empty: t.manifest.empty }}
+          t={{ remove: t.manifest.remove, sceneEdit: t.manifest.sceneEdit, edit: t.manifest.edit, save: t.manifest.save, cancel: t.manifest.cancel, titleLabel: t.manifest.titleField, phraseLabel: t.manifest.phraseField, editHint: t.manifest.editHint, textBlocked: t.aura.errors.text_blocked, manifested: t.manifest.manifested, markManifested: t.manifest.markManifested, unmark: t.manifest.unmark, onProfile: t.manifest.onProfile, profileHint: t.manifest.profileHint, showOnProfile: t.manifest.showOnProfile, hideFromProfile: t.manifest.hideFromProfile, generating: t.manifest.generating, waitingFunds: t.manifest.waitingFunds, failed: t.manifest.failed, close: t.aura.close, empty: t.manifest.empty, options: t.manifest.options, manifestedHint: t.manifest.manifestedHint }}
         />
       )}
 

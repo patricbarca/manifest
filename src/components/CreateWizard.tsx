@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { PhotoSlots, type SlotResult } from "./PhotoSlots";
+import { trackEvent } from "@/lib/track-client";
 import { useMemo, useState } from "react";
 import { PALETTES, TIERS, type Palette } from "@/lib/types";
 import type {
@@ -40,7 +42,10 @@ import { Icon } from "./Icon";
 import { DEFAULT_VOICE, VOICES, voiceSample } from "@/lib/voices";
 import type { Locale as VideoLocale } from "@/lib/i18n/locale";
 
-const STEP = { desires: 0, details: 1, photo: 2, people: 3, format: 4, review: 5 } as const;
+const STEP = { desires: 0, details: 1, scenes: 2, photo: 3, people: 4, format: 5, review: 6 } as const;
+
+type SceneIdea = { place: string; action: string; outfit: string; mood: string };
+const EMPTY_IDEA: SceneIdea = { place: "", action: "", outfit: "", mood: "" };
 const MAX_PEOPLE = 4;
 const MAX_PERSON_PHOTOS = 3;
 
@@ -67,9 +72,11 @@ type Props = {
   /** El diccionario llega por prop: este componente corre en el cliente. */
   t: Dictionary;
   locale: Locale;
+  /** Ya dio el consentimiento de fotos (no se vuelve a pedir). */
+  consented?: boolean;
 };
 
-export function CreateWizard({ initialArea, template, freeLeft, prices, initialTier, t, locale }: Props) {
+export function CreateWizard({ initialArea, template, freeLeft, prices, initialTier, t, locale, consented = false }: Props) {
   const router = useRouter();
 
   const [step, setStep] = useState<number>(STEP.desires);
@@ -81,13 +88,16 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
     // Siempre 3 casillas: el primer vídeo trae 3 escenas, una por deseo.
     template ? template.affirmations[locale].slice(0, MAX_DESIRES) : Array(MAX_DESIRES).fill(""),
   );
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  // Un hueco por tipo de foto (de frente sonriendo, suave, tres cuartos, medio cuerpo).
+  const [slotUrls, setSlotUrls] = useState<(string | undefined)[]>([undefined, undefined, undefined, undefined]);
+  const [uploadingSlot, setUploadingSlot] = useState<number>();
+  const photoUrls = slotUrls.filter((u): u is string => !!u);
   const [palette, setPalette] = useState<Palette>("dusk");
   const [videoLocale, setVideoLocale] = useState<VideoLocale>(locale as VideoLocale);
   const [voice, setVoice] = useState<string>(DEFAULT_VOICE);
-  const [consent, setConsent] = useState(false);
+  const [consent, setConsent] = useState(consented);
   // Consentimiento aparte para tratar las fotos de cara (dato biométrico): proveedores, plazo y uso.
-  const [bioConsent, setBioConsent] = useState(false);
+  const [bioConsent, setBioConsent] = useState(consented);
   // UE: para generar ya hay que pedirlo expresamente y aceptar perder el desistimiento de 14 días.
   const [waiver, setWaiver] = useState(false);
   const [people, setPeople] = useState<PersonDraft[]>([]);
@@ -101,6 +111,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
   const tone: VoiceTone = template?.tone ?? "calma";
   const durationSec: 30 | 60 = 60;
   const [error, setError] = useState<string>();
+  const [photoNote, setPhotoNote] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
 
   // Detalles: las preguntas se piden una vez por intención y se rehacen solo
@@ -109,8 +120,11 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
   const [questionsKey, setQuestionsKey] = useState<string>();
   const [tailored, setTailored] = useState(false);
   const [answers, setAnswers] = useState<string[]>([]);
-  // Cómo quiere verse en las escenas (ropa, colores): el guionista lo usa en todas.
-  const [outfit, setOutfit] = useState("");
+  // Una escena por deseo (lugar, qué hace, ropa, ambiente): la IA la propone y la persona la edita.
+  const [ideas, setIdeas] = useState<SceneIdea[]>([]);
+  const [ideasKey, setIdeasKey] = useState<string>();
+  const [loadingIdeas, setLoadingIdeas] = useState(false);
+  const [rethinking, setRethinking] = useState<number>();
   const [loadingQuestions, setLoadingQuestions] = useState(false);
 
   // Revisión.
@@ -132,6 +146,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
       );
     }
     if (step === STEP.details) return !loadingQuestions;
+    if (step === STEP.scenes) return !loadingIdeas && rethinking === undefined;
     if (step === STEP.people) {
       // Las personas son opcionales, pero las que se añaden van completas.
       return (
@@ -141,7 +156,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
       );
     }
     return true; // la foto es opcional, y el formato siempre es válido
-  }, [step, desires, loadingQuestions, people, peopleConsent, uploadingPerson]);
+  }, [step, desires, loadingQuestions, loadingIdeas, rethinking, people, peopleConsent, uploadingPerson]);
 
   const cleanPeople = useMemo(
     () =>
@@ -178,15 +193,35 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
     });
   }
 
+  // Las escenas que definió la persona viajan como detalles: el guionista las sigue al pie de la letra.
+  const sceneDetails: ClarifyAnswer[] = useMemo(
+    () =>
+      ideas
+        .map((idea, i) => {
+          const parts = [
+            idea.place && `${t.create.scenePlace}: ${idea.place}`,
+            idea.action && `${t.create.sceneAction}: ${idea.action}`,
+            idea.outfit && `${t.create.sceneOutfit}: ${idea.outfit}`,
+            idea.mood && `${t.create.sceneMood}: ${idea.mood}`,
+          ].filter(Boolean);
+          return {
+            question: fill(t.create.sceneQuestion, { n: i + 1, desire: (cleanDesires[i] ?? "").slice(0, 80) }).slice(0, 200),
+            answer: parts.join(". ").slice(0, 300),
+          };
+        })
+        .filter((d) => d.answer),
+    [ideas, cleanDesires, t],
+  );
+
   const details: ClarifyAnswer[] = useMemo(
     () => [
       ...(questions ?? [])
         .map((q, i) => ({ question: q.question, answer: (answers[i] ?? "").trim() }))
         .filter((d) => d.answer),
       ...corrections.map((answer) => ({ question: t.create.reviewFixQuestion, answer })),
-      ...(outfit.trim() ? [{ question: t.create.outfitQuestion, answer: outfit.trim() }] : []),
+      ...sceneDetails,
     ],
-    [questions, answers, corrections, outfit, t],
+    [questions, answers, corrections, sceneDetails, t],
   );
 
   // Todo lo que cambia el guion. Si difiere del de la revisión, esa revisión
@@ -221,13 +256,71 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
       setAnswers([]);
       setQuestionsKey(key);
       // Si no hay nada que aclarar, no se hace pasar a la persona por un paso vacío.
-      if (data.questions.length === 0) setStep(STEP.photo);
+      if (data.questions.length === 0) {
+        setStep(STEP.scenes);
+        void loadIdeas();
+      }
     } catch (err) {
       setError((err as Error).message);
       setStep(STEP.desires);
     } finally {
       setLoadingQuestions(false);
     }
+  }
+
+  /** Propuesta de escena por deseo. Se pide una vez por deseos + respuestas. */
+  async function loadIdeas() {
+    const answered = (questions ?? [])
+      .map((q, i) => ({ question: q.question, answer: (answers[i] ?? "").trim() }))
+      .filter((d) => d.answer);
+    const key = JSON.stringify({ desires: cleanDesires, answered });
+    if (key === ideasKey) return;
+    setLoadingIdeas(true);
+    setError(undefined);
+    try {
+      const res = await fetch("/api/scene-ideas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ desires: cleanDesires, details: answered }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? t.errors.createFailed);
+      setIdeas(cleanDesires.map((_, i) => ({ ...EMPTY_IDEA, ...(data.ideas?.[i] ?? {}) })));
+      setIdeasKey(key);
+    } catch (err) {
+      setError((err as Error).message);
+      setIdeas(cleanDesires.map(() => ({ ...EMPTY_IDEA })));
+    } finally {
+      setLoadingIdeas(false);
+    }
+  }
+
+  /** "Otra idea" para una sola escena. */
+  async function rethink(i: number) {
+    setRethinking(i);
+    setError(undefined);
+    try {
+      const answered = (questions ?? [])
+        .map((q, k) => ({ question: q.question, answer: (answers[k] ?? "").trim() }))
+        .filter((d) => d.answer);
+      const res = await fetch("/api/scene-ideas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ desires: cleanDesires, details: answered, index: i, avoid: ideas[i] }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? t.errors.createFailed);
+      const fresh = data.ideas?.[0];
+      if (fresh) setIdeas((prev) => prev.map((x, k) => (k === i ? { ...EMPTY_IDEA, ...fresh } : x)));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setRethinking(undefined);
+    }
+  }
+
+  function setIdea(i: number, patch: Partial<SceneIdea>) {
+    setIdeas((prev) => prev.map((x, k) => (k === i ? { ...x, ...patch } : x)));
   }
 
   async function loadPreview(extraCorrections = corrections) {
@@ -277,6 +370,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
     const target = step + 1;
     setStep(target);
     if (target === STEP.details) void loadQuestions();
+    if (target === STEP.scenes) void loadIdeas();
     if (target === STEP.review && preview?.key !== scriptKey) void loadPreview();
   }
 
@@ -289,17 +383,20 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
   }
 
   /** Sube una foto y devuelve su URL, o undefined si falló (el error ya se muestra). */
-  async function sendPhoto(file: File, agreed: boolean, self = false): Promise<string | undefined> {
+  async function sendPhoto(file: File, agreed: boolean, self = false, slot?: number): Promise<string | undefined> {
     setError(undefined);
+    setPhotoNote(undefined);
     const body = new FormData();
     body.append("selfie", file);
     body.append("consent", String(agreed));
     body.append("biometric", String(bioConsent));
     if (self) body.append("kind", "self");
+    if (slot !== undefined) body.append("slot", String(slot));
     try {
       const res = await fetch("/api/upload", { method: "POST", body });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? t.errors.uploadFailed);
+      if (data.warning) setPhotoNote(data.warning);
       return data.url as string;
     } catch (err) {
       setError((err as Error).message);
@@ -307,11 +404,29 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
     }
   }
 
-  async function upload(file: File) {
+  /** Selfie de un hueco: el veredicto (borde y mensaje) lo enseña PhotoSlots. */
+  async function upload(file: File, slot: number, scanned = false): Promise<SlotResult> {
     setUploading(true);
-    const url = await sendPhoto(file, consent, true);
-    if (url) setPhotoUrls((prev) => [...prev, url].slice(0, 4));
+    setUploadingSlot(slot);
+    const body = new FormData();
+    body.append("selfie", file);
+    body.append("consent", String(consent));
+    body.append("biometric", String(bioConsent));
+    body.append("kind", "self");
+    body.append("slot", String(slot));
+    if (scanned) body.append("scan", "1");
+    let result: SlotResult;
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.url) setSlotUrls((prev) => prev.map((u, i) => (i === slot ? data.url : u)));
+      result = { ok: res.ok, warn: !!data.warning, message: res.ok ? data.warning : (data.error ?? t.errors.uploadFailed) };
+    } catch {
+      result = { ok: false, message: t.errors.uploadFailed };
+    }
+    setUploadingSlot(undefined);
     setUploading(false);
+    return result;
   }
 
   async function uploadPersonPhotos(i: number, files: File[]) {
@@ -359,6 +474,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
       if (!res.ok) throw new Error(data.error ?? t.errors.createFailed);
       // Con pagos activos, la API devuelve la página de pago de Stripe.
       if (data.checkoutUrl) {
+        trackEvent({ name: "begin_checkout", id: data.project?.id });
         window.location.href = data.checkoutUrl;
         return;
       }
@@ -407,16 +523,6 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
             {fill(t.create.desiresCount, { n: cleanDesires.length, max: MAX_DESIRES })}
           </p>
 
-          <label className="mt-8 block">
-            <span className="t-sub mb-2 block font-medium text-[var(--color-label-1)]">{t.create.outfitLabel}</span>
-            <input
-              value={outfit}
-              onChange={(e) => setOutfit(e.target.value)}
-              maxLength={160}
-              placeholder={t.create.outfitPlaceholder}
-              className="t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none transition-colors duration-200 placeholder:text-[var(--color-label-4)] focus:border-[var(--color-hairline-strong)]"
-            />
-          </label>
 
           <p className="t-sub mt-8 mb-3 text-[var(--color-label-2)]">{t.create.ideasLabel}</p>
           <div className="flex flex-wrap gap-2">
@@ -490,73 +596,83 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
         </Section>
       )}
 
-      {/* ── Paso 2: foto ───────────────────────────────────────────────── */}
+      {/* ── Paso 2: escenas ────────────────────────────────────────────── */}
+      {step === STEP.scenes && (
+        <Section title={t.create.scenesTitle} hint={t.create.scenesHint}>
+          {loadingIdeas ? (
+            <p className="t-sub pulse-soft text-[var(--color-label-2)]">{t.create.scenesLoading}</p>
+          ) : (
+            <div className="space-y-4">
+              {cleanDesires.map((desire, i) => {
+                const idea = ideas[i] ?? EMPTY_IDEA;
+                const fields: { key: keyof SceneIdea; label: string }[] = [
+                  { key: "place", label: t.create.scenePlace },
+                  { key: "action", label: t.create.sceneAction },
+                  { key: "outfit", label: t.create.sceneOutfit },
+                  { key: "mood", label: t.create.sceneMood },
+                ];
+                return (
+                  <div key={i} className="card space-y-3 rounded-[var(--radius-md)] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="t-caption text-[var(--color-label-3)]">{fill(t.create.sceneCard, { n: i + 1 })}</p>
+                        <p className="t-sub font-medium">{desire}</p>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={rethinking !== undefined}
+                        onClick={() => void rethink(i)}
+                        className="interactive t-caption shrink-0 rounded-full border border-[var(--color-hairline-strong)] px-3 py-1.5 disabled:opacity-40"
+                      >
+                        {rethinking === i ? t.create.sceneThinking : t.create.sceneAnother}
+                      </button>
+                    </div>
+                    {fields.map((f) => (
+                      <label key={f.key} className="block">
+                        <span className="t-caption mb-1 block text-[var(--color-label-2)]">{f.label}</span>
+                        <input
+                          value={idea[f.key]}
+                          onChange={(e) => setIdea(i, { [f.key]: e.target.value })}
+                          maxLength={90}
+                          disabled={rethinking === i}
+                          className="t-sub w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-3 py-2 outline-none focus:border-[var(--color-hairline-strong)] disabled:opacity-50"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Section>
+      )}
+
+      {/* ── Paso 3: foto ───────────────────────────────────────────────── */}
       {step === STEP.photo && (
         <Section
           title={t.create.photoTitle}
           hint={t.create.photoHint}
         >
           <div className="space-y-5">
-            <div className="grid grid-cols-4 gap-3">
-              {Array.from({ length: 4 }, (_, i) => photoUrls[i]).map((url, i) => (
-                <div
-                  key={i}
-                  className="relative aspect-[3/4] overflow-hidden rounded-[var(--radius-md)] border border-dashed border-[var(--color-hairline-strong)] bg-[var(--color-surface-2)]"
-                >
-                  {url ? (
-                    <>
-                      <img src={url} alt="" className="h-full w-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setPhotoUrls((prev) => prev.filter((u) => u !== url))}
-                        className="t-caption absolute bottom-1.5 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-white backdrop-blur"
-                      >
-                        {t.create.removePhoto}
-                      </button>
-                    </>
-                  ) : (
-                    <span className="t-caption grid h-full place-items-center text-[var(--color-label-3)]">
-                      {i + 1}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <label className="t-sub flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
-              <input
-                type="checkbox"
-                checked={consent}
-                onChange={(e) => setConsent(e.target.checked)}
-                className="mt-[3px] h-4 w-4 accent-white"
-              />
-              <span>{t.consent}</span>
-            </label>
-            <label className="t-sub flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
-              <input
-                type="checkbox"
-                checked={bioConsent}
-                onChange={(e) => setBioConsent(e.target.checked)}
-                className="mt-[3px] h-4 w-4 accent-white"
-              />
-              <span>
-                {t.biometricConsent}{" "}
-                <a href="/privacy" target="_blank" className="underline">{t.biometricMore}</a>
-              </span>
-            </label>
-
-            <input
-              type="file"
-              multiple
-              accept="image/jpeg,image/png,image/webp"
-              disabled={!consent || !bioConsent || uploading || photoUrls.length >= 4}
-              onChange={async (e) => {
-                const files = Array.from(e.target.files ?? []).slice(0, 4 - photoUrls.length);
-                e.target.value = "";
-                for (const file of files) await upload(file);
+            <PhotoSlots
+              urls={slotUrls}
+              onPick={(file, slot, scanned) => upload(file, slot, scanned)}
+              onRemove={(slot) => setSlotUrls((prev) => prev.map((u, i) => (i === slot ? undefined : u)))}
+              disabled={uploading}
+              busySlot={uploadingSlot}
+              consent={{
+                given: consent && bioConsent,
+                text: t.consent,
+                biometric: t.biometricConsent,
+                onGive: () => {
+                  setConsent(true);
+                  setBioConsent(true);
+                },
               }}
-              className="t-sub block w-full text-[var(--color-label-2)] file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-white file:px-5 file:py-2 file:text-[13px] file:font-medium file:text-black hover:file:bg-white/90 disabled:opacity-35"
+              t={t.photoGuide}
             />
+
+
             <p className="t-caption text-[var(--color-label-3)]">
               {uploading ? t.create.uploading : fill(t.create.photoCount, { n: photoUrls.length })}
             </p>
@@ -850,6 +966,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
         </Section>
       )}
 
+      {photoNote && <p className="t-caption mt-4 text-amber-200">{photoNote}</p>}
       {error && (
         <div className="t-sub mt-6 rounded-[var(--radius-ctl)] border border-red-500/25 bg-red-500/[0.08] p-4 text-red-300">
           {error}

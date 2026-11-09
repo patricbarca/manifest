@@ -364,12 +364,21 @@ export function isPovBrief(brief: string): boolean {
   return /^pov:\s*/i.test(brief);
 }
 
+/**
+ * Una sola foto, una sola cara nítida: si hay más gente parecida cerca, el
+ * modelo le copia la cara (caras duplicadas). Con reparto con fotos, applyCast
+ * lo cambia por la versión para varias personas.
+ */
+const ALONE = "One single photograph of one moment, with the main subject as the only face in the image; anyone else appears only from behind or as a blurred silhouette far in the background";
+const WITH_CAST = "One single photograph of one moment; the people from the figures are the only faces in the image; anyone else appears only from behind or as a blurred silhouette far in the background";
+
 /** Compone el prompt final de imagen: identidad + escena + estilo + encuadre. */
 export function buildScenePrompt(
   brief: string,
   style: VisualStyle,
   hasSelfie: boolean,
   photoCount = 1,
+  body = "",
 ): string {
   const styleDef = VISUAL_STYLES.find((s) => s.id === style) ?? VISUAL_STYLES[0];
   // Escena subjetiva: se ve desde los ojos de la persona, así que no hay
@@ -381,7 +390,7 @@ export function buildScenePrompt(
   const identity = isPovBrief(brief)
     ? "First-person point of view through the person's own eyes, only their hands visible"
     : hasSelfie
-      ? `The person is exactly the person in ${figures}, with their own face, hair and features, natural likeness`
+      ? `The main subject is exactly the person in ${figures}, with their own face, hair and features, natural likeness.${body ? ` ${body}.` : ""} ${ALONE}`
       : "A person seen from behind or at a distance";
   // Todo en positivo: las negaciones ("no text") el modelo las lee al revés.
   return [
@@ -397,11 +406,12 @@ export function buildScenes(
   hasSelfie: boolean,
   durationSec: number,
   photoCount = 1,
+  body = "",
 ): Scene[] {
   const slot = durationSec / Math.max(1, briefs.length);
   return briefs.map((brief, i) => ({
     id: `sc_${i + 1}`,
-    prompt: buildScenePrompt(brief, style, hasSelfie, photoCount),
+    prompt: buildScenePrompt(brief, style, hasSelfie, photoCount, body),
     pov: isPovBrief(brief) || undefined,
     startSec: +(i * slot).toFixed(2),
     endSec: +((i + 1) * slot).toFixed(2),
@@ -453,14 +463,14 @@ export function applyCast(
   prompt: string,
   cast: { name: string; first: number; last: number }[],
 ): string {
-  let out = prompt;
+  let out = cast.length ? prompt.replace(ALONE, WITH_CAST) : prompt;
   const extra: string[] = [];
   for (const c of cast) {
     const figs = c.first === c.last ? `Figure ${c.first}` : `Figures ${c.first} to ${c.last}`;
     const who = `the person in ${figs}`;
     const re = new RegExp(`\\[\\[\\s*${escapeRe(c.name)}\\s*\\]\\]`, "gi");
     if (re.test(out)) out = out.replace(re, who);
-    else extra.push(`Also in the scene, close to the main person: ${who}`);
+    else extra.push(`Also in the scene, close to the main subject: ${who}`);
   }
   // Marcas de personas que no están en el reparto: se quitan los corchetes.
   out = out.replace(/\[\[\s*([^\]]+?)\s*\]\]/g, "a person");

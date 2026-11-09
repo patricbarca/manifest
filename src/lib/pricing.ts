@@ -11,7 +11,7 @@ import type { Tier } from "./types";
  */
 export const PROVIDER_COST = {
   /** Imagen con identidad preservada (Seedream 4.5 vía fal). */
-  imageCents: 4.0,
+  imageCents: Number(process.env.IMAGE_COST_CENTS ?? 4.0), // Seedream 4.5; si se cambia FAL_IMAGE_MODEL, ajustar
   /** Vídeo image-to-video, por segundo (MiniMax H3 Max vía fal). */
   videoCentsPerSec: 3.25,
   /** Modelos premium (Kling Pro y similares), por segundo. */

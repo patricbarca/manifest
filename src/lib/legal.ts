@@ -6,7 +6,7 @@ import type { Locale } from "./i18n/locale";
  * Borrador: debe revisarlo un abogado antes de cobrar.
  */
 
-export const LEGAL_UPDATED = "2026-10-26";
+export const LEGAL_UPDATED = "2026-10-31";
 
 
 const UPLOAD_DAYS = Number(process.env.UPLOAD_TTL_DAYS ?? 30);
@@ -15,6 +15,8 @@ export type LegalDoc = "privacy" | "terms" | "refunds";
 export interface LegalSection {
   h: string;
   p: string[];
+  /** Ancla para enlazar directo a la sección (p. ej. /privacy#providers). */
+  id?: string;
 }
 
 function contact(locale: Locale): string {
@@ -25,8 +27,13 @@ function contact(locale: Locale): string {
 
 export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; updated: string; sections: LegalSection[] } {
   const c = contact(locale);
-  const OWNER = process.env.LEGAL_NAME ?? "ManifestLifeAI";
   const es = locale === "es";
+  // Titular: con LEGAL_NAME (y LEGAL_ABN) sale "Nombre (ABN …), operando como ManifestLifeAI".
+  const name = process.env.LEGAL_NAME?.trim();
+  const abn = process.env.LEGAL_ABN?.trim();
+  const OWNER = name
+    ? `${name}${abn ? ` (ABN ${abn})` : ""}${name === "ManifestLifeAI" ? "" : es ? ", operando como ManifestLifeAI" : ", trading as ManifestLifeAI"}`
+    : "ManifestLifeAI";
   const updated = es ? `Última actualización: ${LEGAL_UPDATED}` : `Last updated: ${LEGAL_UPDATED}`;
 
   if (doc === "privacy") {
@@ -40,7 +47,8 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
               "Las fotos que subes de ti y, si las añades, de otras personas, con su nombre y relación contigo.",
               "Lo que escribes: tus deseos, tus respuestas y tus correcciones al guion.",
               "Lo que generamos para ti: guion, imágenes, clips, voz y el vídeo final.",
-              "Un identificador anónimo en una cookie, para saber qué vídeos son tuyos. No usamos cookies de publicidad ni de analítica de terceros.",
+              "Un identificador anónimo en una cookie, para saber qué vídeos son tuyos.",
+              "Solo si lo aceptas en el aviso de cookies: cookies de Google Ads y TikTok para medir qué anuncios traen compras, y el anuncio del que vienes (campaña y su identificador de clic) durante 90 días. Si las rechazas, no se carga nada de terceros. Puedes cambiar tu elección con el enlace «Cookies» del pie de página.",
               "Si pagas, los datos de pago los procesa Stripe; nosotros no vemos ni guardamos el número de tu tarjeta.",
               "Si tienes cuenta: tu perfil (nombre visible, nombre de usuario), los días en que ves tus vídeos (para calcular tu aura, nivel y racha) y las personas de tu círculo. Si los añades, tu foto de perfil, descripción, intención, enlace y ubicación. Tu perfil es privado salvo que elijas mostrarlo a tu círculo o a todo el mundo; entonces los demás ven esos datos, tu aura, nivel, racha y logros, y los highlights (escenas animadas cortas, sin sonido, en las que puede salir tu cara) de los vídeos que tú actives uno a uno. Nunca tus vídeos completos ni tus frases.",
             ] },
@@ -48,8 +56,9 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
               "Solo para crear tu vídeo y mostrártelo. Tus fotos se usan como referencia para que las escenas se parezcan a ti (y a las personas que añadas).",
               "No usamos tus fotos ni tus textos para entrenar modelos de IA, no las usamos para identificarte y no las vendemos.",
             ] },
-            { h: "Con quién se comparten", p: [
-              "Con los proveedores técnicos imprescindibles para generar el vídeo: fal.ai (que ejecuta los modelos de imagen, animación, voz y texto, entre ellos ElevenLabs, MiniMax, ByteDance y Anthropic a través de OpenRouter), Railway (alojamiento de la web y los ficheros) y Stripe (pagos). Cada uno trata los datos según sus propias políticas y puede conservar copias temporales. Las fotos que subes (también la de perfil) y los textos que escribes pasan además un filtro automático de contenido de fal.ai para impedir contenido sexual, de odio o violento.",
+            { h: "Con quién se comparten", id: "providers", p: [
+              "Con los proveedores técnicos imprescindibles para generar el vídeo: fal.ai (que ejecuta los modelos de imagen, animación, voz y texto, entre ellos OpenAI, Google, MiniMax, Kuaishou (Kling), ElevenLabs y Anthropic, algunos a través de OpenRouter), Railway (alojamiento de la web y los ficheros), Supabase (base de datos e inicio de sesión), Resend (envío de emails) y Stripe (pagos). Si aceptas las cookies de publicidad, también Google y TikTok reciben que has visitado la web o comprado (nunca tus fotos, deseos ni vídeos). Cada uno trata los datos según sus propias políticas y puede conservar copias temporales. Las fotos que subes (también la de perfil) y los textos que escribes pasan además un filtro automático de contenido de fal.ai para impedir contenido sexual, de odio o violento.",
+              "Dónde: tus datos se guardan y procesan principalmente en Estados Unidos (servidor, ficheros, fal.ai, OpenAI, Google, Anthropic, ElevenLabs, Resend y Stripe). La base de datos de cuentas está en Australia y la animación de calidad Elevated (Kling) se procesa en Singapur. Algunos proveedores pueden acceder a los datos desde otros países para soporte o moderación de contenido.",
             ] },
             { h: "Cuánto tiempo", p: [
               "Las fotos de otras personas se borran en cuanto tu vídeo está listo.",
@@ -59,7 +68,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
             { h: "Fotos de otras personas", p: [
               "Solo puedes subir fotos de alguien si te ha dado permiso y es mayor de edad. Si alguien aparece en un vídeo sin haberlo autorizado, escríbenos y lo borramos.",
             ] },
-            { h: "Tus derechos", p: [`Puedes pedir acceso, corrección o borrado de tus datos, u oponerte a su uso, escribiendo a ${c}. También puedes reclamar ante la autoridad de protección de datos de tu país.`] },
+            { h: "Tus derechos", p: ["Puedes borrar tu cuenta y todos tus datos cuando quieras desde Ajustes → Privacidad y legal → Borrar mi cuenta. Los datos de los pagos los conserva Stripe el tiempo que exige la ley.", `Puedes pedir acceso, corrección o borrado de tus datos, u oponerte a su uso, escribiendo a ${c}. También puedes reclamar ante la autoridad de protección de datos de tu país.`] },
             { h: "Menores", p: ["ManifestLifeAI es para mayores de 18 años."] },
           ]
         : [
@@ -68,7 +77,8 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
               "The photos you upload of yourself and, if you add them, of other people, with their name and relationship to you.",
               "What you write: your desires, your answers and your corrections to the script.",
               "What we generate for you: script, images, clips, voice and the final video.",
-              "An anonymous identifier in a cookie, so we know which videos are yours. We don't use third-party advertising or analytics cookies.",
+              "An anonymous identifier in a cookie, so we know which videos are yours.",
+              "Only if you accept in the cookie notice: Google Ads and TikTok cookies to measure which ads lead to purchases, and the ad you came from (campaign and its click ID) for 90 days. If you decline, nothing from third parties is loaded. You can change your choice with the “Cookies” link in the footer.",
               "If you pay, payment details are processed by Stripe; we never see or store your card number.",
               "If you have an account: your profile (display name, username), the days you watch your videos (to calculate your aura, level and streak) and the people in your circle. If you add them, your profile photo, bio, intention, link and location. Your profile is private unless you choose to show it to your circle or to everyone; then others see those details, your aura, level, streak and achievements, and the highlights (short muted animated scenes, which may show your face) of the videos you switch on one by one. Never your full videos or your phrases.",
             ] },
@@ -76,8 +86,9 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
               "Only to create your video and show it to you. Your photos are used as a reference so the scenes look like you (and the people you add).",
               "We don't use your photos or text to train AI models, we don't use them to identify you, and we don't sell them.",
             ] },
-            { h: "Who we share it with", p: [
-              "With the technical providers needed to generate the video: fal.ai (which runs the image, animation, voice and text models, including ElevenLabs, MiniMax, ByteDance and Anthropic via OpenRouter), Railway (hosting for the site and files) and Stripe (payments). Each processes data under its own policies and may keep temporary copies. The photos you upload (including your profile photo) and the text you write also go through an automated content filter at fal.ai to prevent sexual, hateful or violent content.",
+            { h: "Who we share it with", id: "providers", p: [
+              "With the technical providers needed to generate the video: fal.ai (which runs the image, animation, voice and text models, including OpenAI, Google, MiniMax, Kuaishou (Kling), ElevenLabs and Anthropic, some via OpenRouter), Railway (hosting for the site and files), Supabase (database and sign-in), Resend (sending emails) and Stripe (payments). If you accept advertising cookies, Google and TikTok also learn that you visited the site or made a purchase (never your photos, desires or videos). Each processes data under its own policies and may keep temporary copies. The photos you upload (including your profile photo) and the text you write also go through an automated content filter at fal.ai to prevent sexual, hateful or violent content.",
+              "Where: your data is stored and processed mainly in the United States (server, files, fal.ai, OpenAI, Google, Anthropic, ElevenLabs, Resend and Stripe). The account database is in Australia, and Elevated-quality animation (Kling) is processed in Singapore. Some providers may access data from other countries for support or content moderation.",
             ] },
             { h: "How long", p: [
               "Other people's photos are deleted as soon as your video is ready.",
@@ -87,7 +98,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
             { h: "Photos of other people", p: [
               "You may only upload someone's photos if they've given you permission and are an adult. If someone appears in a video without having agreed to it, write to us and we'll delete it.",
             ] },
-            { h: "Your rights", p: [`You can ask to access, correct or delete your data, or object to its use, by writing to ${c}. You can also complain to the data protection authority in your country.`] },
+            { h: "Your rights", p: ["You can delete your account and all your data at any time from Settings → Privacy and legal → Delete my account. Payment records are kept by Stripe for as long as the law requires.", `You can ask to access, correct or delete your data, or object to its use, by writing to ${c}. You can also complain to the data protection authority in your country.`] },
             { h: "Minors", p: ["ManifestLifeAI is for people aged 18 and over."] },
           ],
     };
@@ -99,6 +110,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
       updated,
       sections: es
         ? [
+            { h: "Quién te lo vende", p: [`ManifestLifeAI lo ofrece ${OWNER}. Contacto: ${c}.`] },
             { h: "Qué es ManifestLifeAI", p: ["Una herramienta que crea vídeos de visualización con inteligencia artificial a partir de tus fotos y tus deseos. Es una herramienta de enfoque y motivación: no garantiza ningún resultado y no sustituye ayuda médica, psicológica, legal ni financiera."] },
             { h: "Quién puede usarla", p: ["Personas mayores de 18 años. Al usarla confirmas que lo eres."] },
             { h: "Lo que subes", p: [
@@ -117,6 +129,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
             { h: "Contacto", p: [`Para cualquier duda escribe a ${c}.`] },
           ]
         : [
+            { h: "Who sells it", p: [`ManifestLifeAI is provided by ${OWNER}. Contact: ${c}.`] },
             { h: "What ManifestLifeAI is", p: ["A tool that creates visualization videos with artificial intelligence from your photos and your desires. It's a focus and motivation tool: it doesn't guarantee any result and doesn't replace medical, psychological, legal or financial help."] },
             { h: "Who can use it", p: ["People aged 18 and over. By using it you confirm you are."] },
             { h: "What you upload", p: [

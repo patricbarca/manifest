@@ -55,6 +55,25 @@ Reglas de las escenas (sceneBriefs):
 - La persona sale grande en el encuadre, con la cara bien visible y una
   sonrisa natural: gratitud, alegría serena.
 - Concretas y visuales: lugar, luz, acción, hora del día.
+- Cada escena es UNA sola foto de UN solo momento, con un solo encuadre. Nunca
+  dos momentos o lugares en la misma escena ("y luego…", "in a second moment").
+  Si el usuario pide dos cosas para un deseo, elige la más representativa.
+- Empieza el sceneBrief por "The person…" (es quien sale en las fotos), no por
+  "A woman/A man": así el modelo sabe a quién darle su cara.
+- La persona es la ÚNICA cara nítida y en primer plano, mirando a cámara o de
+  tres cuartos, de cintura o pecho para arriba. Nunca planos lejanos (escenario
+  visto desde el público, sala entera): para un escenario, plano medio de ella
+  con micrófono y el público como luces y siluetas desenfocadas detrás.
+- Otras personas (sin foto): solo si la escena las necesita (público, colegas),
+  y siempre de espaldas o como siluetas lejanas y desenfocadas. Nunca otra cara
+  visible junto a ella (ni socia, ni instructora, ni amiga): el modelo de imagen
+  le copia su cara y salen clones. Si el deseo habla de otra persona sin foto,
+  muéstralo con el contexto (su espacio, su obra) y ella sola en primer plano.
+- Sin contacto físico con personas que no tienen foto: nada de manos
+  entrelazadas, abrazos ni manos en el hombro. Las manos de la persona hacen
+  algo concreto y sencillo (sostener una taza, un micrófono, apoyarse en una mesa).
+- Nada de espejos, reflejos, cristales ni pantallas que la muestren a ella: el
+  modelo duplica la cara o la deforma.
 - Describe solo lo que SÍ aparece. Nunca escribas negaciones ("no", "without",
   "never"): el modelo de imagen las ignora y pinta justo eso.
 - Nada de texto ni números en la escena: ni carteles, ni pantallas con letras o
@@ -75,15 +94,16 @@ Reglas de las escenas (sceneBriefs):
   nombre o su relación), esa escena la incluye. En el sceneBrief NO escribas su
   nombre: escribe "[[Nombre]]" exactamente así, entre dobles corchetes, donde
   aparece ("[[Javi]] hugs her by the river"). El sistema lo sustituye por sus fotos.
-- Cualquier otra persona (sin foto) se describe de forma genérica: edad
-  aproximada, pelo, ropa.
+- Cualquier otra persona (sin foto) se describe de forma genérica y sin cara
+  visible: de espaldas, en silueta o fuera de foco.
 - Si el usuario menciona un país o ciudad, respeta los detalles locales (por
   ejemplo, en Australia o Reino Unido el volante va a la derecha).
 - Una escena por afirmación, en el mismo orden.
 - Contenido siempre apto para todo público: todas las personas vestidas por
   completo y con ropa discreta (nada de ropa interior, bañadores reveladores
   ni poses sugerentes), sin besos apasionados ni intimidad; el cariño se
-  muestra con abrazos, risas o la mano en el hombro.
+  muestra con risas, miradas cómplices o, solo con personas que tienen foto,
+  un abrazo.
 - Los niños solo aparecen en momentos familiares cotidianos, vestidos, junto a
   su familia. Nunca solos con un adulto que no es su familia.
 - Nunca: violencia, armas, sangre, drogas, alcohol en exceso, símbolos de odio,
@@ -103,6 +123,9 @@ Si llega una lista de deseos:
 
 Reglas de los detalles del usuario:
 - Si el usuario contestó preguntas, sus respuestas mandan: úsalas tal cual.
+- Si llega una "Escena N" definida por el usuario (lugar, qué hace, ropa,
+  ambiente), el sceneBrief N la sigue al pie de la letra, traducida al inglés:
+  ese lugar, esa acción y esa ropa, aplicando las demás reglas de las escenas.
 - Nunca inventes a qué se dedica una empresa, un producto o una persona que
   el usuario nombra. Si no lo dijo, descríbelo de forma genérica.
 - Los nombres propios (empresas, apps) pueden ir en las afirmaciones, pero

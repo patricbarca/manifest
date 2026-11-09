@@ -56,6 +56,7 @@ export function TemplateCard({
       {/* Fuera del enlace: cambiar de versión no abre la ficha. */}
       <div
         role="tablist"
+        data-dark
         className="absolute left-3 top-3 flex rounded-full bg-black/45 p-1 backdrop-blur-md"
       >
         {options.map((o) => (
