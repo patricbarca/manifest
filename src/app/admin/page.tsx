@@ -5,6 +5,8 @@ import { isAdmin } from "@/lib/admin";
 import { appStats, stripeStats, webStats } from "@/lib/admin-stats";
 import { DayChart, Section, Tile, TopList, n } from "@/components/AdminCharts";
 import { formatUsd } from "@/lib/pricing";
+import { stripeSetupChecks } from "@/lib/stripe-admin";
+import { StripeTestCodes } from "@/components/StripeTestCodes";
 
 export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false, follow: false } };
@@ -16,7 +18,7 @@ export default async function AdminPage() {
   // A quien no es administrador, la página ni existe.
   if (!isAdmin(who.user.email)) notFound();
 
-  const [web, app, money] = await Promise.all([webStats(), appStats(), stripeStats()]);
+  const [web, app, money, setup] = await Promise.all([webStats(), appStats(), stripeStats(), stripeSetupChecks()]);
   const conversion = web.visits30 ? ((money.payers30 / web.visits30) * 100).toFixed(1) : "–";
 
   return (
@@ -83,6 +85,24 @@ export default async function AdminPage() {
         ) : (
           <p className="t-caption text-rose-300">No se pudo leer Stripe: {money.error}</p>
         )}
+      </Section>
+
+      <Section title="Stripe: configuración" note="Revisión en vivo con la clave del servidor: cuenta, cobros, pagos al banco y webhook.">
+        <ul className="space-y-2">
+          {setup.map((c) => (
+            <li key={c.label} className="flex gap-3">
+              <span aria-hidden className="w-5 shrink-0 text-center">{c.state === "ok" ? "✅" : c.state === "warn" ? "⚠️" : "❌"}</span>
+              <div className="min-w-0">
+                <p className="t-sub">{c.label}</p>
+                {c.detail && <p className="t-caption break-words text-[var(--color-label-2)]">{c.detail}</p>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </Section>
+
+      <Section title="Stripe: códigos de prueba" note="Crea 2 códigos de un solo uso: uno gratis (100 %) y otro que deja el pack de 1 deseo en US$1. Se escriben en la página de pago, en «Añadir código promocional».">
+        <StripeTestCodes />
       </Section>
     </div>
   );
