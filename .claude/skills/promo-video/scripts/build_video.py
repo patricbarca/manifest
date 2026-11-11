@@ -230,7 +230,7 @@ for k, v in enumerate(spec["voice"]):
 n = len(parts)
 for j, (png, a, b) in enumerate(overlays):
     inputs += ["-loop", "1", "-framerate", str(FPS), "-t", f"{total:.2f}", "-i", png]
-    chain += f"{label}[{n + j}:v]overlay=0:0:enable='between(t,{a:.2f},{b:.2f})'[o{j}];"
+    chain += f"{label}[{n + j}:v]overlay=0:0:enable='gte(t,{a:.2f})*lt(t,{b:.2f})'[o{j}];"
     label = f"[o{j}]"
 chain += f"{label}format=yuv420p[vout]"
 run([*inputs, "-filter_complex", chain, "-map", "[vout]", "-t", f"{total:.2f}",
