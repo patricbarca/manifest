@@ -23,7 +23,7 @@ Spec (campos):
   "grade": "teal_gold",                       # opcional: etalonaje oscuro teal/dorado con grano y viñeta
   "caption_yc": 0.17                          # opcional (tiktok): altura de los subtítulos, 0 arriba – 1 abajo
 }
-En tiktok, una palabra entre asteriscos (*FOCUS.*) sale en dorado.
+En tiktok, el texto entre asteriscos (*FOCUS.* o *LIVING IT.*) sale en dorado.
 """
 import json, os, subprocess, sys
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
@@ -105,7 +105,12 @@ def bold_caption(text, out, size=84, yc=0.17, top=None):
     img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     f = font("Inter.ttf", size, [32, 700])
-    words = [(w.strip("*"), w.startswith("*") and w.endswith("*") and len(w) > 2) for w in text.split()]
+    words, gold = [], False  # *una palabra* o *varias palabras* en dorado
+    for w in text.split():
+        start = w.startswith("*")
+        end = w.endswith("*") and len(w) > (1 if not start else 2)
+        words.append((w.strip("*"), gold or start))
+        gold = (gold or start) and not end
     sp = d.textlength(" ", font=f)
     lines, cur, cw = [], [], 0
     for w, g in words:
