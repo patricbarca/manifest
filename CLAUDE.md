@@ -24,6 +24,12 @@
 - Verificar sigue siendo obligatorio: build, typecheck y probar de verdad.
 - Ahorra en cómo lo cuentas, no en si lo haces.
 
+## Publicar
+
+- Tras verificar, abre el PR a `main` y únelo tú (squash), sin preguntar.
+  Railway despliega desde `main`.
+- Si el PR de la rama ya se unió, sigue en la misma rama partiendo de `main` para el siguiente cambio.
+
 ## Delegación a modelos más baratos
 
 - Buscar en el código (dónde está algo, qué lo usa, barrer muchos ficheros):
