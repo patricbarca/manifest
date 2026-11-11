@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PAYMENTS_ENABLED, creditPacks, stillPacks, upsellPack } from "@/lib/pricing";
+import { PAYMENTS_ENABLED, creditPacks, elevatedPacks, stillPacks, upsellPack } from "@/lib/pricing";
 import { stripeEnabled } from "@/lib/stripe";
 import { PricingPacks } from "@/components/PricingPacks";
 import { upsellEligible } from "@/lib/wallet";
@@ -128,6 +128,8 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
             mode="buy"
             wishes={creditPacks()}
             stills={stillPacks()}
+            elevated={elevatedPacks()}
+            products={t.products}
             balance={{ wishes: wallet.credits ?? 0, stills: wallet.stillCredits ?? 0 }}
             upsell={upsellEligible(wallet, mine) ? upsellPack() : undefined}
             t={t.packs}
@@ -145,6 +147,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
       {tab === "manifest" && (
         <ManifestationGrid
           initial={mine}
+          newWish={{ label: t.manifest.newWishTile, hint: t.manifest.newWishHint }}
           locale={locale}
           paymentsOn={PAYMENTS_ENABLED}
           t={{ remove: t.manifest.remove, sceneEdit: t.manifest.sceneEdit, edit: t.manifest.edit, save: t.manifest.save, cancel: t.manifest.cancel, titleLabel: t.manifest.titleField, phraseLabel: t.manifest.phraseField, editHint: t.manifest.editHint, textBlocked: t.aura.errors.text_blocked, manifested: t.manifest.manifested, markManifested: t.manifest.markManifested, unmark: t.manifest.unmark, onProfile: t.manifest.onProfile, profileHint: t.manifest.profileHint, showOnProfile: t.manifest.showOnProfile, hideFromProfile: t.manifest.hideFromProfile, generating: t.manifest.generating, waitingFunds: t.manifest.waitingFunds, failed: t.manifest.failed, close: t.aura.close, empty: t.manifest.empty, options: t.manifest.options, manifestedHint: t.manifest.manifestedHint }}

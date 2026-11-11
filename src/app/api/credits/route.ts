@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   if (!who) return NextResponse.json({ error: "signin" }, { status: 401 });
   if (!stripeEnabled()) return NextResponse.json({ error: "payments_off" }, { status: 409 });
   const body = z
-    .object({ qty: z.number().int().positive(), kind: z.enum(["wishes", "stills"]).default("wishes"), upsell: z.boolean().optional() })
+    .object({ qty: z.number().int().positive(), kind: z.enum(["wishes", "stills", "elevated"]).default("wishes"), upsell: z.boolean().optional() })
     .safeParse(await request.json().catch(() => ({})));
   const kind = body.success ? body.data.kind : "wishes";
   let pack = body.success ? packsFor(kind).find((p) => p.qty === body.data.qty) : undefined;
@@ -38,7 +38,9 @@ export async function POST(request: Request) {
     kind,
     priceCents: Math.round(pack.priceUsd * 100),
     productName: `ManifestLifeAI · ${pack.qty} ${
-      kind === "stills"
+      kind === "elevated"
+        ? locale === "es" ? (pack.qty === 1 ? "escena Elevada (2 deseos)" : `escenas Elevadas (${pack.qty * 2} deseos)`) : pack.qty === 1 ? "Elevated scene (2 wishes)" : `Elevated scenes (${pack.qty * 2} wishes)`
+        : kind === "stills"
         ? locale === "es" ? (pack.qty === 1 ? "foto con movimiento" : "fotos con movimiento") : pack.qty === 1 ? "photo in motion" : "photos in motion"
         : locale === "es" ? (pack.qty === 1 ? "deseo" : "deseos") : pack.qty === 1 ? "wish" : "wishes"
     }`,

@@ -60,7 +60,7 @@ export interface Product {
 function defaultTierPrices(): Record<Tier, number> {
   const three = (packs: CreditPack[], fallback: number) => packs.find((p) => p.qty === 3)?.priceUsd ?? fallback;
   const wish3 = three(creditPacks(), 25);
-  return { vision: three(stillPacks(), 12), cinematic: wish3, elevated: wish3 * 2 };
+  return { vision: three(stillPacks(), 12), cinematic: wish3, elevated: three(elevatedPacks(), wish3 * 2) };
 }
 
 function tierPrices(): Record<Tier, number> {
@@ -189,8 +189,28 @@ export function stillPacks(): CreditPack[] {
   return parsePacks(process.env.STILL_PACK_PRICES ?? "1:5,3:12,10:35", { qty: 1, priceUsd: 5 });
 }
 
-export type PackKind = "wishes" | "stills";
-export const packsFor = (kind: PackKind) => (kind === "stills" ? stillPacks() : creditPacks());
+/**
+ * Packs de escenas Elevadas (ELEVATED_PACK_PRICES). Cada escena son 2 deseos:
+ * al comprar se suman qty × 2 deseos. Por defecto: 1 → 20 $, 3 → 50 $, 5 → 69 $.
+ */
+export function elevatedPacks(): CreditPack[] {
+  return parsePacks(process.env.ELEVATED_PACK_PRICES ?? "1:20,3:50,5:69", { qty: 1, priceUsd: 20 });
+}
+
+export type PackKind = "wishes" | "stills" | "elevated";
+export const packsFor = (kind: PackKind) => (kind === "stills" ? stillPacks() : kind === "elevated" ? elevatedPacks() : creditPacks());
+
+/** Cuánto saldo da un pack: deseos (Animado y Elevado, ×2) o fotos con movimiento. */
+export function packGrant(kind: PackKind, qty: number): { field: "credits" | "stillCredits"; n: number } {
+  if (kind === "stills") return { field: "stillCredits", n: qty };
+  return { field: "credits", n: kind === "elevated" ? qty * 2 : qty };
+}
+
+/** "3 deseos · US$25": lo que gasta y cuesta un vídeo completo (3 escenas) de cada tipo. */
+export function videoLabel(tier: Tier, many: { wishes: string; stills: string }): string {
+  const units = tier === "vision" ? many.stills.replace("{n}", "3") : many.wishes.replace("{n}", tier === "elevated" ? "6" : "3");
+  return `${units} · ${formatUsd(PRODUCTS[tier].priceUsd)}`;
+}
 
 /** "Completa tu vídeo": a quien compró 1 deseo, los 2 que le faltan al precio del pack de 3 (25 − 10 = 15 $). */
 export function upsellPack(): CreditPack | undefined {
