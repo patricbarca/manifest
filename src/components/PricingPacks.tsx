@@ -7,6 +7,7 @@ import { formatUsd, type CreditPack, type PackKind } from "@/lib/pricing";
 import type { Dictionary } from "@/lib/i18n";
 import type { Tier } from "@/lib/types";
 import { Icon } from "./Icon";
+import { TierExamples } from "./TierExamples";
 
 type Labels = Dictionary["packs"];
 type Products = Dictionary["products"];
@@ -34,6 +35,7 @@ export function PricingPacks({
   balance,
   upsell,
   initial = "wishes",
+  examples = false,
 }: {
   wishes: CreditPack[];
   stills: CreditPack[];
@@ -46,6 +48,8 @@ export function PricingPacks({
   /** "Completa tu vídeo": 2 deseos más a precio de pack (solo si le toca). */
   upsell?: CreditPack;
   initial?: PackKind;
+  /** Los 3 tipos a la vez, cada uno con su ejemplo y sus precios (landing y /pricing). */
+  examples?: boolean;
 }) {
   const [kind, setKind] = useState<PackKind>(initial);
   const [busy, setBusy] = useState<string>();
@@ -72,6 +76,44 @@ export function PricingPacks({
     }
     setBusy(undefined);
     setErr(t.error);
+  }
+
+  // Landing y /pricing: los tres tipos a la vez, cada uno con un ejemplo y sus precios.
+  if (examples) {
+    const packsOf = (k: PackKind) => (k === "stills" ? stills : k === "elevated" ? elevated : wishes);
+    return (
+      <div className="space-y-5">
+        <TierExamples tiers={KINDS.map((k) => ({ tier: k.tier, name: products[k.tier].name, tagline: products[k.tier].tagline }))}>
+          {(tr) => {
+            const k = KINDS.find((x) => x.tier === tr)!.kind;
+            const list = packsOf(k);
+            const one = list.find((x) => x.qty === 1)?.priceUsd ?? 0;
+            return (
+              <ul className="divide-y divide-[var(--color-hairline)] border-y border-[var(--color-hairline)]">
+                {list.map((pk) => {
+                  const save = pk.qty > 1 && one ? Math.round((1 - pk.priceUsd / (one * pk.qty)) * 100) : 0;
+                  return (
+                    <li key={pk.qty}>
+                      <Link href={href} className="flex items-baseline justify-between gap-2 py-2.5 transition-opacity hover:opacity-70">
+                        <span className="t-sub text-[var(--color-label-2)]">{label(k, pk.qty)}</span>
+                        <span className="flex items-baseline gap-2">
+                          {save > 0 && <span className="text-[11px] font-medium text-emerald-400">−{save}%</span>}
+                          <span className="t-headline tabular-nums">{formatUsd(pk.priceUsd)}</span>
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            );
+          }}
+        </TierExamples>
+        <div className="t-caption space-y-1 text-center text-[var(--color-label-3)]">
+          <p>{t.note}</p>
+          <p>{t.guarantee}</p>
+        </div>
+      </div>
+    );
   }
 
   return (

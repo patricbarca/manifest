@@ -186,7 +186,7 @@ export const es: Dictionary = {
     eyebrow: "Visualización guiada",
     titleA: "Verte viviéndolo",
     titleB: "antes de que pase.",
-    lede: "Sube un selfie, escribe tus deseos y recibe un vídeo de unos 2 minutos donde te ves viviéndolos. Una voz te guía: respiras, ves cada escena contigo dentro y repites tus afirmaciones en voz alta.",
+    lede: "Sube un selfie, escribe tus deseos y mírate viviéndolos en un vídeo guiado de 2 minutos.",
     ctaPrimary: "Crear mi vídeo",
     ctaSecondary: "Ver el market",
     previewLine: "Dirijo mi propio estudio.",
