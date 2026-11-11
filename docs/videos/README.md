@@ -16,5 +16,6 @@ Todas las personas son ficticias, generadas con IA. Si se usan en anuncios, már
 | tiktok-url-en.mp4 | EN | 25 s | Montaje reciclado; termina con "Make yours at manifestlife.ai" |
 | explainer-en.mp4 | EN | 48 s | Qué es la app y cómo funciona (selfie → 3 deseos → revisar escenas → vídeo) |
 | be-delusional-en.mp4 | EN | 32 s | "Everyone called it delusional." Estilo oscuro teal/dorado; en medio, secuencia de móvil: selfie → escribe tu sueño → vídeo de él cumpliéndolo. Voz Brian, música Lyria 2 |
+| future-self-en.mp4 | EN | 29 s | "Your future self is waiting." El espejo se desempaña y aparece su yo futuro; secuencia de móvil (selfie → visión → vídeo de ella); pantalla partida presente/futuro. Voz Sarah |
 
 Están en `docs/`, que no entra en la imagen de Docker: no se publican en la web.

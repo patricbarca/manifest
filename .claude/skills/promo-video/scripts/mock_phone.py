@@ -1,5 +1,5 @@
 """Secuencia de móvil (1080x1920, 30 fps): selfie -> escribe tu sueño -> generando -> vídeo tuyo.
-Uso: python3 mock_phone.py <selfie.jpg> <bg.mp4> <escena.mp4> <salida.mp4> <dir_fuentes>
+Uso: python3 mock_phone.py <selfie.jpg> <bg.mp4> <escena.mp4> <salida.mp4> <dir_fuentes> ["sueño"] ["etiqueta"]
 """
 import os, subprocess, sys
 from PIL import Image, ImageDraw, ImageFont, ImageOps
@@ -9,7 +9,8 @@ W, H, FPS = 1080, 1920, 30
 SX, SY, SW, SH, R = 296, 156, 488, 1028, 56          # pantalla
 GOLD, BGC, CARD, WHITE, GREY = (255, 196, 92), (13, 18, 22), (27, 35, 42), (255, 255, 255), (150, 160, 168)
 T1, T2, T3, T4 = 1.9, 2.5, 1.3, 2.6                    # selfie, sueño, generando, vídeo
-DREAM = "I speak on the biggest stage in my city."
+DREAM = sys.argv[6] if len(sys.argv) > 6 else "I speak on the biggest stage in my city."
+TAG = sys.argv[7] if len(sys.argv) > 7 else "You, already there"
 WORK = os.path.join(os.path.dirname(os.path.abspath(OUT)), "mock")
 os.makedirs(f"{WORK}/scr", exist_ok=True)
 
@@ -113,7 +114,7 @@ for i in range(n4):
     im = Image.open(p).convert("RGB") if os.path.exists(p) else im
     d = ImageDraw.Draw(im)
     f = font(28, 650)
-    t = "You, already there"
+    t = TAG
     tw = d.textlength(t, font=f)
     d.rounded_rectangle([(SW - tw) / 2 - 26, SH - 120, (SW + tw) / 2 + 26, SH - 64], radius=28, fill=(0, 0, 0))
     centered(d, SH - 108, t, f, GOLD)
