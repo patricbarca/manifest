@@ -120,8 +120,10 @@ type ChargeError = "noFreeLeft" | "paymentRequired";
 export async function chargeForVideo(
   userId: string,
   priceCents: number,
-  /** Si se pasa, el vídeo se paga con el saldo (3 deseos, 6 en Elevated, 3 stills) cuando le alcanza. */
+  /** Si se pasa, el vídeo se paga con el saldo (un deseo por escena, 2 en Elevated) cuando le alcanza. */
   tier?: Tier,
+  /** Escenas del vídeo (= deseos). */
+  scenes = 3,
 ): Promise<
   | { ok: true; kind: ChargeKind; paidCents: number }
   | { ok: false; reason: ChargeError }
@@ -138,7 +140,7 @@ export async function chargeForVideo(
     return { ok: true, kind: "prelaunch", paidCents: 0 };
   }
 
-  if (tier && (await spend(userId, tierCost(tier)))) return { ok: true, kind: "wallet", paidCents: 0 };
+  if (tier && (await spend(userId, tierCost(tier, scenes)))) return { ok: true, kind: "wallet", paidCents: 0 };
 
   // Si no le alcanza, el cobro lo hace Stripe Checkout (ver api/projects y lib/stripe).
   void priceCents;

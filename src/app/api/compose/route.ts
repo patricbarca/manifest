@@ -7,11 +7,11 @@ import { manifests } from "@/lib/manifest/store";
 import { composeProject } from "@/lib/manifest/compose";
 import { enqueueCompose } from "@/lib/queue";
 import { VOICE_IDS } from "@/lib/voices";
-import { PALETTES, type Manifestation, type Palette } from "@/lib/types";
+import { MAX_DESIRES, PALETTES, type Manifestation, type Palette } from "@/lib/types";
 
 export const runtime = "nodejs";
 
-const MAX_SCENES = 8;
+const MAX_SCENES = MAX_DESIRES;
 
 const Body = z.object({
   ids: z.array(z.string().startsWith("m_").max(64)).min(1).max(MAX_SCENES),

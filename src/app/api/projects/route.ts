@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db/store";
 import { currentUser, chargeForVideo } from "@/lib/db/session";
-import { estimateCostCents, priceUsd } from "@/lib/pricing";
+import { estimateCostCents, packGrant, packKindOf, packsFor, videoPriceUsd } from "@/lib/pricing";
 import { checkBlocked, checkDesires, checkDetails } from "@/lib/safety";
 import { moderate } from "@/lib/moderation";
 import { Area, Desires, Details, People, intentionFrom } from "@/lib/api-schemas";
@@ -44,6 +44,8 @@ const CreateProject = z.object({
   templateSlug: z.string().optional(),
   /** Guion aprobado en la revisión. */
   previewId: z.string().startsWith("sp_").optional(),
+  /** El pack elegido en precios si trae más deseos de los que caben en un vídeo (p. ej. 10): lo que sobra va al saldo. */
+  packQty: z.number().int().min(1).max(100).optional(),
   /** Pidió generar ya y aceptó perder el desistimiento (UE). */
   waiver: z.literal(true),
 });
@@ -116,8 +118,14 @@ export async function POST(request: Request) {
       ? preview
       : undefined;
 
-  const priceCents = priceUsd(input.tier) * 100;
-  const charge = await chargeForVideo(user.id, priceCents, input.tier);
+  // Precio según cuántos deseos lleva el vídeo (el del pack de ese tamaño).
+  // Si eligió un pack más grande de lo que cabe, paga ese pack y el resto queda de saldo.
+  const kind = packKindOf(input.tier);
+  const packs = packsFor(kind);
+  const scenes = input.desires.length;
+  const bigPack = input.packQty && input.packQty > scenes ? packs.find((p) => p.qty === input.packQty) : undefined;
+  const priceCents = Math.round((bigPack ? bigPack.priceUsd : videoPriceUsd(packs, scenes)) * 100);
+  const charge = await chargeForVideo(user.id, priceCents, input.tier, scenes);
   // Sin vídeo gratis y con pagos activos: se crea el proyecto en borrador y se cobra en Stripe.
   const needsCheckout = !charge.ok && charge.reason === "paymentRequired" && stripeEnabled();
   if (!charge.ok && !needsCheckout) {
@@ -162,6 +170,7 @@ export async function POST(request: Request) {
     watermark: charge.ok && charge.kind === "free",
     waiverAt: Date.now(),
     attribution,
+    ...(bigPack && needsCheckout ? { extraGrant: packGrant(kind, bigPack.qty - scenes) } : {}),
   };
   if (needsCheckout) project.status = "draft";
   await db.putProject(project);

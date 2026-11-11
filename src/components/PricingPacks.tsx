@@ -94,7 +94,7 @@ export function PricingPacks({
                   const save = pk.qty > 1 && one ? Math.round((1 - pk.priceUsd / (one * pk.qty)) * 100) : 0;
                   return (
                     <li key={pk.qty}>
-                      <Link href={href} className="flex items-baseline justify-between gap-2 py-2.5 transition-opacity hover:opacity-70">
+                      <Link href={`/create?tier=${tr}&qty=${pk.qty}`} className="flex items-baseline justify-between gap-2 py-2.5 transition-opacity hover:opacity-70">
                         <span className="t-sub text-[var(--color-label-2)]">{label(k, pk.qty)}</span>
                         <span className="flex items-baseline gap-2">
                           {save > 0 && <span className="text-[11px] font-medium text-emerald-400">−{save}%</span>}
