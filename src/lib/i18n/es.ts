@@ -280,6 +280,10 @@ export const es: Dictionary = {
     qualityElevated: "Elevado · 2 deseos",
     qualityStill: "Foto con movimiento · 1 foto",
     perScene: "por escena",
+    usesOne: "usa 1 deseo",
+    usesTwo: "usa 2 deseos",
+    usesStill: "usa 1 foto con movimiento",
+    typesLede: "Cada deseo se convierte en una escena. Elige cómo quieres verla; mezcla tipos cuando quieras.",
   },
   pricing: {
     title: "Pagas por deseo, y ya",
@@ -303,7 +307,7 @@ export const es: Dictionary = {
   },
   products: {
     vision: {
-      name: "Imágenes",
+      name: "Fotos con movimiento",
       tagline: "Escenas tuyas con movimiento de cámara",
       waitLabel: "listo en un par de minutos",
       points: [

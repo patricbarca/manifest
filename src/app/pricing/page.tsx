@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
-import { PRODUCTS, creditPacks, formatUsd, stillPacks } from "@/lib/pricing";
+import { creditPacks, formatUsd, scenePrice, stillPacks } from "@/lib/pricing";
 import { PricingPacks } from "@/components/PricingPacks";
 import { TIERS } from "@/lib/types";
 import { getDictionary } from "@/lib/i18n/server";
@@ -27,7 +27,12 @@ export default async function PreciosPage() {
         <PricingPacks mode="link" href="/create" wishes={creditPacks()} stills={stillPacks()} t={t.packs} />
       </div>
 
-      <div className="mx-auto mt-16 grid max-w-5xl gap-4 md:grid-cols-3">
+      <div className="mx-auto mt-20 max-w-xl text-center">
+        <h2 className="t-title">{t.home.productsTitle}</h2>
+        <p className="t-body mt-3 text-[var(--color-label-2)]">{t.packs.typesLede}</p>
+      </div>
+
+      <div className="mx-auto mt-10 grid max-w-5xl gap-4 md:grid-cols-3">
         {TIERS.map((id) => {
           const copy = t.products[id];
           return (
@@ -42,11 +47,12 @@ export default async function PreciosPage() {
                 {copy.tagline}
               </p>
 
-              <p className="mt-7 text-[3rem] font-semibold leading-none tracking-[-0.035em] tabular-nums">
-                {formatUsd(PRODUCTS[id].priceUsd)}
+              <p className="mt-6 text-[1.75rem] font-semibold leading-none tracking-[-0.02em] tabular-nums">
+                {formatUsd(scenePrice(id))}
+                <span className="t-sub ml-1.5 font-normal text-[var(--color-label-2)]">{t.packs.perScene}</span>
               </p>
               <p className="t-caption mt-2 text-[var(--color-label-2)]">
-                {t.pricing.sameDuration}
+                {id === "vision" ? t.packs.usesStill : id === "elevated" ? t.packs.usesTwo : t.packs.usesOne}
               </p>
 
               <ul className="mt-7 flex-1 space-y-2.5">

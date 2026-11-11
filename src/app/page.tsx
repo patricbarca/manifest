@@ -3,7 +3,7 @@ import { Icon } from "@/components/Icon";
 import { HeroVideo } from "@/components/HeroVideo";
 import { TEMPLATES } from "@/lib/templates";
 import { TemplateMedia } from "@/components/TemplateMedia";
-import { PRODUCTS, creditPacks, formatUsd, stillPacks } from "@/lib/pricing";
+import { PRODUCTS, creditPacks, formatUsd, scenePrice, stillPacks } from "@/lib/pricing";
 import { PricingPacks } from "@/components/PricingPacks";
 import { LIFE_AREAS, TIERS } from "@/lib/types";
 import type { Tier } from "@/lib/types";
@@ -262,9 +262,3 @@ function TierCard({ id, t }: { id: Tier; t: Dictionary }) {
   );
 }
 
-/** Precio suelto de una escena: 1 foto con movimiento, 1 deseo o 2 deseos (Elevado). */
-function scenePrice(id: Tier): number {
-  const one = (packs: { qty: number; priceUsd: number }[]) => packs.find((p) => p.qty === 1)?.priceUsd ?? packs[0].priceUsd;
-  if (id === "vision") return one(stillPacks());
-  return one(creditPacks()) * (id === "elevated" ? 2 : 1);
-}
