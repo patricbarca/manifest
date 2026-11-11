@@ -148,7 +148,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── Precios: packs de deseos y de fotos con movimiento ─────────────── */}
-      <section id="pricing" className="mx-auto max-w-[760px] scroll-mt-20 px-4 py-20 sm:px-6">
+      <section id="pricing" className="mx-auto max-w-[1000px] scroll-mt-20 px-4 py-20 sm:px-6">
         <div className="mx-auto mb-8 max-w-xl text-center">
           <h2 className="t-title">{t.packs.title}</h2>
           <p className="t-body mt-3 text-[var(--color-label-2)]">{t.packs.lede}</p>
