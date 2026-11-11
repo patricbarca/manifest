@@ -15,5 +15,6 @@ Todas las personas son ficticias, generadas con IA. Si se usan en anuncios, már
 | tiktok-selfie-en.mp4 | EN | 24 s | "I almost didn't upload my selfie." |
 | tiktok-url-en.mp4 | EN | 25 s | Montaje reciclado; termina con "Make yours at manifestlife.ai" |
 | explainer-en.mp4 | EN | 48 s | Qué es la app y cómo funciona (selfie → 3 deseos → revisar escenas → vídeo) |
+| be-delusional-en.mp4 | EN | 30 s | "Everyone called it delusional." Estilo oscuro teal/dorado, voz Brian, música generada con Lyria 2 |
 
 Están en `docs/`, que no entra en la imagen de Docker: no se publican en la web.

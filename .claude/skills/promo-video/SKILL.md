@@ -33,6 +33,7 @@ Every generation costs real money (images ~cents, animation ~$0.03/s at 768p, vo
 Narration patterns that worked:
 - **Promo** (3rd person, calm, Sarah): open with a Dispenza-style idea without naming him ("Your brain can't tell the difference between what you vividly imagine… and what you live."), show the ritual on the phone, step into the reality, close.
 - **TikTok** (1st person, her own voice): hook in the first 2 s, then "I wrote down 3 desires… and uploaded one selfie" → "it made me a video of ME living them" → "every night: I breathe, I watch, I repeat" → "my brain started believing it…".
+- **"Be Delusional" (moody)**: hard cuts, `"grade": "teal_gold"`, uppercase captions with the key word in gold (`*WORD*`), `"caption_yc": 0.70`, music generated with `fal-ai/lyria2` passed as `"music"`. Example: `docs/videos/be-delusional-en.mp4`.
 - **Ending**: a different voice (George) says "ManifestLifeAI. See it. Feel it. Live it." over the brand card.
 
 ## Workflow
