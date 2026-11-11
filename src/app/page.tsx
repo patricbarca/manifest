@@ -153,7 +153,7 @@ export default async function HomePage() {
           <h2 className="t-title">{t.packs.title}</h2>
           <p className="t-body mt-3 text-[var(--color-label-2)]">{t.packs.lede}</p>
         </div>
-        <PricingPacks mode="link" href="/create" wishes={creditPacks()} stills={stillPacks()} elevated={elevatedPacks()} products={t.products} t={t.packs} />
+        <PricingPacks mode="link" href="/create" wishes={creditPacks()} stills={stillPacks()} elevated={elevatedPacks()} products={t.products} t={t.packs} examples />
       </section>
 
       {/* ── Preguntas ────────────────────────────────────────────────────── */}

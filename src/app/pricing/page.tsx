@@ -21,7 +21,7 @@ export default async function PreciosPage() {
       </header>
 
       <div className="mx-auto mt-12 max-w-[720px]">
-        <PricingPacks mode="link" href="/create" wishes={creditPacks()} stills={stillPacks()} elevated={elevatedPacks()} products={t.products} t={t.packs} />
+        <PricingPacks mode="link" href="/create" wishes={creditPacks()} stills={stillPacks()} elevated={elevatedPacks()} products={t.products} t={t.packs} examples />
       </div>
 
       <p className="t-sub mx-auto mt-8 max-w-md text-center text-[var(--color-label-2)]">

@@ -7,6 +7,7 @@ import { formatUsd, type CreditPack, type PackKind } from "@/lib/pricing";
 import type { Dictionary } from "@/lib/i18n";
 import type { Tier } from "@/lib/types";
 import { Icon } from "./Icon";
+import { TierExamples } from "./TierExamples";
 
 type Labels = Dictionary["packs"];
 type Products = Dictionary["products"];
@@ -34,6 +35,7 @@ export function PricingPacks({
   balance,
   upsell,
   initial = "wishes",
+  examples = false,
 }: {
   wishes: CreditPack[];
   stills: CreditPack[];
@@ -46,12 +48,15 @@ export function PricingPacks({
   /** "Completa tu vídeo": 2 deseos más a precio de pack (solo si le toca). */
   upsell?: CreditPack;
   initial?: PackKind;
+  /** Muestra 3 ejemplos seguidos del tipo de escena elegido (landing y /pricing). */
+  examples?: boolean;
 }) {
   const [kind, setKind] = useState<PackKind>(initial);
   const [busy, setBusy] = useState<string>();
   const [err, setErr] = useState<string>();
   const packs = kind === "stills" ? stills : kind === "elevated" ? elevated : wishes;
-  const copy = products[KINDS.find((k) => k.kind === kind)!.tier];
+  const tier = KINDS.find((k) => k.kind === kind)!.tier;
+  const copy = products[tier];
   const unit = packs.find((p) => p.qty === 1)?.priceUsd ?? packs[0]?.priceUsd ?? 0;
   const mid = packs.length === 3 ? 1 : -1;
   const label = (k: PackKind, n: number) => (n === 1 ? t.one[k] : t.many[k].replace("{n}", String(n)));
@@ -115,6 +120,8 @@ export function PricingPacks({
           </button>
         ))}
       </div>
+
+      {examples && <TierExamples tier={tier} />}
 
       {/* Qué es este tipo de escena. */}
       <div className="text-center">
