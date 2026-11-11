@@ -23,7 +23,9 @@ export async function POST(request: Request) {
     };
     // Paquete de manifestaciones: suma créditos una sola vez por sesión.
     const kind = session.metadata?.kind;
-    if ((kind === "credits" || kind === "stills") && session.payment_status === "paid" && session.metadata?.userId) {
+    // Pagado, o gratis con un código de descuento del 100 % (Stripe no cobra nada en ese caso).
+    const settled = session.payment_status === "paid" || (session.payment_status === "no_payment_required" && session.amount_total === 0);
+    if ((kind === "credits" || kind === "stills") && settled && session.metadata?.userId) {
       const user = await db.getUser(session.metadata.userId);
       const qty = Math.max(0, Math.min(100, Number(session.metadata.qty) || 0));
       const field = kind === "stills" ? "stillCredits" : "credits";
@@ -33,7 +35,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true });
     }
     const id = session.metadata?.projectId;
-    if (id && session.payment_status === "paid") {
+    if (id && settled) {
       // Solo una vez: Stripe puede reenviar el mismo evento.
       let start = false;
       await db.patchProject(id, (p) => {
