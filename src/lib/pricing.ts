@@ -198,6 +198,23 @@ export function elevatedPacks(): CreditPack[] {
 }
 
 export type PackKind = "wishes" | "stills" | "elevated";
+/** El tipo de pack que paga cada tipo de vídeo. */
+export const packKindOf = (tier: Tier): PackKind => (tier === "vision" ? "stills" : tier === "elevated" ? "elevated" : "wishes");
+
+/**
+ * Precio de un vídeo con n deseos: la combinación de packs más barata que
+ * sume justo n (4 = pack de 3 + 1), y nunca más que un pack mayor (4 Elevado
+ * cuesta lo del pack de 5). Pura: sirve en el cliente.
+ */
+export function videoPriceUsd(packs: CreditPack[], n: number): number {
+  const best = [0];
+  for (let k = 1; k <= n; k++) {
+    best[k] = Math.min(...packs.filter((p) => p.qty <= k).map((p) => best[k - p.qty] + p.priceUsd), Infinity);
+  }
+  const bigger = Math.min(...packs.filter((p) => p.qty >= n).map((p) => p.priceUsd), Infinity);
+  const price = Math.min(best[n], bigger);
+  return Number.isFinite(price) ? +price.toFixed(2) : 0;
+}
 export const packsFor = (kind: PackKind) => (kind === "stills" ? stillPacks() : kind === "elevated" ? elevatedPacks() : creditPacks());
 
 /** Cuánto saldo da un pack: deseos (Animado y Elevado, ×2) o fotos con movimiento. */

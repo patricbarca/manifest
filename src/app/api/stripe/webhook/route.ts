@@ -46,6 +46,13 @@ export async function POST(request: Request) {
       });
       if (start) {
         enqueue(id);
+        // Lo que sobró del pack (p. ej. 4 de 10 deseos) va al saldo.
+        const paid = await db.getProject(id);
+        if (paid?.extraGrant) {
+          const { field, n } = paid.extraGrant;
+          const owner = await db.getUser(paid.ownerId);
+          if (owner) await db.putUser({ ...owner, [field]: (owner[field] ?? 0) + n });
+        }
         // Recibo con la renuncia al desistimiento (soporte duradero).
         const project = await db.getProject(id);
         const owner = project ? await db.getUser(project.ownerId) : undefined;

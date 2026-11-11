@@ -10,10 +10,10 @@ export function costOf(quality: Quality | undefined): { field: Field; n: number 
   return { field: "credits", n: quality === "elevated" ? 2 : 1 };
 }
 
-/** El vídeo completo (3 escenas) pagado con el saldo: Stills 3 stills, Cinematic 3 deseos, Elevated 6. */
-export function tierCost(tier: Tier): { field: Field; n: number } {
-  if (tier === "vision") return { field: "stillCredits", n: 3 };
-  return { field: "credits", n: tier === "elevated" ? 6 : 3 };
+/** Un vídeo de n escenas pagado con el saldo: n stills, n deseos, o 2n en Elevated. */
+export function tierCost(tier: Tier, scenes = 3): { field: Field; n: number } {
+  if (tier === "vision") return { field: "stillCredits", n: scenes };
+  return { field: "credits", n: tier === "elevated" ? scenes * 2 : scenes };
 }
 
 export const balance = (user: User | undefined | null, field: Field) => user?.[field] ?? 0;
