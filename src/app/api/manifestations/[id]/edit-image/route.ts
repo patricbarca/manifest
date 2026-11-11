@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { costOf, giveBack, spend } from "@/lib/wallet";
 import { z } from "zod";
 import { db } from "@/lib/db/store";
 import { me } from "@/lib/social/me";
@@ -47,9 +48,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   // Desde el perfil, editar una escena se paga: 1 manifestación al empezar cubre
   // hasta 3 imágenes y la animación. Las regeneraciones gratis son solo al crear el vídeo.
   const charge = PAYMENTS_ENABLED && !m.editPaid;
+  const cost = costOf(m.quality);
   if (charge) {
-    if ((user.credits ?? 0) < 1) return NextResponse.json({ error: "credits" }, { status: 402 });
-    await db.putUser({ ...user, credits: (user.credits ?? 0) - 1 });
+    if (!(await spend(user.id, cost))) return NextResponse.json({ error: "credits", kind: cost.field === "stillCredits" ? "stills" : "wishes", need: cost.n }, { status: 402 });
     await manifests.patch(id, (cur) => ({ ...cur, editPaid: true }));
   }
 
@@ -75,8 +76,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     console.error("[edit-image]", id, err);
     // Si falló la primera imagen de una edición recién pagada, se devuelve la manifestación.
     if (charge && !m.draftImageUrl) {
-      const fresh = (await db.getUser(who.user.id)) ?? user;
-      await db.putUser({ ...fresh, credits: (fresh.credits ?? 0) + 1 });
+      await giveBack(user.id, cost);
       await manifests.patch(id, (cur) => ({ ...cur, editPaid: undefined }));
     }
     const blocked = /no permitido|content_policy/i.test(String(err));

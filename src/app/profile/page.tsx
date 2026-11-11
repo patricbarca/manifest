@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { PAYMENTS_ENABLED, creditPacks } from "@/lib/pricing";
+import { PAYMENTS_ENABLED, creditPacks, stillPacks, upsellPack } from "@/lib/pricing";
 import { stripeEnabled } from "@/lib/stripe";
-import { BuyCredits } from "@/components/BuyCredits";
+import { PricingPacks } from "@/components/PricingPacks";
+import { upsellEligible } from "@/lib/wallet";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -56,6 +57,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
   };
   const ready = projects.filter((p) => p.status === "ready");
   // Arriba, los mismos círculos que ven los demás: las manifestaciones que muestra.
+  const wallet = (await db.getUser(who.user.id)) ?? who.user;
   const groups = manifestPosts(mine);
   const members = circle.filter((c) => c.status === "accepted");
   const pending = circle.filter((c) => c.status === "pending");
@@ -121,11 +123,16 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
       </nav>
 
       {tab === "manifest" && stripeEnabled() && (
-        <BuyCredits
-          credits={(await db.getUser(who.user.id))?.credits ?? 0}
-          packs={creditPacks()}
-          t={{ title: t.manifest.buyTitle, credits: t.manifest.credits, none: t.manifest.buyNone, buy: t.manifest.buy, each: t.manifest.each, error: t.manifest.buyError, note: t.manifest.buyNote }}
-        />
+        <div className="card rounded-[var(--radius-lg)] p-4 sm:p-5">
+          <PricingPacks
+            mode="buy"
+            wishes={creditPacks()}
+            stills={stillPacks()}
+            balance={{ wishes: wallet.credits ?? 0, stills: wallet.stillCredits ?? 0 }}
+            upsell={upsellEligible(wallet, mine) ? upsellPack() : undefined}
+            t={t.packs}
+          />
+        </div>
       )}
       {tab === "manifest" && (
         <div className="flex gap-2">

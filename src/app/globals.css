@@ -67,6 +67,8 @@ body {
   color: var(--color-label-1);
   font-family: var(--font-sans);
   font-synthesis-weight: none;
+  /* Los halos decorativos (blur) no deben crear scroll horizontal en móvil. */
+  overflow-x: clip;
 }
 
 /*

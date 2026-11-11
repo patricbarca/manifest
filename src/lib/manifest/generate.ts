@@ -1,4 +1,5 @@
 import { isOutOfFunds, reportOutOfFunds } from "../provider-funds";
+import { costOf, giveBack } from "../wallet";
 import type { Project } from "../types";
 import { providers } from "../ai";
 import { buildScenes, inferArea } from "../script-engine";
@@ -10,7 +11,7 @@ import { deleteMediaUrl, offloadProject } from "../cleanup";
 import { manifests } from "./store";
 import { ensureLocal } from "./compose";
 import { db } from "../db/store";
-import { makePlayCopy } from "../playback";
+import { makePlayCopy, makeStillClip } from "../playback";
 import { bodyClause } from "../body";
 
 /** Si la manifestación se pagó con un paquete y falló, devuelve la unidad (solo una vez). */
@@ -20,8 +21,7 @@ export async function refundCredit(id: string): Promise<void> {
   if (m?.freeRegen) await manifests.patch(id, (cur) => ({ ...cur, freeRegen: undefined, regensUsed: Math.max(0, (cur.regensUsed ?? 1) - 1) }));
   if (!m?.paidCredit) return;
   await manifests.patch(id, (cur) => ({ ...cur, paidCredit: undefined, editPaid: undefined }));
-  const user = await db.getUser(m.ownerId);
-  if (user) await db.putUser({ ...user, credits: (user.credits ?? 0) + 1 });
+  await giveBack(m.ownerId, costOf(m.quality));
 }
 
 /**
@@ -87,13 +87,14 @@ export async function runManifestation(id: string): Promise<void> {
 
     // 4. Movimiento.
     const plain = brief.replace(/^pov:\s*/i, "").replace(/\[\[\s*([^\]]+?)\s*\]\]/g, "a loved one");
-    const clip = await providers.video.animate({
+    // Foto con movimiento: sin IA de vídeo, un movimiento de cámara lento sobre la imagen.
+    const clip = start.quality === "still" ? { result: { url: await makeStillClip(imageUrl, secs, sceneId) }, costCents: 0 } : await providers.video.animate({
       imageUrl,
       prompt: `Gentle, realistic natural motion in this scene: ${plain}. Subtle movement of hair, clothes and light, people move naturally, the person keeps their face visible and turned toward the camera the whole time, steady camera, every face stays the same.`,
       durationSec: secs,
       projectId: id,
       sceneId,
-      quality: start.quality ?? "standard",
+      quality: start.quality === "elevated" ? "elevated" : "standard",
     });
     cents += clip.costCents;
 
