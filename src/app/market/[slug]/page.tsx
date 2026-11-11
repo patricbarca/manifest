@@ -5,7 +5,7 @@ import { templatePreview } from "@/lib/templates";
 import { TemplateMedia } from "@/components/TemplateMedia";
 import { notFound } from "next/navigation";
 import { TEMPLATES, templateBySlug } from "@/lib/templates";
-import { PRODUCTS, formatUsd } from "@/lib/pricing";
+import { videoLabel } from "@/lib/pricing";
 import { Icon } from "@/components/Icon";
 import { fill } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/server";
@@ -63,7 +63,7 @@ export default async function TemplatePage({
                 <div className="mb-2 flex items-baseline justify-between gap-2">
                   <span className="t-sub font-medium">{t.products[tier].name}</span>
                   <span className="t-sub tabular-nums text-[var(--color-label-2)]">
-                    {formatUsd(PRODUCTS[tier].priceUsd)}
+                    {videoLabel(tier, t.packs.many)}
                   </span>
                 </div>
                 <TemplateMedia

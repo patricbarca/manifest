@@ -3,10 +3,9 @@ import { Icon } from "@/components/Icon";
 import { HeroVideo } from "@/components/HeroVideo";
 import { TEMPLATES } from "@/lib/templates";
 import { TemplateMedia } from "@/components/TemplateMedia";
-import { PRODUCTS, creditPacks, formatUsd, scenePrice, stillPacks } from "@/lib/pricing";
+import { creditPacks, elevatedPacks, formatUsd, stillPacks, videoLabel } from "@/lib/pricing";
 import { PricingPacks } from "@/components/PricingPacks";
-import { LIFE_AREAS, TIERS } from "@/lib/types";
-import type { Tier } from "@/lib/types";
+import { LIFE_AREAS } from "@/lib/types";
 import { isDemoMode } from "@/lib/ai";
 import { type Dictionary, type Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/server";
@@ -111,28 +110,13 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Los dos productos ────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-[1120px] px-6 py-20">
-        <div className="mx-auto max-w-xl text-center">
-          <h2 className="t-title">{t.home.productsTitle}</h2>
-          <p className="t-body mt-3 text-[var(--color-label-2)]">{t.home.productsLede}</p>
-        </div>
-
-        <div className="mx-auto mt-12 grid max-w-5xl gap-4 md:grid-cols-3">
-          {TIERS.map((id) => (
-            <TierCard key={id} id={id} t={t} />
-          ))}
-        </div>
-
-      </section>
-
       {/* ── Precios: packs de deseos y de fotos con movimiento ─────────────── */}
       <section id="pricing" className="mx-auto max-w-[760px] scroll-mt-20 px-4 py-20 sm:px-6">
         <div className="mx-auto mb-8 max-w-xl text-center">
           <h2 className="t-title">{t.packs.title}</h2>
           <p className="t-body mt-3 text-[var(--color-label-2)]">{t.packs.lede}</p>
         </div>
-        <PricingPacks mode="link" href="/create" wishes={creditPacks()} stills={stillPacks()} t={t.packs} />
+        <PricingPacks mode="link" href="/create" wishes={creditPacks()} stills={stillPacks()} elevated={elevatedPacks()} products={t.products} t={t.packs} />
       </section>
 
       {/* ── Áreas ────────────────────────────────────────────────────────── */}
@@ -187,7 +171,7 @@ export default async function HomePage() {
                   {tpl.summary[locale as Locale]}
                 </p>
                 <p className="t-sub mt-4 tabular-nums">
-                  {formatUsd(PRODUCTS[tpl.tier].priceUsd)}
+                  {videoLabel(tpl.tier, t.packs.many)}
                 </p>
               </div>
             </Link>
@@ -221,43 +205,6 @@ export default async function HomePage() {
           {t.home.closingCta}
         </Link>
       </section>
-    </div>
-  );
-}
-
-function TierCard({ id, t }: { id: Tier; t: Dictionary }) {
-  const copy = t.products[id];
-  return (
-    <div
-      className={`card rounded-[var(--radius-lg)] p-8 ${
-        id === "cinematic" ? "border-[var(--color-hairline-strong)]" : ""
-      }`}
-    >
-      <div className="flex items-baseline justify-between gap-4">
-        <h3 className="t-headline">{copy.name}</h3>
-        <span className="t-caption text-[var(--color-label-3)]">{t.home.durationBoth}</span>
-      </div>
-      <p className="t-sub mt-1 text-[var(--color-label-2)]">{copy.tagline}</p>
-
-      <p className="mt-7 text-[2.5rem] font-semibold leading-none tracking-[-0.03em] tabular-nums">
-        {formatUsd(scenePrice(id))}
-      </p>
-      <p className="t-caption mt-2 text-[var(--color-label-2)]">
-        {t.packs.perScene} · {id === "vision" ? t.packs.one.stills : id === "elevated" ? t.packs.many.wishes.replace("{n}", "2") : t.packs.one.wishes}
-      </p>
-
-      <ul className="mt-7 space-y-3">
-        {copy.points.map((point) => (
-          <li key={point} className="t-sub flex gap-3 text-[var(--color-label-2)]">
-            <Icon
-              name="check"
-              size={15}
-              className="mt-[3px] shrink-0 text-[var(--color-label-1)]"
-            />
-            {point}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

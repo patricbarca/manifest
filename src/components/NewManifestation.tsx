@@ -10,7 +10,7 @@ import { AccessCodeForm } from "./AccessCodeForm";
 import type { Locale } from "@/lib/i18n/locale";
 
 type Voice = { id: string; label: string };
-type Packs = { wishes: CreditPack[]; stills: CreditPack[]; upsell?: CreditPack; t: Dictionary["packs"] };
+type Packs = { wishes: CreditPack[]; stills: CreditPack[]; elevated: CreditPack[]; products: Dictionary["products"]; upsell?: CreditPack; t: Dictionary["packs"] };
 type Quality = "standard" | "elevated" | "still";
 type Labels = {
   desire: string; desirePlaceholder: string; language: string; voice: string; photosTitle: string; photosHint: string;
@@ -178,9 +178,11 @@ export function NewManifestation({
             mode="buy"
             wishes={packs.wishes}
             stills={packs.stills}
+            elevated={packs.elevated}
+            products={packs.products}
             balance={{ wishes: credits, stills: stillCredits }}
             upsell={packs.upsell}
-            initial={quality === "still" ? "stills" : "wishes"}
+            initial={quality === "still" ? "stills" : quality === "elevated" ? "elevated" : "wishes"}
             t={packs.t}
           />
         </div>

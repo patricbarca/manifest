@@ -5,17 +5,29 @@ import { useState } from "react";
 import { trackEvent } from "@/lib/track-client";
 import { formatUsd, type CreditPack, type PackKind } from "@/lib/pricing";
 import type { Dictionary } from "@/lib/i18n";
+import type { Tier } from "@/lib/types";
+import { Icon } from "./Icon";
 
 type Labels = Dictionary["packs"];
+type Products = Dictionary["products"];
+
+/** Pestañas en orden: de la más barata a la premium. Cada una con su tipo de escena. */
+const KINDS: { kind: PackKind; tier: Tier }[] = [
+  { kind: "stills", tier: "vision" },
+  { kind: "wishes", tier: "cinematic" },
+  { kind: "elevated", tier: "elevated" },
+];
 
 /**
- * Packs de deseos (animados) y de fotos con movimiento, en dos pestañas. El
- * del medio va destacado. En la landing cada tarjeta lleva a empezar; dentro
- * de la app abre el pago de Stripe.
+ * La sección de precios: una pestaña por tipo de escena (Fotos con movimiento,
+ * Animado, Elevado), con qué es y sus 3 packs (el del medio, destacado). En la
+ * landing cada tarjeta lleva a empezar; dentro de la app abre el pago de Stripe.
  */
 export function PricingPacks({
   wishes,
   stills,
+  elevated,
+  products,
   t,
   mode,
   href = "/start",
@@ -25,6 +37,8 @@ export function PricingPacks({
 }: {
   wishes: CreditPack[];
   stills: CreditPack[];
+  elevated: CreditPack[];
+  products: Products;
   t: Labels;
   mode: "buy" | "link";
   href?: string;
@@ -36,14 +50,14 @@ export function PricingPacks({
   const [kind, setKind] = useState<PackKind>(initial);
   const [busy, setBusy] = useState<string>();
   const [err, setErr] = useState<string>();
-  const packs = kind === "stills" ? stills : wishes;
+  const packs = kind === "stills" ? stills : kind === "elevated" ? elevated : wishes;
+  const copy = products[KINDS.find((k) => k.kind === kind)!.tier];
   const unit = packs.find((p) => p.qty === 1)?.priceUsd ?? packs[0]?.priceUsd ?? 0;
   const mid = packs.length === 3 ? 1 : -1;
   const label = (k: PackKind, n: number) => (n === 1 ? t.one[k] : t.many[k].replace("{n}", String(n)));
 
   async function buy(qty: number, k: PackKind, upsellBuy = false) {
-    const key = `${k}:${qty}`;
-    setBusy(key);
+    setBusy(`${k}:${qty}`);
     setErr(undefined);
     const res = await fetch("/api/credits", {
       method: "POST",
@@ -59,20 +73,6 @@ export function PricingPacks({
     setBusy(undefined);
     setErr(t.error);
   }
-
-  const tab = (k: PackKind, text: string) => (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={kind === k}
-      onClick={() => setKind(k)}
-      className={`interactive t-sub flex-1 rounded-full px-4 py-2 font-medium ${
-        kind === k ? "bg-[var(--color-label-1)] text-[var(--color-surface-1)]" : "text-[var(--color-label-2)]"
-      }`}
-    >
-      {text}
-    </button>
-  );
 
   return (
     <div className="space-y-5">
@@ -99,13 +99,37 @@ export function PricingPacks({
         </div>
       )}
 
-      <div role="tablist" className="mx-auto flex max-w-sm gap-1 rounded-full border border-[var(--color-hairline)] p-1">
-        {tab("wishes", t.tabWishes)}
-        {tab("stills", t.tabStills)}
+      <div role="tablist" className="mx-auto grid max-w-md grid-cols-3 gap-1 rounded-full border border-[var(--color-hairline)] p-1">
+        {KINDS.map(({ kind: k, tier }) => (
+          <button
+            key={k}
+            type="button"
+            role="tab"
+            aria-selected={kind === k}
+            onClick={() => setKind(k)}
+            className={`rounded-full px-2 py-2 text-[13px] transition-colors font-medium leading-tight sm:text-[14px] ${
+              kind === k ? "bg-[var(--color-label-1)] text-[var(--color-surface-1)]" : "text-[var(--color-label-2)] hover:text-[var(--color-label-1)]"
+            }`}
+          >
+            {products[tier].name}
+          </button>
+        ))}
       </div>
-      <p className="t-sub text-center text-[var(--color-label-2)]">{kind === "stills" ? t.ledeStills : t.ledeWishes}</p>
 
-      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+      {/* Qué es este tipo de escena. */}
+      <div className="text-center">
+        <p className="t-sub text-[var(--color-label-1)]">{copy.tagline}</p>
+        <ul className="mx-auto mt-3 grid max-w-lg gap-x-5 gap-y-1.5 text-left sm:grid-cols-2">
+          {copy.points.map((point) => (
+            <li key={point} className="t-caption flex gap-2 text-[var(--color-label-2)]">
+              <Icon name="check" size={13} className="mt-[3px] shrink-0 text-[var(--color-label-1)]" />
+              {point}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 pt-2 sm:gap-4">
         {packs.map((p, i) => {
           const hot = i === mid;
           const save = p.qty > 1 && unit ? Math.round((1 - p.priceUsd / (unit * p.qty)) * 100) : 0;
@@ -144,7 +168,9 @@ export function PricingPacks({
       </div>
 
       <div className="t-caption space-y-1 text-center text-[var(--color-label-3)]">
-        {kind === "wishes" && <p>{t.fullVideo} {t.elevated}</p>}
+        <p>
+          {kind === "elevated" ? t.noteElevated : kind === "stills" ? t.noteStills : t.fullVideo} · {copy.waitLabel}
+        </p>
         <p>{t.note}</p>
         <p>{t.guarantee}</p>
       </div>

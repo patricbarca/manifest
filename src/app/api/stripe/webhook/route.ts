@@ -1,4 +1,5 @@
 import { appBase } from "@/lib/hosts";
+import { packGrant } from "@/lib/pricing";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { enqueue } from "@/lib/queue";
@@ -25,12 +26,12 @@ export async function POST(request: Request) {
     const kind = session.metadata?.kind;
     // Pagado, o gratis con un código de descuento del 100 % (Stripe no cobra nada en ese caso).
     const settled = session.payment_status === "paid" || (session.payment_status === "no_payment_required" && session.amount_total === 0);
-    if ((kind === "credits" || kind === "stills") && settled && session.metadata?.userId) {
+    if ((kind === "credits" || kind === "stills" || kind === "elevated") && settled && session.metadata?.userId) {
       const user = await db.getUser(session.metadata.userId);
       const qty = Math.max(0, Math.min(100, Number(session.metadata.qty) || 0));
-      const field = kind === "stills" ? "stillCredits" : "credits";
+      const { field, n } = packGrant(kind === "credits" ? "wishes" : kind, qty);
       if (user && qty && !(user.creditSessions ?? []).includes(session.id)) {
-        await db.putUser({ ...user, [field]: (user[field] ?? 0) + qty, ...(session.metadata.upsell === "1" ? { upsellUsed: true } : {}), creditSessions: [...(user.creditSessions ?? []), session.id].slice(-50) });
+        await db.putUser({ ...user, [field]: (user[field] ?? 0) + n, ...(session.metadata.upsell === "1" ? { upsellUsed: true } : {}), creditSessions: [...(user.creditSessions ?? []), session.id].slice(-50) });
       }
       return NextResponse.json({ received: true });
     }

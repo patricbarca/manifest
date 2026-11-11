@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { TemplateCard } from "@/components/TemplateCard";
 import { TEMPLATES } from "@/lib/templates";
-import { CREATOR_SHARE, PRODUCTS, formatUsd } from "@/lib/pricing";
+import { CREATOR_SHARE, videoLabel } from "@/lib/pricing";
 import { LIFE_AREAS, type LifeArea } from "@/lib/types";
 import { fill } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/server";
@@ -68,9 +68,9 @@ export default async function MarketPage({
             by={t.market.by}
             referenceLabel={t.market.referenceShort}
             options={[
-              { variant: "stills", label: t.products.vision.name, price: formatUsd(PRODUCTS.vision.priceUsd) },
-              { variant: "animated", label: t.products.cinematic.name, price: formatUsd(PRODUCTS.cinematic.priceUsd) },
-              { variant: "elevated", label: t.products.elevated.name, price: formatUsd(PRODUCTS.elevated.priceUsd) },
+              { variant: "stills", label: t.products.vision.name, price: videoLabel("vision", t.packs.many) },
+              { variant: "animated", label: t.products.cinematic.name, price: videoLabel("cinematic", t.packs.many) },
+              { variant: "elevated", label: t.products.elevated.name, price: videoLabel("elevated", t.packs.many) },
             ]}
           />
         ))}
