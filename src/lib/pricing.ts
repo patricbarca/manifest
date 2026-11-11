@@ -199,3 +199,10 @@ export function upsellPack(): CreditPack | undefined {
   const three = packs.find((p) => p.qty === 3)?.priceUsd;
   return one && three && three > one ? { qty: 2, priceUsd: three - one } : undefined;
 }
+
+/** Precio suelto de una escena: 1 foto con movimiento (Stills), 1 deseo (Animado) o 2 deseos (Elevado). */
+export function scenePrice(tier: Tier): number {
+  const one = (packs: CreditPack[]) => packs.find((p) => p.qty === 1)?.priceUsd ?? packs[0].priceUsd;
+  if (tier === "vision") return one(stillPacks());
+  return one(creditPacks()) * (tier === "elevated" ? 2 : 1);
+}

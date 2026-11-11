@@ -281,6 +281,10 @@ export const en = {
     qualityElevated: "Elevated · 2 wishes",
     qualityStill: "Photo in motion · 1 photo",
     perScene: "per scene",
+    usesOne: "uses 1 wish",
+    usesTwo: "uses 2 wishes",
+    usesStill: "uses 1 photo in motion",
+    typesLede: "Each wish becomes a scene. Choose how you want to see it; mix types whenever you like.",
   },
   pricing: {
     title: "Pay per wish, that's it",
@@ -304,11 +308,11 @@ export const en = {
   },
   products: {
     vision: {
-      name: "Stills",
+      name: "Photos in motion",
       tagline: "Scenes of you with camera movement",
       waitLabel: "ready in a couple of minutes",
       points: [
-        "3 scenes generated with your face, one per desire",
+        "3 scenes generated with your face, one per wish",
         "Smooth camera movement over each one",
         "Script written for your case, voice included",
         "MP4 download",
