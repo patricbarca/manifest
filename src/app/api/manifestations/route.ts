@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { costOf, spend } from "@/lib/wallet";
 import { allowFor } from "@/lib/rate-limit";
 import { z } from "zod";
 import { me } from "@/lib/social/me";
@@ -79,6 +80,8 @@ const Create = z.object({
   locale: z.enum(["es", "en"]),
   voice: z.enum(VOICE_IDS).optional(),
   style: z.enum(["cinematic", "editorial", "golden", "minimal", "dream"]).optional(),
+  /** Animado (1 deseo), Elevated (2 deseos) o foto con movimiento (1 still). */
+  quality: z.enum(["standard", "elevated", "still"]).optional(),
   /** Pidió generarla ya y aceptó perder el desistimiento (UE). */
   waiver: z.literal(true),
 });
@@ -101,10 +104,9 @@ export async function POST(request: Request) {
   const user = (await db.getUser(who.user.id)) ?? who.user;
   const photos = await livePhotos(user);
   if (!photos.length) return NextResponse.json({ error: "photos" }, { status: 409 });
-  if (PAYMENTS_ENABLED) {
-    if ((user.credits ?? 0) < 1) return NextResponse.json({ error: "credits" }, { status: 402 });
-    await db.putUser({ ...user, credits: (user.credits ?? 0) - 1 });
-  }
+  const quality = body.data.quality ?? "standard";
+  const cost = costOf(quality);
+  if (PAYMENTS_ENABLED && !(await spend(user.id, cost))) return NextResponse.json({ error: "credits", kind: cost.field === "stillCredits" ? "stills" : "wishes", need: cost.n }, { status: 402 });
 
   const now = Date.now();
   const m: Manifestation = {
@@ -119,6 +121,7 @@ export async function POST(request: Request) {
     voice: body.data.voice,
     style: body.data.style,
     photoUrls: photos,
+    quality,
     paidCredit: PAYMENTS_ENABLED || undefined,
     costCents: 0,
   };

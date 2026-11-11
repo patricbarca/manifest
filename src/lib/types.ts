@@ -148,7 +148,8 @@ export interface Manifestation {
   /** La regeneración en curso es gratis: si falla, se devuelve. */
   freeRegen?: boolean;
   /** Calidad de animación con la que nació (Elevated se re-anima con Kling). */
-  quality?: "standard" | "elevated";
+  /** standard (MiniMax), elevated (Kling, 2 deseos) o still (foto con movimiento de cámara, sin animar). */
+  quality?: "standard" | "elevated" | "still";
   /** Cambios de imagen hechos desde la última animación (máximo 3). */
   draftTries?: number;
   /** Edición de escena desde el perfil ya pagada (1 manifestación cubre hasta 3 imágenes y la animación). */
@@ -433,6 +434,10 @@ export interface User {
   photoUrls?: string[];
   /** Complexión y estatura elegidas con botones (opcional): se añaden al prompt de las escenas. */
   body?: import("./body").BodyFeatures;
+  /** Stills que puede crear (fotos con movimiento de cámara), aparte de los deseos animados. */
+  stillCredits?: number;
+  /** Ya compró el "completa tu vídeo" (2 deseos a precio de pack); solo una vez. */
+  upsellUsed?: boolean;
   /** Último recordatorio de prueba pedido desde Ajustes (para limitarlo). */
   lastTestReminder?: number;
 }

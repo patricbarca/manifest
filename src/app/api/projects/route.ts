@@ -117,7 +117,7 @@ export async function POST(request: Request) {
       : undefined;
 
   const priceCents = priceUsd(input.tier) * 100;
-  const charge = await chargeForVideo(user.id, priceCents);
+  const charge = await chargeForVideo(user.id, priceCents, input.tier);
   // Sin vídeo gratis y con pagos activos: se crea el proyecto en borrador y se cobra en Stripe.
   const needsCheckout = !charge.ok && charge.reason === "paymentRequired" && stripeEnabled();
   if (!charge.ok && !needsCheckout) {

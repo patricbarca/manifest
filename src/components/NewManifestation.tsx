@@ -1,15 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { formatUsd } from "@/lib/pricing";
+import type { CreditPack } from "@/lib/pricing";
+import type { Dictionary } from "@/lib/i18n";
+import { PricingPacks } from "./PricingPacks";
 import { PhotoSlots, type SlotResult, type PhotoGuideLabels } from "./PhotoSlots";
-import { trackEvent } from "@/lib/track-client";
 import { useState } from "react";
 import { AccessCodeForm } from "./AccessCodeForm";
 import type { Locale } from "@/lib/i18n/locale";
 
 type Voice = { id: string; label: string };
-type Pack = { qty: number; priceUsd: number };
+type Packs = { wishes: CreditPack[]; stills: CreditPack[]; upsell?: CreditPack; t: Dictionary["packs"] };
+type Quality = "standard" | "elevated" | "still";
 type Labels = {
   desire: string; desirePlaceholder: string; language: string; voice: string; photosTitle: string; photosHint: string;
   consent: string; biometric: string; upload: string; uploading: string; photosOk: string; waiver: string; create: string; creating: string;
@@ -20,6 +22,7 @@ type Labels = {
 export function NewManifestation({
   initialPhotos,
   credits,
+  stillCredits,
   paymentsOn,
   packs,
   voices,
@@ -30,8 +33,9 @@ export function NewManifestation({
 }: {
   initialPhotos: number;
   credits: number;
+  stillCredits: number;
   paymentsOn: boolean;
-  packs: Pack[];
+  packs: Packs;
   voices: Voice[];
   locale: Locale;
   t: Labels;
@@ -52,7 +56,10 @@ export function NewManifestation({
   const [busySlot, setBusySlot] = useState<number>();
   const [error, setError] = useState<string>();
   const [note, setNote] = useState<string>();
-  const canCreate = desire.trim().length >= 3 && photos > 0 && waiver && (!paymentsOn || credits > 0) && !busy;
+  const [quality, setQuality] = useState<Quality>(credits === 0 && stillCredits > 0 ? "still" : "standard");
+  const need = quality === "elevated" ? 2 : 1;
+  const have = quality === "still" ? stillCredits : credits;
+  const canCreate = desire.trim().length >= 3 && photos > 0 && waiver && (!paymentsOn || have >= need) && !busy;
   const input = "t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none focus:border-[var(--color-hairline-strong)]";
 
   async function upload(files: File[], slot = 0, scanned = false): Promise<SlotResult | undefined> {
@@ -86,23 +93,13 @@ export function NewManifestation({
     return result;
   }
 
-  async function buy(qty: number) {
-    const res = await fetch("/api/credits", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ qty }) });
-    const data = await res.json().catch(() => ({}));
-    if (res.ok && data.url) {
-      trackEvent({ name: "begin_checkout" });
-      window.location.href = data.url;
-    }
-    else setError(t.errors[data.error] ?? t.errors.invalid);
-  }
-
   async function create() {
     setBusy(true);
     setError(undefined);
     const res = await fetch("/api/manifestations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ desire: desire.trim(), locale: lang, voice, waiver: true }),
+      body: JSON.stringify({ desire: desire.trim(), locale: lang, voice, quality, waiver: true }),
     });
     const data = await res.json().catch(() => ({}));
     setBusy(false);
@@ -152,18 +149,48 @@ export function NewManifestation({
         </div>
       )}
 
-      {paymentsOn && (
-        <div className="space-y-3">
-          <p className="t-sub">{credits > 0 ? t.credits.replace("{n}", String(credits)) : t.noCredits}</p>
-          <div className="flex flex-wrap gap-2">
-            {packs.map((p) => (
-              <button key={p.qty} type="button" onClick={() => buy(p.qty)} className="interactive t-sub rounded-full border border-[var(--color-hairline-strong)] px-4 py-2 hover:bg-white/5">
-                {t.buy.replace("{n}", String(p.qty))} · {formatUsd(p.priceUsd)}
-                {p.qty > 1 && <span className="t-caption ml-1 text-[var(--color-label-3)]">({t.each.replace("{p}", (p.priceUsd / p.qty).toFixed(2))})</span>}
-              </button>
-            ))}
-          </div>
+      <fieldset className="space-y-2">
+        <legend className="t-caption mb-1.5 text-[var(--color-label-2)]">{packs.t.quality}</legend>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {([
+            ["standard", packs.t.qualityStandard],
+            ["elevated", packs.t.qualityElevated],
+            ["still", packs.t.qualityStill],
+          ] as [Quality, string][]).map(([q, text]) => (
+            <button
+              key={q}
+              type="button"
+              aria-pressed={quality === q}
+              onClick={() => setQuality(q)}
+              className={`interactive t-sub rounded-[var(--radius-ctl)] border px-3 py-2.5 text-left ${
+                quality === q ? "border-[var(--color-label-1)] bg-[var(--color-surface-2)] font-medium" : "border-[var(--color-hairline)] text-[var(--color-label-2)]"
+              }`}
+            >
+              {text}
+            </button>
+          ))}
         </div>
+      </fieldset>
+
+      {paymentsOn && (have < need || packs.upsell) && (
+        <div className="card rounded-[var(--radius-lg)] p-4 sm:p-5">
+          <PricingPacks
+            mode="buy"
+            wishes={packs.wishes}
+            stills={packs.stills}
+            balance={{ wishes: credits, stills: stillCredits }}
+            upsell={packs.upsell}
+            initial={quality === "still" ? "stills" : "wishes"}
+            t={packs.t}
+          />
+        </div>
+      )}
+      {paymentsOn && have >= need && !packs.upsell && (
+        <p className="t-caption text-[var(--color-label-2)]">
+          {packs.t.balance
+            .replace("{w}", credits === 1 ? packs.t.one.wishes : packs.t.many.wishes.replace("{n}", String(credits)))
+            .replace("{s}", stillCredits === 1 ? packs.t.one.stills : packs.t.many.stills.replace("{n}", String(stillCredits)))}
+        </p>
       )}
 
       <label className="t-caption flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">

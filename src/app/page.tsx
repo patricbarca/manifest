@@ -3,7 +3,8 @@ import { Icon } from "@/components/Icon";
 import { HeroVideo } from "@/components/HeroVideo";
 import { TEMPLATES } from "@/lib/templates";
 import { TemplateMedia } from "@/components/TemplateMedia";
-import { PRODUCTS, formatUsd } from "@/lib/pricing";
+import { PRODUCTS, creditPacks, formatUsd, stillPacks } from "@/lib/pricing";
+import { PricingPacks } from "@/components/PricingPacks";
 import { LIFE_AREAS, TIERS } from "@/lib/types";
 import type { Tier } from "@/lib/types";
 import { isDemoMode } from "@/lib/ai";
@@ -59,6 +60,9 @@ export default async function HomePage() {
               <Icon name="arrow-right" size={15} />
             </Link>
           </div>
+          <p className="t-caption rise mt-4 text-[var(--color-label-3)]">
+            {t.packs.heroNote.replace("{p}", formatUsd(Math.min(...stillPacks().map((x) => x.priceUsd))))}
+          </p>
         </div>
 
         {/* El reproductor, centrado y grande: es el producto. */}
@@ -120,10 +124,15 @@ export default async function HomePage() {
           ))}
         </div>
 
-        <p className="t-sub mt-8 text-center text-[var(--color-label-2)]">
-          {t.home.freeAfterProducts}
-        </p>
-        <p className="t-caption mt-2 text-center text-[var(--color-label-3)]">{t.common.pricesUsd}</p>
+      </section>
+
+      {/* ── Precios: packs de deseos y de fotos con movimiento ─────────────── */}
+      <section id="pricing" className="mx-auto max-w-[760px] scroll-mt-20 px-4 py-20 sm:px-6">
+        <div className="mx-auto mb-8 max-w-xl text-center">
+          <h2 className="t-title">{t.packs.title}</h2>
+          <p className="t-body mt-3 text-[var(--color-label-2)]">{t.packs.lede}</p>
+        </div>
+        <PricingPacks mode="link" href="/create" wishes={creditPacks()} stills={stillPacks()} t={t.packs} />
       </section>
 
       {/* ── Áreas ────────────────────────────────────────────────────────── */}
@@ -231,10 +240,10 @@ function TierCard({ id, t }: { id: Tier; t: Dictionary }) {
       <p className="t-sub mt-1 text-[var(--color-label-2)]">{copy.tagline}</p>
 
       <p className="mt-7 text-[2.5rem] font-semibold leading-none tracking-[-0.03em] tabular-nums">
-        {formatUsd(PRODUCTS[id].priceUsd)}
+        {formatUsd(scenePrice(id))}
       </p>
       <p className="t-caption mt-2 text-[var(--color-label-2)]">
-        {t.common.perVideo} · {copy.waitLabel}
+        {t.packs.perScene} · {id === "vision" ? t.packs.one.stills : id === "elevated" ? t.packs.many.wishes.replace("{n}", "2") : t.packs.one.wishes}
       </p>
 
       <ul className="mt-7 space-y-3">
@@ -251,4 +260,11 @@ function TierCard({ id, t }: { id: Tier; t: Dictionary }) {
       </ul>
     </div>
   );
+}
+
+/** Precio suelto de una escena: 1 foto con movimiento, 1 deseo o 2 deseos (Elevado). */
+function scenePrice(id: Tier): number {
+  const one = (packs: { qty: number; priceUsd: number }[]) => packs.find((p) => p.qty === 1)?.priceUsd ?? packs[0].priceUsd;
+  if (id === "vision") return one(stillPacks());
+  return one(creditPacks()) * (id === "elevated" ? 2 : 1);
 }

@@ -53,10 +53,18 @@ export interface Product {
  * TIER_PRICES="vision:9,cinematic:39,elevated:49" (solo en el servidor: los
  * componentes de cliente reciben los precios por props).
  */
-const DEFAULT_TIER_PRICES: Record<Tier, number> = { vision: 9, cinematic: 39, elevated: 49 };
+/**
+ * El vídeo completo son 3 deseos: cuesta lo mismo que el pack de 3 de su tipo
+ * (Stills: 3 stills; Cinematic: 3 deseos; Elevated: 3 deseos × 2).
+ */
+function defaultTierPrices(): Record<Tier, number> {
+  const three = (packs: CreditPack[], fallback: number) => packs.find((p) => p.qty === 3)?.priceUsd ?? fallback;
+  const wish3 = three(creditPacks(), 25);
+  return { vision: three(stillPacks(), 12), cinematic: wish3, elevated: wish3 * 2 };
+}
 
 function tierPrices(): Record<Tier, number> {
-  const out = { ...DEFAULT_TIER_PRICES };
+  const out = defaultTierPrices();
   for (const part of (process.env.TIER_PRICES ?? "").split(",")) {
     const [k, v] = part.split(":").map((x) => x.trim());
     const n = Number(v);
@@ -162,12 +170,32 @@ export interface CreditPack {
   priceUsd: number;
 }
 
-export function creditPacks(): CreditPack[] {
-  const raw = process.env.PACK_PRICES ?? "1:9,5:35,12:69";
+function parsePacks(raw: string, fallback: CreditPack): CreditPack[] {
   const packs = raw
     .split(",")
     .map((p) => p.split(":").map(Number))
     .filter(([q, price]) => q > 0 && price > 0)
     .map(([qty, priceUsd]) => ({ qty, priceUsd }));
-  return packs.length ? packs : [{ qty: 1, priceUsd: 9 }];
+  return packs.length ? packs : [fallback];
+}
+
+/** Packs de deseos animados (PACK_PRICES). Por defecto: 1 → 10 $, 3 → 25 $, 10 → 69 $. */
+export function creditPacks(): CreditPack[] {
+  return parsePacks(process.env.PACK_PRICES ?? "1:10,3:25,10:69", { qty: 1, priceUsd: 10 });
+}
+
+/** Packs de stills: fotos tuyas con movimiento de cámara (STILL_PACK_PRICES). Por defecto: 1 → 5 $, 3 → 12 $, 10 → 35 $. */
+export function stillPacks(): CreditPack[] {
+  return parsePacks(process.env.STILL_PACK_PRICES ?? "1:5,3:12,10:35", { qty: 1, priceUsd: 5 });
+}
+
+export type PackKind = "wishes" | "stills";
+export const packsFor = (kind: PackKind) => (kind === "stills" ? stillPacks() : creditPacks());
+
+/** "Completa tu vídeo": a quien compró 1 deseo, los 2 que le faltan al precio del pack de 3 (25 − 10 = 15 $). */
+export function upsellPack(): CreditPack | undefined {
+  const packs = creditPacks();
+  const one = packs.find((p) => p.qty === 1)?.priceUsd;
+  const three = packs.find((p) => p.qty === 3)?.priceUsd;
+  return one && three && three > one ? { qty: 2, priceUsd: three - one } : undefined;
 }
