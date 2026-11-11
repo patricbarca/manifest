@@ -187,7 +187,7 @@ export const en = {
     eyebrow: "Guided visualization",
     titleA: "Seeing yourself live it",
     titleB: "before it happens.",
-    lede: "Upload a selfie, write your desires and get a video of about 2 minutes where you see yourself living them. A voice guides you: you breathe, watch each scene with you in it, and repeat your affirmations out loud.",
+    lede: "Upload a selfie, write your wishes and watch yourself living them in a guided 2-minute video.",
     ctaPrimary: "Create my video",
     ctaSecondary: "See the market",
     previewLine: "I run my own studio.",
