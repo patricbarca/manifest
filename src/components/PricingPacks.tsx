@@ -90,12 +90,24 @@ export function PricingPacks({
             const one = list.find((x) => x.qty === 1)?.priceUsd ?? 0;
             return (
               <ul className="divide-y divide-[var(--color-hairline)] border-y border-[var(--color-hairline)]">
-                {list.map((pk) => {
+                {list.map((pk, i) => {
                   const save = pk.qty > 1 && one ? Math.round((1 - pk.priceUsd / (one * pk.qty)) * 100) : 0;
+                  // El más elegido: el pack del medio de Animado (3 deseos).
+                  const hot = k === "wishes" && list.length === 3 && i === 1;
                   return (
                     <li key={pk.qty}>
-                      <Link href={`/create?tier=${tr}&qty=${pk.qty}`} className="flex items-baseline justify-between gap-2 py-2.5 transition-opacity hover:opacity-70">
-                        <span className="t-sub text-[var(--color-label-2)]">{label(k, pk.qty)}</span>
+                      <Link
+                        href={`/create?tier=${tr}&qty=${pk.qty}`}
+                        className={`flex items-baseline justify-between gap-2 py-2.5 transition-opacity hover:opacity-70 ${hot ? "-mx-2 rounded-[var(--radius-sm,8px)] bg-[var(--color-surface-2)] px-2 ring-1 ring-[var(--color-label-1)]" : ""}`}
+                      >
+                        <span className="t-sub flex flex-wrap items-baseline gap-x-2 text-[var(--color-label-2)]">
+                          <span className={hot ? "font-medium text-[var(--color-label-1)]" : ""}>{label(k, pk.qty)}</span>
+                          {hot && (
+                            <span className="whitespace-nowrap rounded-full bg-[var(--color-label-1)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-surface-1)]">
+                              ⭐ {t.popular}
+                            </span>
+                          )}
+                        </span>
                         <span className="flex items-baseline gap-2">
                           {save > 0 && <span className="text-[11px] font-medium text-emerald-400">−{save}%</span>}
                           <span className="t-headline tabular-nums">{formatUsd(pk.priceUsd)}</span>
