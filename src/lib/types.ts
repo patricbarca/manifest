@@ -439,6 +439,8 @@ export interface User {
   credits?: number;
   /** Sesiones de Stripe ya abonadas (para no sumar dos veces el mismo pago). */
   creditSessions?: string[];
+  /** Último recordatorio de pago sin terminar: como mucho uno cada 24 h. */
+  checkoutReminderAt?: number;
   /** Sus últimas fotos (para crear manifestaciones sin volver a subirlas mientras existan). */
   photoUrls?: string[];
   /** Complexión y estatura elegidas con botones (opcional): se añaden al prompt de las escenas. */
