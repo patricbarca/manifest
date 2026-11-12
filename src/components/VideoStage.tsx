@@ -22,6 +22,22 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
   const [project, setProject] = useState(initial);
   const working = project.status === "queued" || project.status === "generating";
   const awaitingPayment = project.status === "draft";
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState(false);
+
+  /** Abre otra vez el pago de Stripe para este borrador. */
+  async function payNow() {
+    setPaying(true);
+    setPayError(false);
+    const res = await fetch(`/api/projects/${project.id}/checkout`, { method: "POST" }).catch(() => null);
+    const data = (await res?.json().catch(() => ({}))) as { checkoutUrl?: string };
+    if (data?.checkoutUrl) {
+      window.location.href = data.checkoutUrl;
+      return;
+    }
+    setPaying(false);
+    setPayError(true);
+  }
 
   useEffect(() => {
     if (!working && !awaitingPayment) return;
@@ -47,6 +63,17 @@ export function VideoStage({ initial, t }: { initial: Project; t: Dictionary }) 
       <div className="mx-auto max-w-lg px-6 py-28 text-center">
         <h1 className="t-title">{t.video.awaitingPaymentTitle}</h1>
         <p className="t-body pulse-soft mt-4 text-[var(--color-label-2)]">{t.video.awaitingPaymentBody}</p>
+        {project.checkoutCents ? (
+          <button
+            type="button"
+            onClick={payNow}
+            disabled={paying}
+            className="interactive mt-8 rounded-full bg-white px-7 py-3 text-[15px] font-medium text-black disabled:opacity-50"
+          >
+            {paying ? "…" : `${t.video.payNow} · ${formatUsd(project.checkoutCents / 100)}`}
+          </button>
+        ) : null}
+        {payError && <p className="t-caption mt-3 text-rose-300">{t.errors.paymentFailed}</p>}
       </div>
     );
   }

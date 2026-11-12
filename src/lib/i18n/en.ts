@@ -547,7 +547,8 @@ export const en = {
   },
   video: {
     awaitingPaymentTitle: "Confirming your payment",
-    awaitingPaymentBody: "As soon as Stripe confirms it we start creating your video. If you left the payment page without finishing, create the video again.",
+    awaitingPaymentBody: "As soon as Stripe confirms it we start creating your video. If you left the payment page without finishing, you can pay here.",
+    payNow: "Pay now",
     failedTitle: "We couldn't finish your video",
     failedUnknown: "Something went wrong while generating your video.",
     failedRefund: "If no scene was generated, you weren't charged.",

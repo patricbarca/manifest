@@ -122,6 +122,61 @@ export async function stripeStats(): Promise<StripeStats> {
   };
 }
 
+// ── Embudo de pago (Stripe Checkout) ────────────────────────────────────────
+
+export interface CheckoutStats {
+  ok: boolean;
+  /** Personas que abrieron el pago de Stripe en 30 días. */
+  began: number;
+  /** Personas que lo terminaron (pagado, también con un código del 100 %). */
+  paid: number;
+  /** Pagos que caducaron sin terminar. */
+  expired: number;
+  /** Pagos abiertos ahora mismo. */
+  open: number;
+  error?: string;
+}
+
+type Session = { id: string; status: string; payment_status: string; metadata?: { userId?: string; projectId?: string }; customer_details?: { email?: string | null } | null };
+
+export async function checkoutStats(): Promise<CheckoutStats> {
+  const key = process.env.STRIPE_SECRET_KEY;
+  const empty = { began: 0, paid: 0, expired: 0, open: 0 };
+  if (!key) return { ok: false, ...empty, error: "Stripe no está configurado." };
+  const since = Math.floor((Date.now() - 30 * DAY) / 1000);
+  const sessions: Session[] = [];
+  let after: string | undefined;
+  try {
+    for (let page = 0; page < 5; page++) {
+      const url = new URL("https://api.stripe.com/v1/checkout/sessions");
+      url.searchParams.set("limit", "100");
+      url.searchParams.set("created[gte]", String(since));
+      if (after) url.searchParams.set("starting_after", after);
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${key}` }, cache: "no-store" });
+      if (!res.ok) return { ok: false, ...empty, error: res.status === 403 ? "La clave de Stripe no puede leer las sesiones de pago (permiso Checkout Sessions: Read)." : `Stripe ${res.status}` };
+      const body = (await res.json()) as { data: Session[]; has_more: boolean };
+      sessions.push(...body.data);
+      if (!body.has_more || !body.data.length) break;
+      after = body.data[body.data.length - 1].id;
+    }
+  } catch (err) {
+    return { ok: false, ...empty, error: err instanceof Error ? err.message : String(err) };
+  }
+  // Una persona: su id (packs), el dueño del vídeo, o su email si el borrador ya se borró.
+  const projects = await db.listAllProjects().catch(() => []);
+  const owner = new Map(projects.map((p) => [p.id, p.ownerId]));
+  const who = (s: Session) =>
+    s.metadata?.userId || (s.metadata?.projectId && owner.get(s.metadata.projectId)) || s.customer_details?.email || s.id;
+  const done = sessions.filter((s) => s.status === "complete" && s.payment_status !== "unpaid");
+  return {
+    ok: true,
+    began: new Set(sessions.map(who)).size,
+    paid: new Set(done.map(who)).size,
+    expired: sessions.filter((s) => s.status === "expired").length,
+    open: sessions.filter((s) => s.status === "open").length,
+  };
+}
+
 // ── Visitas (Cloudflare Web Analytics) ──────────────────────────────────────
 
 export interface Row {

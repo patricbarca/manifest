@@ -17,6 +17,11 @@ export function stripeEnabled(): boolean {
   return PAYMENTS_ENABLED && !!process.env.STRIPE_SECRET_KEY && !!process.env.STRIPE_WEBHOOK_SECRET;
 }
 
+/** Caduca a las 3 horas (Stripe deja de 30 min a 24 h): si no paga, el aviso de caducada dispara el recordatorio el mismo día. */
+function checkoutExpiry(): number {
+  return Math.floor(Date.now() / 1000) + 3 * 3600;
+}
+
 export function siteOrigin(request: Request): string {
   return requestOrigin(request);
 }
@@ -44,6 +49,7 @@ export async function createCheckout(opts: {
     "payment_intent_data[metadata][projectId]": opts.projectId,
     locale: opts.locale === "es" ? "es" : "en",
     allow_promotion_codes: "true",
+    expires_at: String(checkoutExpiry()),
     "metadata[waiver]": "accepted",
     "custom_text[submit][message]":
       opts.locale === "es"
@@ -124,6 +130,7 @@ export async function createCreditCheckout(opts: {
     "metadata[qty]": String(opts.qty),
     locale: opts.locale === "es" ? "es" : "en",
     allow_promotion_codes: "true",
+    expires_at: String(checkoutExpiry()),
   });
   const res = await fetch(`${API}/checkout/sessions`, {
     method: "POST",

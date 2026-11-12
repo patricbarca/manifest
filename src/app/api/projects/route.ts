@@ -171,6 +171,7 @@ export async function POST(request: Request) {
     waiverAt: Date.now(),
     attribution,
     ...(bigPack && needsCheckout ? { extraGrant: packGrant(kind, bigPack.qty - scenes) } : {}),
+    ...(needsCheckout ? { checkoutCents: priceCents } : {}),
   };
   if (needsCheckout) project.status = "draft";
   await db.putProject(project);
