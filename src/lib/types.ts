@@ -431,6 +431,10 @@ export interface User {
   credits?: number;
   /** Cuándo usó su escena gratis (FREE_MANIFESTATIONS). Sin valor = aún la tiene. */
   freeSceneAt?: number;
+  /** Permiso expreso para emails de novedades y ofertas (casilla sin marcar por defecto). Sin valor = no. */
+  marketing?: { at: number; version: string };
+  /** Emails de seguimiento de la escena gratis ya enviados (días: 1, 3). */
+  freeFollowups?: number[];
   /** Sesiones de Stripe ya abonadas (para no sumar dos veces el mismo pago). */
   creditSessions?: string[];
   /** Sus últimas fotos (para crear manifestaciones sin volver a subirlas mientras existan). */

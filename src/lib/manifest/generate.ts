@@ -13,6 +13,8 @@ import { db } from "../db/store";
 import { makePlayCopy } from "../playback";
 import { bodyClause } from "../body";
 import { refundFreeScene } from "./free";
+import { sendSceneReady } from "../email";
+import { appBase } from "../hosts";
 
 /** Si la manifestación se pagó con un paquete y falló, devuelve la unidad (solo una vez). */
 export async function refundCredit(id: string): Promise<void> {
@@ -123,6 +125,12 @@ export async function runManifestation(id: string): Promise<void> {
       editPaid: undefined,
       costCents: +((start.costCents ?? 0) + cents).toFixed(2),
     }));
+    // Su escena gratis recién hecha: aviso del servicio "ya está lista" (no es publicidad).
+    if (free && !start.clipUrl) {
+      const owner = await db.getUser(start.ownerId);
+      const site = appBase();
+      if (owner?.email && site) await sendSceneReady({ to: owner.email, locale: start.locale, url: `${site}/profile` }).catch(() => false);
+    }
     // Al rehacerla, la versión anterior ya no se ve en ningún sitio: se borran sus ficheros.
     if (start.clipUrl) {
       const now = new Set([imageUrl, clip.result.url, playUrl, voiceUrl, hl?.[0]?.videoUrl, hl?.[0]?.posterUrl]);

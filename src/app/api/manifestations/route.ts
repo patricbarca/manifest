@@ -14,6 +14,7 @@ import { enqueueManifestation } from "@/lib/queue";
 import { VOICE_IDS } from "@/lib/voices";
 import { deleteManifestFiles } from "@/lib/cleanup";
 import { claimFreeScene } from "@/lib/manifest/free";
+import { MARKETING_CONSENT_VERSION } from "@/lib/consent";
 import type { Manifestation } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -82,6 +83,8 @@ const Create = z.object({
   style: z.enum(["cinematic", "editorial", "golden", "minimal", "dream"]).optional(),
   /** Pidió generarla ya y aceptó perder el desistimiento (UE). */
   waiver: z.literal(true),
+  /** Marcó la casilla (sin marcar por defecto) de recibir novedades y ofertas por email. */
+  marketing: z.boolean().optional(),
 });
 
 /**
@@ -112,6 +115,12 @@ export async function POST(request: Request) {
       await db.putUser({ ...user, credits: (user.credits ?? 0) - 1 });
       paid = true;
     }
+  }
+
+  // Permiso de emails de novedades: se guarda con fecha y versión del texto (lectura fresca: el cobro ya escribió).
+  if (body.data.marketing) {
+    const fresh = (await db.getUser(who.user.id)) ?? user;
+    if (!fresh.marketing) await db.putUser({ ...fresh, marketing: { at: Date.now(), version: MARKETING_CONSENT_VERSION } });
   }
 
   const now = Date.now();

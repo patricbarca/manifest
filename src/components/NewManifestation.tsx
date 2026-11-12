@@ -12,7 +12,7 @@ type Pack = { qty: number; priceUsd: number };
 type Labels = {
   desire: string; desirePlaceholder: string; language: string; voice: string; photosTitle: string; photosHint: string;
   consent: string; biometric: string; upload: string; uploading: string; photosOk: string; waiver: string; create: string; creating: string;
-  credits: string; noCredits: string; buy: string; each: string; freeScene: string; errors: Record<string, string>; accessForm: { placeholder: string; submit: string; bad: string };
+  credits: string; noCredits: string; buy: string; each: string; freeScene: string; marketingOptIn: string; errors: Record<string, string>; accessForm: { placeholder: string; submit: string; bad: string };
 };
 
 /** Crear una manifestación nueva: un deseo → una escena animada tuya. */
@@ -48,6 +48,8 @@ export function NewManifestation({
   const [consent, setConsent] = useState(consented);
   const [bio, setBio] = useState(consented);
   const [waiver, setWaiver] = useState(false);
+  // Permiso de emails de novedades: sin marcar por defecto.
+  const [marketing, setMarketing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [slotUrls, setSlotUrls] = useState<(string | undefined)[]>([]);
@@ -104,11 +106,13 @@ export function NewManifestation({
     const res = await fetch("/api/manifestations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ desire: desire.trim(), locale: lang, voice, waiver: true }),
+      body: JSON.stringify({ desire: desire.trim(), locale: lang, voice, waiver: true, marketing }),
     });
     const data = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) return setError(t.errors[data.key ?? data.error] ?? t.errors.invalid);
+    // Escena gratis creada: conversión para los anuncios (solo si aceptó sus cookies).
+    if (data.manifestation?.free) trackEvent({ name: "free_scene", id: data.manifestation.id });
     router.push("/profile");
   }
 
@@ -172,6 +176,10 @@ export function NewManifestation({
       <label className="t-caption flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
         <input type="checkbox" checked={waiver} onChange={(e) => setWaiver(e.target.checked)} className="mt-[2px] h-4 w-4 shrink-0 accent-white" />
         <span>{t.waiver}</span>
+      </label>
+      <label className="t-caption flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
+        <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} className="mt-[2px] h-4 w-4 shrink-0 accent-white" />
+        <span>{t.marketingOptIn}</span>
       </label>
 
       {note && <p className="t-caption text-amber-200">{note}</p>}

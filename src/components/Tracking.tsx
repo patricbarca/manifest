@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { TrackingConfig } from "@/lib/tracking";
 
 type Labels = { text: string; accept: string; reject: string; more: string };
-type Ev = { name: "begin_checkout" | "purchase"; value?: number; currency?: string; id?: string };
+type Ev = { name: "begin_checkout" | "purchase" | "free_scene"; value?: number; currency?: string; id?: string };
 
 const KEYS = /^(utm_(source|medium|campaign|content|term)|gclid|gbraid|wbraid|ttclid|a)$/;
 const YEAR_HALF = 60 * 60 * 24 * 180;
@@ -74,12 +74,12 @@ function startPixels(cfg: TrackingConfig) {
   const send = (e: Ev) => {
     const currency = (e.currency ?? "usd").toUpperCase();
     if (cfg.googleAdsId && w.gtag) {
-      const label = e.name === "purchase" ? cfg.googlePurchaseLabel : cfg.googleCheckoutLabel;
+      const label = e.name === "purchase" ? cfg.googlePurchaseLabel : e.name === "free_scene" ? cfg.googleLeadLabel : cfg.googleCheckoutLabel;
       if (label) w.gtag("event", "conversion", { send_to: `${cfg.googleAdsId}/${label}`, value: e.value, currency, transaction_id: e.id });
       else w.gtag("event", e.name, { value: e.value, currency, transaction_id: e.id });
     }
     if (cfg.tiktokPixelId && w.ttq) {
-      w.ttq.track(e.name === "purchase" ? "CompletePayment" : "InitiateCheckout", { value: e.value, currency, content_type: "product", content_id: "manifestlifeai" }, e.id ? { event_id: e.id } : undefined);
+      w.ttq.track(e.name === "purchase" ? "CompletePayment" : e.name === "free_scene" ? "CompleteRegistration" : "InitiateCheckout", { value: e.value, currency, content_type: "product", content_id: "manifestlifeai" }, e.id ? { event_id: e.id } : undefined);
     }
   };
   for (const e of window.__mlQueue ?? []) send(e);

@@ -66,6 +66,10 @@ export default async function SettingsPage() {
         <ReminderToggle initial={user.reminders !== false} label={t.aura.reminders} />
         <p className="t-caption mt-1 text-[var(--color-label-3)]">{t.aura.remindersHint}</p>
         <ReminderTest t={t.aura.reminderTest} />
+        <div className="mt-5 border-t border-[var(--color-hairline)] pt-5">
+          <ReminderToggle initial={!!user.marketing} label={t.settings.marketing} field="marketing" />
+          <p className="t-caption mt-1 text-[var(--color-label-3)]">{t.settings.marketingHint}</p>
+        </div>
       </Section>
 
       <MyPhotos
