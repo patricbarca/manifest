@@ -2,6 +2,7 @@ import { appBase } from "@/lib/hosts";
 import { packGrant } from "@/lib/pricing";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import type { User } from "@/lib/types";
 import { enqueue } from "@/lib/queue";
 import { verifyWebhook } from "@/lib/stripe";
 import { sendCheckoutReminder, sendOrderConfirmation } from "@/lib/email";
@@ -83,19 +84,30 @@ export async function POST(request: Request) {
         return { ...p, reminderSentAt: Date.now() };
       }).catch(() => undefined);
       const owner = project && remind ? await db.getUser(project.ownerId) : undefined;
-      if (project && owner?.email && owner.reminders !== false) {
-        await sendCheckoutReminder({ to: owner.email, locale: project.locale, what: "video", url: `${appBase()}/video/${project.id}` });
+      if (project && owner && (await claimReminder(owner))) {
+        await sendCheckoutReminder({ to: owner.email!, locale: project.locale, what: "video", url: `${appBase()}/video/${project.id}` });
       }
     } else if (session.metadata?.userId) {
       const user = await db.getUser(session.metadata.userId);
       // creditSessions guarda las sesiones ya atendidas: así no se avisa dos veces.
       if (user && !(user.creditSessions ?? []).includes(session.id)) {
-        await db.putUser({ ...user, creditSessions: [...(user.creditSessions ?? []), session.id].slice(-50) });
-        if (user.email && user.reminders !== false) {
-          await sendCheckoutReminder({ to: user.email, locale: user.locale === "es" ? "es" : "en", what: "pack", url: `${appBase()}/new` });
+        const marked = await db.putUser({ ...user, creditSessions: [...(user.creditSessions ?? []), session.id].slice(-50) });
+        if (await claimReminder(marked)) {
+          await sendCheckoutReminder({ to: user.email!, locale: user.locale === "es" ? "es" : "en", what: "pack", url: `${appBase()}/new` });
         }
       }
     }
   }
   return NextResponse.json({ received: true });
+}
+
+/**
+ * Como mucho un recordatorio de pago sin terminar por persona cada 24 h:
+ * si abrió varios pagos y no terminó ninguno, recibe un solo email.
+ */
+async function claimReminder(user: User): Promise<boolean> {
+  if (!user.email || user.reminders === false) return false;
+  if (user.checkoutReminderAt && Date.now() - user.checkoutReminderAt < 24 * 3600_000) return false;
+  await db.putUser({ ...user, checkoutReminderAt: Date.now() });
+  return true;
 }
