@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { me } from "@/lib/social/me";
 import { isAdmin } from "@/lib/admin";
-import { appStats, stripeStats, webStats } from "@/lib/admin-stats";
+import { appStats, checkoutStats, stripeStats, webStats } from "@/lib/admin-stats";
 import { DayChart, Section, Tile, TopList, n } from "@/components/AdminCharts";
 import { formatUsd } from "@/lib/pricing";
 import { stripeSetupChecks } from "@/lib/stripe-admin";
@@ -18,7 +18,7 @@ export default async function AdminPage() {
   // A quien no es administrador, la página ni existe.
   if (!isAdmin(who.user.email)) notFound();
 
-  const [web, app, money, setup] = await Promise.all([webStats(), appStats(), stripeStats(), stripeSetupChecks()]);
+  const [web, app, money, setup, pay] = await Promise.all([webStats(), appStats(), stripeStats(), stripeSetupChecks(), checkoutStats()]);
   const conversion = web.visits30 ? ((money.payers30 / web.visits30) * 100).toFixed(1) : "–";
 
   return (
@@ -63,6 +63,17 @@ export default async function AdminPage() {
           <Tile label="Nuevas (30 d)" value={n(app.users.new30)} />
           <Tile label="Activas (7 d)" value={n(app.users.active7)} hint="Vieron su vídeo o crearon algo" />
         </div>
+      </Section>
+
+      <Section title="Embudo (30 días)" note="De la visita al pago. «Crearon algo» cuenta borradores y escenas; «Fueron a pagar» y «Pagaron» salen de Stripe (personas, no pedidos).">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          <Tile label="Visitas" value={web.ok ? n(web.visits30) : "–"} hint={web.ok ? undefined : "Falta conectar Cloudflare"} />
+          <Tile label="Cuentas nuevas" value={n(app.users.new30)} />
+          <Tile label="Crearon algo" value={n(app.creators30)} />
+          <Tile label="Fueron a pagar" value={pay.ok ? n(pay.began) : "–"} />
+          <Tile label="Pagaron" value={pay.ok ? n(pay.paid) : "–"} hint={pay.ok ? `${n(pay.expired)} sin terminar · ${n(pay.open)} abiertos` : undefined} />
+        </div>
+        {!pay.ok && <p className="t-caption mt-3 text-rose-300">No se pudo leer Stripe: {pay.error}</p>}
       </Section>
 
       <Section title="Creación">

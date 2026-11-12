@@ -143,6 +143,16 @@ export async function stripeSetupChecks(): Promise<Check[]> {
           ? "Existe pero está desactivado o no escucha checkout.session.completed."
           : "No hay ningún webhook apuntando a /api/stripe/webhook.",
     });
+    if (good) {
+      const expired = good.enabled_events.includes("*") || good.enabled_events.includes("checkout.session.expired");
+      checks.push({
+        label: "Aviso de pago sin terminar",
+        state: expired ? "ok" : "warn",
+        detail: expired
+          ? "El webhook escucha checkout.session.expired: se manda el recordatorio."
+          : "Añade el evento checkout.session.expired al webhook para mandar el recordatorio de pago sin terminar.",
+      });
+    }
   }
   return checks;
 }

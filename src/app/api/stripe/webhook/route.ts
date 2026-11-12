@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { enqueue } from "@/lib/queue";
 import { verifyWebhook } from "@/lib/stripe";
-import { sendOrderConfirmation } from "@/lib/email";
+import { sendCheckoutReminder, sendOrderConfirmation } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -66,6 +66,33 @@ export async function POST(request: Request) {
             waiverAt: project.waiverAt,
             url: `${appBase()}/video/${id}`,
           });
+        }
+      }
+    }
+  }
+  // Pago sin terminar: la sesión caducó (a las 3 h). Un recordatorio por pedido.
+  if (event.type === "checkout.session.expired") {
+    const session = event.data.object as { id: string; metadata?: { projectId?: string; kind?: string; userId?: string } };
+    const projectId = session.metadata?.projectId;
+    if (projectId) {
+      let remind = false;
+      const project = await db.patchProject(projectId, (p) => {
+        // Solo si sigue sin pagar y es la última sesión que se abrió para él.
+        if (p.status !== "draft" || p.reminderSentAt || p.stripeSessionId !== session.id) return p;
+        remind = true;
+        return { ...p, reminderSentAt: Date.now() };
+      }).catch(() => undefined);
+      const owner = project && remind ? await db.getUser(project.ownerId) : undefined;
+      if (project && owner?.email && owner.reminders !== false) {
+        await sendCheckoutReminder({ to: owner.email, locale: project.locale, what: "video", url: `${appBase()}/video/${project.id}` });
+      }
+    } else if (session.metadata?.userId) {
+      const user = await db.getUser(session.metadata.userId);
+      // creditSessions guarda las sesiones ya atendidas: así no se avisa dos veces.
+      if (user && !(user.creditSessions ?? []).includes(session.id)) {
+        await db.putUser({ ...user, creditSessions: [...(user.creditSessions ?? []), session.id].slice(-50) });
+        if (user.email && user.reminders !== false) {
+          await sendCheckoutReminder({ to: user.email, locale: user.locale === "es" ? "es" : "en", what: "pack", url: `${appBase()}/new` });
         }
       }
     }

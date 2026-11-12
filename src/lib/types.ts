@@ -354,6 +354,10 @@ export interface Project {
   watermark: boolean;
   /** Cuándo pidió generar ya y aceptó perder el desistimiento de 14 días (UE). */
   waiverAt?: number;
+  /** Lo que se cobra en Stripe por este borrador (para volver a pagar desde la ficha). */
+  checkoutCents?: number;
+  /** Se le mandó el recordatorio de pago sin terminar (una sola vez). */
+  reminderSentAt?: number;
   /** Lo que sobra del pack pagado (p. ej. 10 deseos para un vídeo de 6): se suma al saldo al pagar. */
   extraGrant?: { field: "credits" | "stillCredits"; n: number };
   /** Vídeo de manifestación montado con estas manifestaciones (en este orden). */
