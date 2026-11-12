@@ -14,6 +14,8 @@ import { newManifestId, shortTitle } from "@/lib/manifest/extract";
 import { enqueueManifestation } from "@/lib/queue";
 import { VOICE_IDS } from "@/lib/voices";
 import { deleteManifestFiles } from "@/lib/cleanup";
+import { claimFreeScene } from "@/lib/manifest/free";
+import { MARKETING_CONSENT_VERSION } from "@/lib/consent";
 import type { Manifestation } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -84,6 +86,8 @@ const Create = z.object({
   quality: z.enum(["standard", "elevated", "still"]).optional(),
   /** Pidió generarla ya y aceptó perder el desistimiento (UE). */
   waiver: z.literal(true),
+  /** Marcó la casilla (sin marcar por defecto) de recibir novedades y ofertas por email. */
+  marketing: z.boolean().optional(),
 });
 
 /**
@@ -106,7 +110,18 @@ export async function POST(request: Request) {
   if (!photos.length) return NextResponse.json({ error: "photos" }, { status: 409 });
   const quality = body.data.quality ?? "standard";
   const cost = costOf(quality);
-  if (PAYMENTS_ENABLED && !(await spend(user.id, cost))) return NextResponse.json({ error: "credits", kind: cost.field === "stillCredits" ? "stills" : "wishes", need: cost.n }, { status: 402 });
+  // Su primera escena animada puede ser gratis (FREE_MANIFESTATIONS); si no, se paga con su saldo.
+  let free = false;
+  if (PAYMENTS_ENABLED) {
+    free = quality === "standard" && (await claimFreeScene(user));
+    if (!free && !(await spend(user.id, cost))) return NextResponse.json({ error: "credits", kind: cost.field === "stillCredits" ? "stills" : "wishes", need: cost.n }, { status: 402 });
+  }
+
+  // Permiso de emails de novedades: se guarda con fecha y versión del texto (lectura fresca: el cobro ya escribió).
+  if (body.data.marketing) {
+    const fresh = (await db.getUser(who.user.id)) ?? user;
+    if (!fresh.marketing) await db.putUser({ ...fresh, marketing: { at: Date.now(), version: MARKETING_CONSENT_VERSION } });
+  }
 
   const now = Date.now();
   const m: Manifestation = {
@@ -122,7 +137,8 @@ export async function POST(request: Request) {
     style: body.data.style,
     photoUrls: photos,
     quality,
-    paidCredit: PAYMENTS_ENABLED || undefined,
+    paidCredit: (PAYMENTS_ENABLED && !free) || undefined,
+    free: free || undefined,
     costCents: 0,
   };
   await manifests.put(m);

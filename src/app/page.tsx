@@ -3,11 +3,10 @@ import { Icon } from "@/components/Icon";
 import { HeroVideo } from "@/components/HeroVideo";
 import { TEMPLATES } from "@/lib/templates";
 import { TemplateMedia } from "@/components/TemplateMedia";
-import { creditPacks, elevatedPacks, formatUsd, stillPacks, videoLabel } from "@/lib/pricing";
+import { FREE_MANIFESTATIONS, PAYMENTS_ENABLED, creditPacks, elevatedPacks, formatUsd, stillPacks } from "@/lib/pricing";
 import { PricingPacks } from "@/components/PricingPacks";
-import { LIFE_AREAS } from "@/lib/types";
+import { LIFE_AREAS, type LifeArea } from "@/lib/types";
 import { isDemoMode } from "@/lib/ai";
-import { type Dictionary, type Locale } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/server";
 import { pageMeta, siteJsonLd } from "@/lib/seo";
 
@@ -18,8 +17,14 @@ export const metadata = pageMeta({
   path: "/",
 });
 
+/** Muestra de cada área: su primera plantilla animada, o la primera que haya. */
+function areaSample(area: LifeArea) {
+  const own = TEMPLATES.filter((tpl) => tpl.area === area);
+  return own.find((tpl) => tpl.tier !== "vision") ?? own[0];
+}
+
 export default async function HomePage() {
-  const { t, locale } = await getDictionary();
+  const { t } = await getDictionary();
   const demo = isDemoMode();
 
   return (
@@ -40,7 +45,7 @@ export default async function HomePage() {
             <br />
             <span className="text-[var(--color-label-2)]">{t.home.titleB}</span>
           </h1>
-          <p className="t-body rise mx-auto mt-5 max-w-md text-pretty text-[var(--color-label-2)]">
+          <p className="t-body rise mx-auto mt-5 max-w-sm text-pretty text-[var(--color-label-2)]">
             {t.home.lede}
           </p>
 
@@ -62,6 +67,13 @@ export default async function HomePage() {
           <p className="t-caption rise mt-4 text-[var(--color-label-3)]">
             {t.packs.heroNote.replace("{p}", formatUsd(Math.min(...stillPacks().map((x) => x.priceUsd))))}
           </p>
+          {FREE_MANIFESTATIONS && PAYMENTS_ENABLED && (
+            <p className="rise mt-2">
+              <Link href="/new" className="t-sub text-emerald-300/90 underline-offset-4 hover:underline">
+                {t.home.freeLink} →
+              </Link>
+            </p>
+          )}
         </div>
 
         {/* El reproductor, centrado y grande: es el producto. */}
@@ -73,11 +85,44 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ── Tipos de deseo: una muestra en vídeo de cada área ────────────── */}
+      <section className="mx-auto max-w-[1120px] px-6 py-20">
+        <h2 className="t-title text-center">{t.home.areasTitle}</h2>
+        <div className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+          {LIFE_AREAS.map((area) => {
+            const sample = areaSample(area.id);
+            return (
+              <Link
+                key={area.id}
+                href={`/create?area=${area.id}`}
+                className="card interactive group relative overflow-hidden rounded-[var(--radius-md)]"
+              >
+                {sample && (
+                  <TemplateMedia template={sample} variant="animated" className="aspect-[4/5] w-full" />
+                )}
+                <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/85 to-transparent p-4 pt-12">
+                  <Icon name={area.icon} size={16} />
+                  <h3 className="t-headline">{t.areas[area.id].label}</h3>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+        <div className="mt-8 text-center">
+          <Link
+            href="/market"
+            className="t-sub inline-flex items-center gap-1.5 text-[var(--color-label-1)] transition-opacity hover:opacity-60"
+          >
+            {t.common.seeAll}
+            <Icon name="arrow-right" size={15} />
+          </Link>
+        </div>
+      </section>
+
       {/* ── Ejemplos reales ──────────────────────────────────────────────── */}
       <section className="mx-auto max-w-[1120px] px-6 py-20">
         <div className="mx-auto max-w-xl text-center">
           <h2 className="t-title">{t.home.examplesTitle}</h2>
-          <p className="t-body mt-3 text-[var(--color-label-2)]">{t.home.examplesLede}</p>
         </div>
         <div className="mx-auto mt-12 grid max-w-2xl gap-6 sm:grid-cols-2">
           {(["woman", "man"] as const).map((who) => (
@@ -101,82 +146,21 @@ export default async function HomePage() {
       <section className="mx-auto max-w-[1120px] px-6 py-20">
         <div className="grid gap-px overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-hairline)] bg-[var(--color-hairline)] sm:grid-cols-3">
           {t.home.steps.map((step) => (
-            <div key={step.n} className="bg-[var(--color-surface-2)] p-8">
+            <div key={step.n} className="bg-[var(--color-surface-2)] p-6">
               <span className="t-eyebrow text-[var(--color-label-3)]">{step.n}</span>
               <h3 className="t-headline mt-4">{step.title}</h3>
-              <p className="t-sub mt-2 text-[var(--color-label-2)]">{step.body}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── Precios: packs de deseos y de fotos con movimiento ─────────────── */}
-      <section id="pricing" className="mx-auto max-w-[760px] scroll-mt-20 px-4 py-20 sm:px-6">
+      <section id="pricing" className="mx-auto max-w-[1000px] scroll-mt-20 px-4 py-20 sm:px-6">
         <div className="mx-auto mb-8 max-w-xl text-center">
           <h2 className="t-title">{t.packs.title}</h2>
           <p className="t-body mt-3 text-[var(--color-label-2)]">{t.packs.lede}</p>
         </div>
-        <PricingPacks mode="link" href="/create" wishes={creditPacks()} stills={stillPacks()} elevated={elevatedPacks()} products={t.products} t={t.packs} />
-      </section>
-
-      {/* ── Áreas ────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-[1120px] px-6 py-20">
-        <h2 className="t-title text-center">{t.home.areasTitle}</h2>
-        <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {LIFE_AREAS.map((area) => (
-            <Link
-              key={area.id}
-              href={`/create?area=${area.id}`}
-              className="card interactive group rounded-[var(--radius-md)] p-6"
-            >
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/[0.07] text-[var(--color-label-1)]">
-                <Icon name={area.icon} size={18} />
-              </span>
-              <h3 className="t-headline mt-4">{t.areas[area.id].label}</h3>
-              <p className="t-sub mt-1 text-[var(--color-label-2)]">
-                {t.areas[area.id].blurb}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Market ───────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-[1120px] px-6 py-20">
-        <div className="flex items-end justify-between gap-6">
-          <div className="max-w-lg">
-            <h2 className="t-title">{t.home.marketTitle}</h2>
-            <p className="t-body mt-3 text-[var(--color-label-2)]">{t.home.marketLede}</p>
-          </div>
-          <Link
-            href="/market"
-            className="t-sub inline-flex shrink-0 items-center gap-1.5 text-[var(--color-label-1)] transition-opacity hover:opacity-60"
-          >
-            {t.common.seeAll}
-            <Icon name="arrow-right" size={15} />
-          </Link>
-        </div>
-
-        <div className="no-scrollbar mt-10 flex gap-4 overflow-x-auto pb-2">
-          {TEMPLATES.slice(0, 4).map((tpl) => (
-            <Link
-              key={tpl.slug}
-              href={`/market/${tpl.slug}`}
-              className="card interactive w-[264px] shrink-0 overflow-hidden rounded-[var(--radius-md)]"
-            >
-              <TemplateMedia template={tpl} className="h-72 w-full" />
-              <div className="p-5">
-                <h3 className="t-headline">{tpl.title[locale as Locale]}</h3>
-                <p className="t-caption mt-1.5 line-clamp-2 text-[var(--color-label-2)]">
-                  {tpl.summary[locale as Locale]}
-                </p>
-                <p className="t-sub mt-4 tabular-nums">
-                  {videoLabel(tpl.tier, t.packs.many)}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <PricingPacks mode="link" href="/create" wishes={creditPacks()} stills={stillPacks()} elevated={elevatedPacks()} products={t.products} t={t.packs} examples />
       </section>
 
       {/* ── Preguntas ────────────────────────────────────────────────────── */}

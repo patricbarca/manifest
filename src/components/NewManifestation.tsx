@@ -7,6 +7,7 @@ import { PricingPacks } from "./PricingPacks";
 import { PhotoSlots, type SlotResult, type PhotoGuideLabels } from "./PhotoSlots";
 import { useState } from "react";
 import { AccessCodeForm } from "./AccessCodeForm";
+import { trackEvent } from "@/lib/track-client";
 import type { Locale } from "@/lib/i18n/locale";
 
 type Voice = { id: string; label: string };
@@ -15,7 +16,7 @@ type Quality = "standard" | "elevated" | "still";
 type Labels = {
   desire: string; desirePlaceholder: string; language: string; voice: string; photosTitle: string; photosHint: string;
   consent: string; biometric: string; upload: string; uploading: string; photosOk: string; waiver: string; create: string; creating: string;
-  credits: string; noCredits: string; buy: string; each: string; errors: Record<string, string>; accessForm: { placeholder: string; submit: string; bad: string };
+  credits: string; noCredits: string; buy: string; each: string; freeScene: string; marketingOptIn: string; errors: Record<string, string>; accessForm: { placeholder: string; submit: string; bad: string };
 };
 
 /** Crear una manifestación nueva: un deseo → una escena animada tuya. */
@@ -23,6 +24,7 @@ export function NewManifestation({
   initialPhotos,
   credits,
   stillCredits,
+  freeScene = false,
   paymentsOn,
   packs,
   voices,
@@ -34,6 +36,8 @@ export function NewManifestation({
   initialPhotos: number;
   credits: number;
   stillCredits: number;
+  /** Le queda su primera escena gratis (FREE_MANIFESTATIONS): solo para una escena animada estándar. */
+  freeScene?: boolean;
   paymentsOn: boolean;
   packs: Packs;
   voices: Voice[];
@@ -50,16 +54,20 @@ export function NewManifestation({
   const [consent, setConsent] = useState(consented);
   const [bio, setBio] = useState(consented);
   const [waiver, setWaiver] = useState(false);
+  // Permiso de emails de novedades: sin marcar por defecto.
+  const [marketing, setMarketing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [slotUrls, setSlotUrls] = useState<(string | undefined)[]>([]);
   const [busySlot, setBusySlot] = useState<number>();
   const [error, setError] = useState<string>();
   const [note, setNote] = useState<string>();
-  const [quality, setQuality] = useState<Quality>(credits === 0 && stillCredits > 0 ? "still" : "standard");
+  const [quality, setQuality] = useState<Quality>(credits === 0 && stillCredits > 0 && !freeScene ? "still" : "standard");
   const need = quality === "elevated" ? 2 : 1;
   const have = quality === "still" ? stillCredits : credits;
-  const canCreate = desire.trim().length >= 3 && photos > 0 && waiver && (!paymentsOn || have >= need) && !busy;
+  // La escena gratis cubre una animada estándar.
+  const freeNow = freeScene && quality === "standard";
+  const canCreate = desire.trim().length >= 3 && photos > 0 && waiver && (!paymentsOn || freeNow || have >= need) && !busy;
   const input = "t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none focus:border-[var(--color-hairline-strong)]";
 
   async function upload(files: File[], slot = 0, scanned = false): Promise<SlotResult | undefined> {
@@ -99,11 +107,13 @@ export function NewManifestation({
     const res = await fetch("/api/manifestations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ desire: desire.trim(), locale: lang, voice, quality, waiver: true }),
+      body: JSON.stringify({ desire: desire.trim(), locale: lang, voice, quality, waiver: true, marketing }),
     });
     const data = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) return setError(t.errors[data.key ?? data.error] ?? t.errors.invalid);
+    // Escena gratis creada: conversión para los anuncios (solo si aceptó sus cookies).
+    if (data.manifestation?.free) trackEvent({ name: "free_scene", id: data.manifestation.id });
     router.push("/profile");
   }
 
@@ -172,7 +182,8 @@ export function NewManifestation({
         </div>
       </fieldset>
 
-      {paymentsOn && (have < need || packs.upsell) && (
+      {paymentsOn && freeNow && <p className="t-sub text-emerald-300/90">✓ {t.freeScene}</p>}
+      {paymentsOn && !freeNow && (have < need || packs.upsell) && (
         <div className="card rounded-[var(--radius-lg)] p-4 sm:p-5">
           <PricingPacks
             mode="buy"
@@ -187,7 +198,7 @@ export function NewManifestation({
           />
         </div>
       )}
-      {paymentsOn && have >= need && !packs.upsell && (
+      {paymentsOn && !freeNow && have >= need && !packs.upsell && (
         <p className="t-caption text-[var(--color-label-2)]">
           {packs.t.balance
             .replace("{w}", credits === 1 ? packs.t.one.wishes : packs.t.many.wishes.replace("{n}", String(credits)))
@@ -198,6 +209,10 @@ export function NewManifestation({
       <label className="t-caption flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
         <input type="checkbox" checked={waiver} onChange={(e) => setWaiver(e.target.checked)} className="mt-[2px] h-4 w-4 shrink-0 accent-white" />
         <span>{t.waiver}</span>
+      </label>
+      <label className="t-caption flex cursor-pointer items-start gap-3 text-[var(--color-label-2)]">
+        <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} className="mt-[2px] h-4 w-4 shrink-0 accent-white" />
+        <span>{t.marketingOptIn}</span>
       </label>
 
       {note && <p className="t-caption text-amber-200">{note}</p>}

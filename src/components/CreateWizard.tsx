@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { PhotoSlots, type SlotResult } from "./PhotoSlots";
 import { trackEvent } from "@/lib/track-client";
 import { useMemo, useState } from "react";
-import { PALETTES, TIERS, type Palette } from "@/lib/types";
+import { MAX_DESIRES, PALETTES, TIERS, type Palette } from "@/lib/types";
 import type {
   ClarifyAnswer,
   ClarifyQuestion,
@@ -15,7 +15,7 @@ import type {
   VisualStyle,
   VoiceTone,
 } from "@/lib/types";
-import { formatUsd } from "@/lib/pricing";
+import { formatUsd, videoPriceUsd, type CreditPack } from "@/lib/pricing";
 import { AccessCodeForm } from "./AccessCodeForm";
 import { PALETTE_SWATCH } from "@/lib/palettes";
 import { fill, type Dictionary, type Locale } from "@/lib/i18n";
@@ -53,7 +53,6 @@ type PersonDraft = { name: string; relation: string; photoUrls: string[] };
 
 /** Cuántas cosas se pueden manifestar en un vídeo: una imagen y una frase por cada una. */
 // Tres deseos: el vídeo de inicio trae 3 manifestaciones; luego se añaden de una en una.
-const MAX_DESIRES = 3;
 
 /** Correcciones que se arrastran de una reescritura a la siguiente. */
 const MAX_CORRECTIONS = 3;
@@ -65,8 +64,10 @@ type Props = {
   template?: Template;
   /** Vídeos gratis que le quedan. El primero lo invita la casa. */
   freeLeft: number;
-  /** Precio por calidad, calculado en el servidor (TIER_PRICES). */
-  prices: Record<Tier, number>;
+  /** Packs de cada tipo (precios del servidor): el vídeo cuesta lo del pack de tantos deseos como lleve. */
+  packs: Record<Tier, CreditPack[]>;
+  /** Deseos del pack elegido en precios. Más de 6: el vídeo lleva 6 y el resto queda de saldo. */
+  initialQty?: number;
   /** Producto elegido antes de entrar (desde la ficha de una plantilla). */
   initialTier?: Tier;
   /** El diccionario llega por prop: este componente corre en el cliente. */
@@ -76,7 +77,7 @@ type Props = {
   consented?: boolean;
 };
 
-export function CreateWizard({ initialArea, template, freeLeft, prices, initialTier, t, locale, consented = false }: Props) {
+export function CreateWizard({ initialArea, template, freeLeft, packs, initialQty, initialTier, t, locale, consented = false }: Props) {
   const router = useRouter();
 
   const [step, setStep] = useState<number>(STEP.desires);
@@ -84,10 +85,17 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
   // deduce el servidor a partir de los deseos.
   const area: LifeArea | undefined = template?.area ?? initialArea;
   // Con plantilla, sus frases son el punto de partida: se pueden editar.
-  const [desires, setDesires] = useState<string[]>(
-    // Siempre 3 casillas: el primer vídeo trae 3 escenas, una por deseo.
-    template ? template.affirmations[locale].slice(0, MAX_DESIRES) : Array(MAX_DESIRES).fill(""),
-  );
+  // Una casilla por deseo: tantas como el pack elegido (3 si no eligió), de 1 a 6.
+  const startCount = Math.min(MAX_DESIRES, Math.max(1, initialQty ?? 3));
+  const [desires, setDesires] = useState<string[]>(() => {
+    const base = template ? template.affirmations[locale].slice(0, startCount) : [];
+    return [...base, ...Array(startCount - base.length).fill("")];
+  });
+  const count = desires.length;
+  /** Cambia el número de deseos sin perder lo escrito en las casillas que quedan. */
+  function setCount(n: number) {
+    setDesires((prev) => (n <= prev.length ? prev.slice(0, n) : [...prev, ...Array(n - prev.length).fill("")]));
+  }
   // Un hueco por tipo de foto (de frente sonriendo, suave, tres cuartos, medio cuerpo).
   const [slotUrls, setSlotUrls] = useState<(string | undefined)[]>([undefined, undefined, undefined, undefined]);
   const [uploadingSlot, setUploadingSlot] = useState<number>();
@@ -133,14 +141,21 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
   const [fix, setFix] = useState("");
   const [corrections, setCorrections] = useState<string[]>([]);
 
-  const price = prices[tier];
+  // Pack más grande de lo que cabe (10): se paga el pack si no cambió nada; el resto va al saldo.
+  const initialTierId = initialTier ?? template?.tier ?? "vision";
+  const bigPack =
+    initialQty && initialQty > MAX_DESIRES && count === MAX_DESIRES && tier === initialTierId
+      ? packs[tier].find((p) => p.qty === initialQty)
+      : undefined;
+  const priceFor = (id: Tier) => videoPriceUsd(packs[id], count);
+  const price = bigPack ? bigPack.priceUsd : priceFor(tier);
   const isFree = freeLeft > 0;
 
   const canContinue = useMemo(() => {
     if (step === STEP.desires) {
       const filled = desires.map((d) => d.trim()).filter(Boolean);
       return (
-        filled.length === MAX_DESIRES &&
+        filled.length === count &&
         filled.every((d) => d.length >= 3) &&
         filled.join(" ").length >= 8
       );
@@ -189,7 +204,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
     setDesires((prev) => {
       const empty = prev.findIndex((d) => !d.trim());
       if (empty >= 0) return prev.map((d, k) => (k === empty ? text : d));
-      return prev.length < MAX_DESIRES ? [...prev, text] : prev;
+      return prev;
     });
   }
 
@@ -466,6 +481,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
           templateSlug: template?.slug,
           details,
           waiver,
+          packQty: bigPack?.qty,
           // Solo si la revisión sigue siendo de lo que se va a generar.
           previewId: preview?.key === scriptKey ? preview.previewId : undefined,
         }),
@@ -501,6 +517,25 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
       {/* ── Paso 0: deseos ────────────────────────────────────────────── */}
       {step === STEP.desires && (
         <Section title={t.create.desiresTitle} hint={t.create.desiresHint}>
+          {/* Cuántos deseos: uno por escena. Llega del pack elegido y se puede cambiar. */}
+          <div className="mb-5 flex flex-wrap items-center gap-2">
+            <span className="t-caption mr-1 text-[var(--color-label-2)]">{t.create.howMany}</span>
+            {Array.from({ length: MAX_DESIRES }, (_, k) => k + 1).map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setCount(n)}
+                aria-pressed={count === n}
+                className={`t-caption h-8 w-8 rounded-full border tabular-nums transition-colors ${
+                  count === n
+                    ? "border-[var(--color-label-1)] bg-[var(--color-label-1)] text-[var(--color-surface-1)]"
+                    : "border-[var(--color-hairline)] text-[var(--color-label-2)] hover:text-[var(--color-label-1)]"
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
           <div className="space-y-3">
             {desires.map((d, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -520,7 +555,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
           </div>
 
           <p className="t-caption mt-3 ml-7 text-[var(--color-label-3)]">
-            {fill(t.create.desiresCount, { n: cleanDesires.length, max: MAX_DESIRES })}
+            {fill(t.create.desiresCount, { n: cleanDesires.length, max: count })}
           </p>
 
 
@@ -815,7 +850,7 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
                   onClick={() => setTier(id)}
                   title={t.products[id].name}
                   sub={t.products[id].tagline}
-                  price={formatUsd(prices[id])}
+                  price={formatUsd(priceFor(id))}
                 />
               ))}
             </div>
@@ -905,8 +940,14 @@ export function CreateWizard({ initialArea, template, freeLeft, prices, initialT
               </p>
             </div>
             <p className="t-caption max-w-[45%] text-right text-[var(--color-label-2)]">
-              {t.products[tier].waitLabel}
+              {count === 1 ? t.create.sceneNoteOne : fill(t.create.scenesNote, { n: count })} · {t.products[tier].waitLabel}
               {isFree && t.create.watermarkNote}
+              {bigPack && !isFree && (
+                <>
+                  <br />
+                  {fill(t.create.leftoverNote, { n: bigPack.qty - count })}
+                </>
+              )}
             </p>
           </div>
 

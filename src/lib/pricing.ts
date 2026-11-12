@@ -153,6 +153,18 @@ export function formatUsd(amount: number): string {
 export const FREE_VIDEOS = Number(process.env.FREE_VIDEOS ?? 0);
 
 /**
+ * PRIMERA ESCENA GRATIS
+ *
+ * Con FREE_MANIFESTATIONS=1, cada cuenta puede crear UNA manifestación (un
+ * deseo → una escena animada) sin pagar, con marca de agua en la copia que se
+ * ve. Sirve de gancho: verse una vez dentro de su deseo y, después, comprar el
+ * vídeo completo. Coste ~0,40–0,50 $ por escena (imagen + ~8 s de animación).
+ * FREE_DAILY_CAP limita cuántas se regalan al día entre todas las cuentas.
+ */
+export const FREE_MANIFESTATIONS = process.env.FREE_MANIFESTATIONS === "1";
+export const FREE_DAILY_CAP = Math.max(0, Number(process.env.FREE_DAILY_CAP ?? 50) || 0);
+
+/**
  * Mientras no haya pasarela de pago, no se cobra: se enseña el precio y se
  * genera igual. Se activa poniendo PAYMENTS_ENABLED=true cuando entre Stripe.
  */
@@ -198,6 +210,23 @@ export function elevatedPacks(): CreditPack[] {
 }
 
 export type PackKind = "wishes" | "stills" | "elevated";
+/** El tipo de pack que paga cada tipo de vídeo. */
+export const packKindOf = (tier: Tier): PackKind => (tier === "vision" ? "stills" : tier === "elevated" ? "elevated" : "wishes");
+
+/**
+ * Precio de un vídeo con n deseos: la combinación de packs más barata que
+ * sume justo n (4 = pack de 3 + 1), y nunca más que un pack mayor (4 Elevado
+ * cuesta lo del pack de 5). Pura: sirve en el cliente.
+ */
+export function videoPriceUsd(packs: CreditPack[], n: number): number {
+  const best = [0];
+  for (let k = 1; k <= n; k++) {
+    best[k] = Math.min(...packs.filter((p) => p.qty <= k).map((p) => best[k - p.qty] + p.priceUsd), Infinity);
+  }
+  const bigger = Math.min(...packs.filter((p) => p.qty >= n).map((p) => p.priceUsd), Infinity);
+  const price = Math.min(best[n], bigger);
+  return Number.isFinite(price) ? +price.toFixed(2) : 0;
+}
 export const packsFor = (kind: PackKind) => (kind === "stills" ? stillPacks() : kind === "elevated" ? elevatedPacks() : creditPacks());
 
 /** Cuánto saldo da un pack: deseos (Animado y Elevado, ×2) o fotos con movimiento. */

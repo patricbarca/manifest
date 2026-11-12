@@ -1,7 +1,7 @@
 "use client";
 
 /** Eventos de anuncios desde el navegador. Si no hay consentimiento o no hay píxeles, no hace nada. */
-type Ev = { name: "begin_checkout" | "purchase"; value?: number; currency?: string; id?: string };
+type Ev = { name: "begin_checkout" | "purchase" | "free_scene"; value?: number; currency?: string; id?: string };
 
 declare global {
   interface Window {

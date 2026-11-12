@@ -1,0 +1,25 @@
+# Vídeos promocionales (redes sociales)
+
+Verticales 1080x1920, montados con `.claude/skills/promo-video` a partir de clips y voces generados en fal.ai.
+Todas las personas son ficticias, generadas con IA. Si se usan en anuncios, márquense como contenido generado con IA.
+
+| Archivo | Idioma | Duración | Gancho |
+|---|---|---|---|
+| tiktok-woman-en.mp4 | EN | 30 s | "POV: you watched yourself living your dream life… before it happened" |
+| tiktok-man-en.mp4 | EN | 28 s | "I didn't believe in this stuff." |
+| tiktok-mujer-es.mp4 | ES | 28 s | "Esto lo vi… antes de vivirlo." |
+| tiktok-woman2-en.mp4 | EN | 29 s | "I saw this… before I lived it." |
+| tiktok-montage-en.mp4 | EN | 25 s | "POV: you could watch yourself living it… before it happens" (personas del market) |
+| tiktok-3things-en.mp4 | EN | 28 s | "3 things I didn't expect after watching myself live my goals" |
+| tiktok-athletes-en.mp4 | EN | 25 s | "Athletes visualize before every race. So I tried it… for my life." |
+| tiktok-selfie-en.mp4 | EN | 24 s | "I almost didn't upload my selfie." |
+| tiktok-url-en.mp4 | EN | 25 s | Montaje reciclado; termina con "Make yours at manifestlife.ai" |
+| explainer-en.mp4 | EN | 48 s | Qué es la app y cómo funciona (selfie → 3 deseos → revisar escenas → vídeo) |
+| be-delusional-en.mp4 | EN | 32 s | "Everyone called it delusional." Estilo oscuro teal/dorado; en medio, secuencia de móvil: selfie → escribe tu sueño → vídeo de él cumpliéndolo. Voz Brian, música Lyria 2 |
+| future-self-en.mp4 | EN | 29 s | "Your future self is waiting." El espejo se desempaña y aparece su yo futuro; secuencia de móvil (selfie → visión → vídeo de ella); pantalla partida presente/futuro. Voz Sarah |
+| mind-asset-en.mp4 | EN | 21 s | "Your mind… is your greatest asset." Ojo con estrellas, cabeza-galaxia, móvil rápido (escribe → ve el vídeo), "Live it", cresta al amanecer. Voz Brian |
+| not-magic-en.mp4 | EN | 24 s | "Manifesting isn't magic." Varita que se apaga, rutina repetida, móvil (selfie → "I open my own little bakery" → vídeo de ella) y su panadería real. Voz Matilda |
+| tiktok-free-en.mp4 | EN | 27 s | Llamada a probar gratis: "I just saw myself… living my dream." Móvil (selfie → "I open my own studio." → vídeo de ella), "Your first scene? It's FREE.", cierre "Your first scene is free · manifestlife.ai". Voz Sarah |
+| tiktok-free-man-en.mp4 | EN | 21 s | Llamada a probar gratis, versión chico: "I watched myself… living the life I want." Móvil (selfie → "I speak on the biggest stage in my city." → vídeo de él), cierre "Make your wish. See your life." + "Your first scene is free". Todo texto en pantalla va con voz. Voz Brian |
+
+Están en `docs/`, que no entra en la imagen de Docker: no se publican en la web.

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_DESIRES } from "./types";
 
 /**
  * Esquemas que comparten varias rutas. La intención y las respuestas viajan
@@ -10,8 +11,8 @@ export const Area = z.enum(["carrera", "abundancia", "salud", "amor", "confianza
 
 export const Intention = z.string().min(1).max(600);
 
-/** Lo que la persona quiere manifestar: 3 deseos, uno por casilla (una escena cada uno). */
-export const Desires = z.array(z.string().trim().min(3).max(200)).length(3);
+/** Lo que la persona quiere manifestar: de 1 a 6 deseos, uno por casilla (una escena cada uno). */
+export const Desires = z.array(z.string().trim().min(3).max(200)).min(1).max(MAX_DESIRES);
 
 /** Las casillas unidas: es lo que se guarda como intención y da el título. */
 export function intentionFrom(desires: string[]): string {

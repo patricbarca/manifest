@@ -6,7 +6,7 @@ import type { Locale } from "./i18n/locale";
  * Borrador: debe revisarlo un abogado antes de cobrar.
  */
 
-export const LEGAL_UPDATED = "2026-10-31";
+export const LEGAL_UPDATED = "2026-11-12";
 
 
 const UPLOAD_DAYS = Number(process.env.UPLOAD_TTL_DAYS ?? 30);
@@ -56,6 +56,8 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
             { h: "Para qué", p: [
               "Solo para crear tu vídeo y mostrártelo. Tus fotos se usan como referencia para que las escenas se parezcan a ti (y a las personas que añadas).",
               "No usamos tus fotos ni tus textos para entrenar modelos de IA, no las usamos para identificarte y no las vendemos.",
+              "Emails del servicio: te avisamos cuando tu vídeo o tu escena están listos, te mandamos el recibo y, si los tienes activados, recordatorios diarios para verlo (se quitan en Ajustes).",
+              "Emails de ideas y ofertas: solo si marcas la casilla (viene sin marcar). Usamos tu email y si has usado tu escena gratis o has comprado, para no mandarte lo que ya no te sirve. Puedes darte de baja con el enlace de cada email o en Ajustes, y dejan de llegar al momento.",
             ] },
             { h: "Con quién se comparten", id: "providers", p: [
               "Con los proveedores técnicos imprescindibles para generar el vídeo: fal.ai (que ejecuta los modelos de imagen, animación, voz y texto, entre ellos OpenAI, Google, MiniMax, Kuaishou (Kling), ElevenLabs y Anthropic, algunos a través de OpenRouter), Railway (alojamiento de la web y los ficheros), Supabase (base de datos e inicio de sesión), Resend (envío de emails), Cloudflare (estadística de visitas y reenvío de correo) y Stripe (pagos). Si aceptas las cookies de publicidad, también Google y TikTok reciben que has visitado la web o comprado (nunca tus fotos, deseos ni vídeos). Cada uno trata los datos según sus propias políticas y puede conservar copias temporales. Las fotos que subes (también la de perfil) y los textos que escribes pasan además un filtro automático de contenido de fal.ai para impedir contenido sexual, de odio o violento.",
@@ -87,6 +89,8 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
             { h: "What for", p: [
               "Only to create your video and show it to you. Your photos are used as a reference so the scenes look like you (and the people you add).",
               "We don't use your photos or text to train AI models, we don't use them to identify you, and we don't sell them.",
+              "Service emails: we tell you when your video or scene is ready, send your receipt and, if you keep them on, daily reminders to watch it (you can turn them off in Settings).",
+              "Tips and offers emails: only if you tick the box (it comes unticked). We use your email and whether you've used your free scene or bought, so we don't send you what no longer helps. You can unsubscribe with the link in every email or in Settings, and they stop right away.",
             ] },
             { h: "Who we share it with", id: "providers", p: [
               "With the technical providers needed to generate the video: fal.ai (which runs the image, animation, voice and text models, including OpenAI, Google, MiniMax, Kuaishou (Kling), ElevenLabs and Anthropic, some via OpenRouter), Railway (hosting for the site and files), Supabase (database and sign-in), Resend (sending emails), Cloudflare (visit statistics and email forwarding) and Stripe (payments). If you accept advertising cookies, Google and TikTok also learn that you visited the site or made a purchase (never your photos, desires or videos). Each processes data under its own policies and may keep temporary copies. The photos you upload (including your profile photo) and the text you write also go through an automated content filter at fal.ai to prevent sexual, hateful or violent content.",

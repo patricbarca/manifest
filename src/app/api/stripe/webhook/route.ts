@@ -2,9 +2,10 @@ import { appBase } from "@/lib/hosts";
 import { packGrant } from "@/lib/pricing";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import type { User } from "@/lib/types";
 import { enqueue } from "@/lib/queue";
 import { verifyWebhook } from "@/lib/stripe";
-import { sendOrderConfirmation } from "@/lib/email";
+import { sendCheckoutReminder, sendOrderConfirmation } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -46,6 +47,13 @@ export async function POST(request: Request) {
       });
       if (start) {
         enqueue(id);
+        // Lo que sobró del pack (p. ej. 4 de 10 deseos) va al saldo.
+        const paid = await db.getProject(id);
+        if (paid?.extraGrant) {
+          const { field, n } = paid.extraGrant;
+          const owner = await db.getUser(paid.ownerId);
+          if (owner) await db.putUser({ ...owner, [field]: (owner[field] ?? 0) + n });
+        }
         // Recibo con la renuncia al desistimiento (soporte duradero).
         const project = await db.getProject(id);
         const owner = project ? await db.getUser(project.ownerId) : undefined;
@@ -63,5 +71,43 @@ export async function POST(request: Request) {
       }
     }
   }
+  // Pago sin terminar: la sesión caducó (a las 3 h). Un recordatorio por pedido.
+  if (event.type === "checkout.session.expired") {
+    const session = event.data.object as { id: string; metadata?: { projectId?: string; kind?: string; userId?: string } };
+    const projectId = session.metadata?.projectId;
+    if (projectId) {
+      let remind = false;
+      const project = await db.patchProject(projectId, (p) => {
+        // Solo si sigue sin pagar y es la última sesión que se abrió para él.
+        if (p.status !== "draft" || p.reminderSentAt || p.stripeSessionId !== session.id) return p;
+        remind = true;
+        return { ...p, reminderSentAt: Date.now() };
+      }).catch(() => undefined);
+      const owner = project && remind ? await db.getUser(project.ownerId) : undefined;
+      if (project && owner && (await claimReminder(owner))) {
+        await sendCheckoutReminder({ to: owner.email!, locale: project.locale, what: "video", url: `${appBase()}/video/${project.id}` });
+      }
+    } else if (session.metadata?.userId) {
+      const user = await db.getUser(session.metadata.userId);
+      // creditSessions guarda las sesiones ya atendidas: así no se avisa dos veces.
+      if (user && !(user.creditSessions ?? []).includes(session.id)) {
+        const marked = await db.putUser({ ...user, creditSessions: [...(user.creditSessions ?? []), session.id].slice(-50) });
+        if (await claimReminder(marked)) {
+          await sendCheckoutReminder({ to: user.email!, locale: user.locale === "es" ? "es" : "en", what: "pack", url: `${appBase()}/new` });
+        }
+      }
+    }
+  }
   return NextResponse.json({ received: true });
+}
+
+/**
+ * Como mucho un recordatorio de pago sin terminar por persona cada 24 h:
+ * si abrió varios pagos y no terminó ninguno, recibe un solo email.
+ */
+async function claimReminder(user: User): Promise<boolean> {
+  if (!user.email || user.reminders === false) return false;
+  if (user.checkoutReminderAt && Date.now() - user.checkoutReminderAt < 24 * 3600_000) return false;
+  await db.putUser({ ...user, checkoutReminderAt: Date.now() });
+  return true;
 }

@@ -20,6 +20,9 @@ export type LifeArea =
  * etiquetas visibles viven en el diccionario (lib/i18n), porque cambian con
  * el idioma y esto no.
  */
+/** Deseos (escenas) por vídeo: de 1 a 6. También el máximo al rearmar tu vídeo. */
+export const MAX_DESIRES = 6;
+
 export const LIFE_AREAS: { id: LifeArea; icon: IconName }[] = [
   { id: "carrera", icon: "briefcase" },
   { id: "abundancia", icon: "growth" },
@@ -168,6 +171,8 @@ export interface Manifestation {
   attempts?: number;
   /** Se pagó con una manifestación de un paquete: si falla, se devuelve una vez. */
   paidCredit?: boolean;
+  /** Es su escena gratis (FREE_MANIFESTATIONS): la copia que se ve lleva marca de agua. */
+  free?: boolean;
   costCents: number;
   error?: string;
 }
@@ -351,6 +356,12 @@ export interface Project {
   watermark: boolean;
   /** Cuándo pidió generar ya y aceptó perder el desistimiento de 14 días (UE). */
   waiverAt?: number;
+  /** Lo que se cobra en Stripe por este borrador (para volver a pagar desde la ficha). */
+  checkoutCents?: number;
+  /** Se le mandó el recordatorio de pago sin terminar (una sola vez). */
+  reminderSentAt?: number;
+  /** Lo que sobra del pack pagado (p. ej. 10 deseos para un vídeo de 6): se suma al saldo al pagar. */
+  extraGrant?: { field: "credits" | "stillCredits"; n: number };
   /** Vídeo de manifestación montado con estas manifestaciones (en este orden). */
   composedFrom?: string[];
   error?: string;
@@ -428,8 +439,16 @@ export interface User {
   lastReminder?: string;
   /** Manifestaciones que puede crear (compradas y aún no usadas). No caducan. */
   credits?: number;
+  /** Cuándo usó su escena gratis (FREE_MANIFESTATIONS). Sin valor = aún la tiene. */
+  freeSceneAt?: number;
+  /** Permiso expreso para emails de novedades y ofertas (casilla sin marcar por defecto). Sin valor = no. */
+  marketing?: { at: number; version: string };
+  /** Emails de seguimiento de la escena gratis ya enviados (días: 1, 3). */
+  freeFollowups?: number[];
   /** Sesiones de Stripe ya abonadas (para no sumar dos veces el mismo pago). */
   creditSessions?: string[];
+  /** Último recordatorio de pago sin terminar: como mucho uno cada 24 h. */
+  checkoutReminderAt?: number;
   /** Sus últimas fotos (para crear manifestaciones sin volver a subirlas mientras existan). */
   photoUrls?: string[];
   /** Complexión y estatura elegidas con botones (opcional): se añaden al prompt de las escenas. */
