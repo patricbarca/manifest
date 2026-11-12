@@ -23,7 +23,7 @@ Spec (campos):
   "grade": "teal_gold",                       # opcional: etalonaje oscuro teal/dorado con grano y viñeta
   "caption_yc": 0.17                          # opcional (tiktok): altura de los subtítulos, 0 arriba – 1 abajo
 }
-En tiktok, el texto entre asteriscos (*FOCUS.* o *LIVING IT.*) sale en dorado.
+En tiktok, el texto entre asteriscos (*FOCUS.* o *LIVING IT.*) sale en dorado y " | " fuerza un salto de línea.
 """
 import json, os, subprocess, sys
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
@@ -114,6 +114,11 @@ def bold_caption(text, out, size=84, yc=0.17, top=None):
     sp = d.textlength(" ", font=f)
     lines, cur, cw = [], [], 0
     for w, g in words:
+        if w == "|":  # salto de línea forzado
+            if cur:
+                lines.append(cur)
+            cur, cw = [], 0
+            continue
         ww = d.textlength(w, font=f)
         if cur and cw + sp + ww > W - 160:
             lines.append(cur)
