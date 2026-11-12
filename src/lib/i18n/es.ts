@@ -151,6 +151,8 @@ export const es: Dictionary = {
     cta: "Crear mi vídeo",
     priceNote: "{price} pago único · sin suscripción",
     guarantee: "Si tu vídeo falla, lo rehacemos o te devolvemos el dinero.",
+    ctaFree: "Mírate gratis",
+    freeNote: "Tu primera escena es gratis · el vídeo completo cuesta {price}",
     angles: {
       money: { title: "Mírate viviendo con libertad financiera.", lede: "Sube una selfie, escribe tus metas de dinero y recibe un vídeo guiado donde te ves ya viviéndolas: tu negocio, tu casa, tu libertad." },
       body: { title: "Mírate en el cuerpo por el que trabajas.", lede: "Sube una selfie, escribe tus metas de salud y forma física y recibe un vídeo guiado donde te ves ya ahí, fuerte y con energía." },
@@ -188,6 +190,7 @@ export const es: Dictionary = {
     lede: "Sube un selfie, escribe tus deseos y recibe un vídeo de unos 2 minutos donde te ves viviéndolos. Una voz te guía: respiras, ves cada escena contigo dentro y repites tus afirmaciones en voz alta.",
     ctaPrimary: "Crear mi vídeo",
     ctaSecondary: "Ver el market",
+    freeLink: "O prueba una escena gratis",
     previewLine: "Dirijo mi propio estudio.",
     previewCue: "ahora tú — dilo en voz alta",
     steps: [
@@ -657,6 +660,8 @@ export const es: Dictionary = {
     creating: "Creando…",
     credits: "Te quedan {n} manifestaciones.",
     noCredits: "No te quedan manifestaciones. Elige un paquete:",
+    freeScene: "Tu primera escena es gratis. Lleva una pequeña marca de agua de ManifestLifeAI.",
+    freeUpsell: { title: "¿Te gustó verte ahí?", body: "Consigue el ritual completo: un vídeo guiado de unos 2 minutos con todos tus deseos, respiración y afirmaciones, para verlo cada día.", cta: "Crear mi vídeo" },
     buy: "Pack de {n}",
     each: "{p} $ c/u",
     errPhotos: "Tus fotos caducaron: súbelas de nuevo.",

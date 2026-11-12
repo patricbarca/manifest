@@ -12,6 +12,7 @@ import { ensureLocal } from "./compose";
 import { db } from "../db/store";
 import { makePlayCopy } from "../playback";
 import { bodyClause } from "../body";
+import { refundFreeScene } from "./free";
 
 /** Si la manifestación se pagó con un paquete y falló, devuelve la unidad (solo una vez). */
 export async function refundCredit(id: string): Promise<void> {
@@ -99,7 +100,9 @@ export async function runManifestation(id: string): Promise<void> {
 
     // 5. Highlight para el perfil y copia ligera para el visor.
     const hl = await makeHighlights({ id, scenes: [{ videoUrl: clip.result.url }] } as unknown as Project).catch(() => undefined);
-    const playUrl = await makePlayCopy(clip.result.url);
+    // Escena gratis: la copia que se ve lleva la marca. Si pagó una edición, ya es suya sin marca.
+    const free = !!start.free && !start.editPaid;
+    const playUrl = await makePlayCopy(clip.result.url, { watermark: free });
 
     await manifests.patch(id, (m) => ({
       ...m,
@@ -111,6 +114,7 @@ export async function runManifestation(id: string): Promise<void> {
       clipUrl: clip.result.url,
       playUrl,
       highlight: hl?.[0],
+      free: free || undefined,
       animateOnly: undefined,
       draftImageUrl: undefined,
       draftNote: undefined,
@@ -144,6 +148,8 @@ export async function runManifestation(id: string): Promise<void> {
     }
     await manifests.patch(id, (m) => ({ ...m, status: "failed", error: message, costCents: +cents.toFixed(2) }));
     await refundCredit(id);
+    // Su escena gratis no llegó a salir: se le devuelve para que lo intente otra vez.
+    if (start.free) await refundFreeScene(start.ownerId);
     throw err;
   }
 }

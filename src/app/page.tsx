@@ -3,7 +3,7 @@ import { Icon } from "@/components/Icon";
 import { HeroVideo } from "@/components/HeroVideo";
 import { TEMPLATES } from "@/lib/templates";
 import { TemplateMedia } from "@/components/TemplateMedia";
-import { PRODUCTS, formatUsd } from "@/lib/pricing";
+import { FREE_MANIFESTATIONS, PAYMENTS_ENABLED, PRODUCTS, formatUsd } from "@/lib/pricing";
 import { LIFE_AREAS, TIERS } from "@/lib/types";
 import type { Tier } from "@/lib/types";
 import { isDemoMode } from "@/lib/ai";
@@ -50,6 +50,13 @@ export default async function HomePage() {
               <Icon name="arrow-right" size={15} />
             </Link>
           </div>
+          {FREE_MANIFESTATIONS && PAYMENTS_ENABLED && (
+            <p className="rise mt-4">
+              <Link href="/new" className="t-sub text-emerald-300/90 underline-offset-4 hover:underline">
+                {t.home.freeLink} →
+              </Link>
+            </p>
+          )}
         </div>
 
         {/* El reproductor, centrado y grande: es el producto. */}

@@ -114,6 +114,16 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
         ))}
       </nav>
 
+      {/* Tras su escena gratis: el siguiente paso es el vídeo completo con el ritual. */}
+      {tab === "manifest" && mine.some((x) => x.free && x.status === "ready") && (
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-hairline-strong)] bg-white/[0.03] p-5">
+          <p className="t-body font-medium">{t.manifest.freeUpsell.title}</p>
+          <p className="t-sub mt-1 text-[var(--color-label-2)]">{t.manifest.freeUpsell.body}</p>
+          <Link href="/create" className="interactive t-sub mt-4 inline-block rounded-full bg-white px-5 py-2 font-medium text-black">
+            {t.manifest.freeUpsell.cta}
+          </Link>
+        </div>
+      )}
       {tab === "manifest" && (
         <div className="flex gap-2">
           <Link href="/new" className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 text-center font-medium text-black">+ {t.manifest.newButton}</Link>

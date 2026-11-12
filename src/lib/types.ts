@@ -167,6 +167,8 @@ export interface Manifestation {
   attempts?: number;
   /** Se pagó con una manifestación de un paquete: si falla, se devuelve una vez. */
   paidCredit?: boolean;
+  /** Es su escena gratis (FREE_MANIFESTATIONS): la copia que se ve lleva marca de agua. */
+  free?: boolean;
   costCents: number;
   error?: string;
 }
@@ -427,6 +429,8 @@ export interface User {
   lastReminder?: string;
   /** Manifestaciones que puede crear (compradas y aún no usadas). No caducan. */
   credits?: number;
+  /** Cuándo usó su escena gratis (FREE_MANIFESTATIONS). Sin valor = aún la tiene. */
+  freeSceneAt?: number;
   /** Sesiones de Stripe ya abonadas (para no sumar dos veces el mismo pago). */
   creditSessions?: string[];
   /** Sus últimas fotos (para crear manifestaciones sin volver a subirlas mientras existan). */

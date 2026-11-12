@@ -152,6 +152,8 @@ export const en = {
     cta: "Create my video",
     priceNote: "{price} one-time · no subscription",
     guarantee: "If your video fails, we remake it or refund you.",
+    ctaFree: "See yourself free",
+    freeNote: "Your first scene is free · the full video is {price}",
     angles: {
       money: { title: "See yourself living financially free.", lede: "Upload a selfie, write your money goals and get a guided video where you see yourself already living them: your business, your home, your freedom." },
       body: { title: "See yourself in the body you're working for.", lede: "Upload a selfie, write your health and fitness goals and get a guided video where you see yourself already there, strong and full of energy." },
@@ -189,6 +191,7 @@ export const en = {
     lede: "Upload a selfie, write your desires and get a video of about 2 minutes where you see yourself living them. A voice guides you: you breathe, watch each scene with you in it, and repeat your affirmations out loud.",
     ctaPrimary: "Create my video",
     ctaSecondary: "See the market",
+    freeLink: "Or try one scene free",
     previewLine: "I run my own studio.",
     previewCue: "your turn — say it out loud",
     steps: [
@@ -658,6 +661,8 @@ export const en = {
     creating: "Creating…",
     credits: "You have {n} manifestations left.",
     noCredits: "No manifestations left. Choose a pack:",
+    freeScene: "Your first scene is free. It comes with a small ManifestLifeAI watermark.",
+    freeUpsell: { title: "Loved seeing yourself there?", body: "Get the full daily ritual: a guided video of about 2 minutes with all your desires, breathing and affirmations, made to watch every day.", cta: "Create my video" },
     buy: "Pack of {n}",
     each: "${p} each",
     errPhotos: "Your photos expired: upload them again.",

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HeroVideo } from "@/components/HeroVideo";
-import { formatUsd, priceUsd } from "@/lib/pricing";
+import { FREE_MANIFESTATIONS, PAYMENTS_ENABLED, formatUsd, priceUsd } from "@/lib/pricing";
 import { getDictionary } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n";
 
@@ -26,7 +26,9 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
   const { t } = await getDictionary();
   const L = t.start;
   const sp = await searchParams;
-  const create = withUtm("/create", sp);
+  // Con la escena gratis activa, el anuncio lleva a crear una escena sin pagar (/new); si no, al vídeo completo.
+  const freeOn = FREE_MANIFESTATIONS && PAYMENTS_ENABLED;
+  const create = withUtm(freeOn ? "/new" : "/create", sp);
   // Versión por ángulo del anuncio: /start?a=money|body|love|travel. El titular repite la promesa del anuncio.
   const angle = typeof sp.a === "string" && sp.a in L.angles ? L.angles[sp.a as keyof typeof L.angles] : null;
   const title = angle?.title ?? L.title;
@@ -34,7 +36,7 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
   const price = formatUsd(priceUsd("cinematic"));
   const cta = (
     <Link href={create} className="interactive inline-block rounded-full bg-white px-7 py-3.5 text-[16px] font-semibold tracking-[-0.011em] text-black hover:bg-white/90">
-      {L.cta}
+      {freeOn ? L.ctaFree : L.cta}
     </Link>
   );
 
@@ -50,7 +52,7 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
           </div>
         </div>
         <div className="mt-8">{cta}</div>
-        <p className="t-caption mt-3 text-[var(--color-label-3)]">{fill(L.priceNote, { price })}</p>
+        <p className="t-caption mt-3 text-[var(--color-label-3)]">{fill(freeOn ? L.freeNote : L.priceNote, { price })}</p>
         <p className="t-caption mt-1 text-emerald-300/90">✓ {L.guarantee}</p>
       </section>
 

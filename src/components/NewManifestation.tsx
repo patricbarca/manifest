@@ -12,13 +12,14 @@ type Pack = { qty: number; priceUsd: number };
 type Labels = {
   desire: string; desirePlaceholder: string; language: string; voice: string; photosTitle: string; photosHint: string;
   consent: string; biometric: string; upload: string; uploading: string; photosOk: string; waiver: string; create: string; creating: string;
-  credits: string; noCredits: string; buy: string; each: string; errors: Record<string, string>; accessForm: { placeholder: string; submit: string; bad: string };
+  credits: string; noCredits: string; buy: string; each: string; freeScene: string; errors: Record<string, string>; accessForm: { placeholder: string; submit: string; bad: string };
 };
 
 /** Crear una manifestación nueva: un deseo → una escena animada tuya. */
 export function NewManifestation({
   initialPhotos,
   credits,
+  freeScene = false,
   paymentsOn,
   packs,
   voices,
@@ -29,6 +30,8 @@ export function NewManifestation({
 }: {
   initialPhotos: number;
   credits: number;
+  /** Le queda su primera escena gratis (FREE_MANIFESTATIONS). */
+  freeScene?: boolean;
   paymentsOn: boolean;
   packs: Pack[];
   voices: Voice[];
@@ -51,7 +54,7 @@ export function NewManifestation({
   const [busySlot, setBusySlot] = useState<number>();
   const [error, setError] = useState<string>();
   const [note, setNote] = useState<string>();
-  const canCreate = desire.trim().length >= 3 && photos > 0 && waiver && (!paymentsOn || credits > 0) && !busy;
+  const canCreate = desire.trim().length >= 3 && photos > 0 && waiver && (!paymentsOn || credits > 0 || freeScene) && !busy;
   const input = "t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none focus:border-[var(--color-hairline-strong)]";
 
   async function upload(files: File[], slot = 0, scanned = false): Promise<SlotResult | undefined> {
@@ -151,7 +154,8 @@ export function NewManifestation({
         </div>
       )}
 
-      {paymentsOn && (
+      {paymentsOn && freeScene && <p className="t-sub text-emerald-300/90">✓ {t.freeScene}</p>}
+      {paymentsOn && !freeScene && (
         <div className="space-y-3">
           <p className="t-sub">{credits > 0 ? t.credits.replace("{n}", String(credits)) : t.noCredits}</p>
           <div className="flex flex-wrap gap-2">

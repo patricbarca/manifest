@@ -1,4 +1,6 @@
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { localPathForMediaUrl, mediaPath } from "./paths";
 import { ensureLocal } from "./manifest/compose";
 import { offloadProject } from "./cleanup";
@@ -28,17 +30,44 @@ function parts(clipUrl: string): { dir: string; base: string } | null {
   return m ? { dir: m[1], base: m[2] } : null;
 }
 
+/**
+ * Marca de agua de la escena gratis: el símbolo y "manifestlife.ai" abajo a la
+ * derecha, quemados en la imagen (no se quita al descargar). Si falta el
+ * símbolo o la fuente, se pone solo lo que haya.
+ */
+function watermarkFilter(): { inputs: string[]; filter: string } | null {
+  const mark = path.join(process.cwd(), "public", "brand", "mark-512.png");
+  const font = path.join(process.cwd(), "render", "fonts", "Inter.ttf");
+  const hasMark = existsSync(mark);
+  const hasFont = existsSync(font);
+  if (!hasMark && !hasFont) return null;
+  let f = "[0:v]scale='min(720,iw)':-2[v0]";
+  let last = "v0";
+  if (hasMark) {
+    f += ";[1:v]scale=52:52,format=rgba,colorchannelmixer=aa=0.85[mk];[v0][mk]overlay=W-w-22:H*0.80[v1]";
+    last = "v1";
+  }
+  if (hasFont) {
+    const ff = font.replace(/\\/g, "/").replace(/:/g, "\\:");
+    f += `;[${last}]drawtext=fontfile='${ff}':text='manifestlife.ai':fontsize=24:fontcolor=white@0.9:shadowcolor=black@0.6:shadowx=1:shadowy=1:x=w-tw-22:y=h*0.80+60[v2]`;
+    last = "v2";
+  }
+  return { inputs: hasMark ? ["-i", mark] : [], filter: `${f};[${last}]null[out]` };
+}
+
 /** Crea la copia y devuelve su URL (en la misma carpeta que el clip). Undefined si no se pudo. */
-export async function makePlayCopy(clipUrl: string): Promise<string | undefined> {
+export async function makePlayCopy(clipUrl: string, opts: { watermark?: boolean } = {}): Promise<string | undefined> {
   const p = parts(clipUrl);
   if (!p || !(await ensureLocal(clipUrl))) return undefined;
   const src = localPathForMediaUrl(clipUrl);
   if (!src) return undefined;
   const name = `play_${p.base}.mp4`;
+  const wm = opts.watermark ? watermarkFilter() : null;
+  if (opts.watermark && !wm) console.error("[playback] sin símbolo ni fuente para la marca de agua:", clipUrl);
   try {
     await ffmpeg([
-      "-y", "-loglevel", "error", "-i", src, "-an",
-      "-vf", "scale='min(720,iw)':-2",
+      "-y", "-loglevel", "error", "-i", src, ...(wm ? wm.inputs : []), "-an",
+      ...(wm ? ["-filter_complex", wm.filter, "-map", "[out]"] : ["-vf", "scale='min(720,iw)':-2"]),
       "-c:v", "libx264", "-preset", "veryfast", "-crf", "24", "-pix_fmt", "yuv420p",
       "-threads", "2", "-movflags", "+faststart", mediaPath("generated", p.dir, name),
     ]);
@@ -58,7 +87,7 @@ export async function backfillPlayCopies(): Promise<void> {
   for (const user of await db.listUsers()) {
     for (const m of await manifests.list(user.id)) {
       if (m.status !== "ready" || !m.clipUrl || m.playUrl) continue;
-      const url = await makePlayCopy(m.clipUrl);
+      const url = await makePlayCopy(m.clipUrl, { watermark: !!m.free });
       if (!url) continue;
       await manifests.patch(m.id, (cur) => (cur.clipUrl === m.clipUrl ? { ...cur, playUrl: url } : cur));
       const dir = parts(m.clipUrl)?.dir;

@@ -13,6 +13,7 @@ import { newManifestId, shortTitle } from "@/lib/manifest/extract";
 import { enqueueManifestation } from "@/lib/queue";
 import { VOICE_IDS } from "@/lib/voices";
 import { deleteManifestFiles } from "@/lib/cleanup";
+import { claimFreeScene } from "@/lib/manifest/free";
 import type { Manifestation } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -101,9 +102,16 @@ export async function POST(request: Request) {
   const user = (await db.getUser(who.user.id)) ?? who.user;
   const photos = await livePhotos(user);
   if (!photos.length) return NextResponse.json({ error: "photos" }, { status: 409 });
+  // Su primera escena puede ser gratis (FREE_MANIFESTATIONS); si no, gasta una manifestación.
+  let free = false;
+  let paid = false;
   if (PAYMENTS_ENABLED) {
-    if ((user.credits ?? 0) < 1) return NextResponse.json({ error: "credits" }, { status: 402 });
-    await db.putUser({ ...user, credits: (user.credits ?? 0) - 1 });
+    free = await claimFreeScene(user);
+    if (!free) {
+      if ((user.credits ?? 0) < 1) return NextResponse.json({ error: "credits" }, { status: 402 });
+      await db.putUser({ ...user, credits: (user.credits ?? 0) - 1 });
+      paid = true;
+    }
   }
 
   const now = Date.now();
@@ -119,7 +127,8 @@ export async function POST(request: Request) {
     voice: body.data.voice,
     style: body.data.style,
     photoUrls: photos,
-    paidCredit: PAYMENTS_ENABLED || undefined,
+    paidCredit: paid || undefined,
+    free: free || undefined,
     costCents: 0,
   };
   await manifests.put(m);
