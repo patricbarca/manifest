@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { createPortal } from "react-dom";
 import type { Manifestation } from "@/lib/types";
 
@@ -93,7 +94,44 @@ function Slide({ m, active, near, onSeen }: { m: Manifestation; active: boolean;
  * Tus manifestaciones, una por tarjeta. Al tocar se ve su escena; desde ahí
  * se puede marcar como cumplida (✓ Manifestado).
  */
-export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { initial: Manifestation[]; t: Labels; locale: string; paymentsOn?: boolean }) {
+/**
+ * Hueco "un deseo más": la silueta de una escena por crear. Lleva a /new.
+ */
+function NewWishTile({ label, hint }: { label: string; hint: string }) {
+  return (
+    <Link href="/new" className="group text-left" aria-label={label}>
+      <span className="relative block aspect-[9/16] overflow-hidden rounded-[var(--radius-md)] border-2 border-dashed border-[var(--color-hairline-strong)] bg-white/[0.02] transition-colors group-hover:border-[var(--color-label-2)]">
+        {/* Silueta de una persona dentro de la escena, con un brillo que respira. */}
+        <span className="absolute inset-x-[8%] bottom-0 top-[22%] animate-pulse text-[var(--color-label-3)] [animation-duration:2.6s]">
+          <svg viewBox="0 0 100 150" className="h-full w-full" fill="currentColor" aria-hidden>
+            <circle cx="50" cy="38" r="17" opacity="0.55" />
+            <path d="M14 150 C14 98 30 74 50 74 C70 74 86 98 86 150 Z" opacity="0.4" />
+          </svg>
+        </span>
+        <span className="absolute inset-x-0 bottom-4 grid place-items-center">
+          <span className="grid h-10 w-10 place-items-center rounded-full bg-white text-[22px] font-light leading-none text-black shadow-lg transition-transform group-hover:scale-110">+</span>
+        </span>
+      </span>
+      <span className="t-sub mt-1.5 block truncate font-medium">{label}</span>
+      <span className="t-caption block text-[var(--color-label-3)]">{hint}</span>
+    </Link>
+  );
+}
+
+export function ManifestationGrid({
+  initial,
+  t,
+  locale,
+  paymentsOn = false,
+  newWish,
+}: {
+  initial: Manifestation[];
+  t: Labels;
+  locale: string;
+  paymentsOn?: boolean;
+  /** Si se pasa, añade al final el hueco para crear un deseo más. */
+  newWish?: { label: string; hint: string };
+}) {
   const [items, setItems] = useState(initial);
   const [open, setOpen] = useState<Manifestation | null>(null);
   const [editing, setEditing] = useState(false);
@@ -239,7 +277,17 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
     setErr(undefined);
   }, [open?.id]);
 
-  if (!items.length) return <p className="t-sub py-6 text-center text-[var(--color-label-2)]">{t.empty}</p>;
+  if (!items.length)
+    return newWish ? (
+      <div className="space-y-4">
+        <p className="t-sub pt-2 text-center text-[var(--color-label-2)]">{t.empty}</p>
+        <div className="mx-auto w-1/2 sm:w-1/3">
+          <NewWishTile {...newWish} />
+        </div>
+      </div>
+    ) : (
+      <p className="t-sub py-6 text-center text-[var(--color-label-2)]">{t.empty}</p>
+    );
 
   /** Opciones de la manifestación activa: editar texto, editar escena, mostrar en perfil, borrar. */
   const details = open && (
@@ -393,6 +441,7 @@ export function ManifestationGrid({ initial, t, locale, paymentsOn = false }: { 
             </button>
           );
         })}
+        {newWish && <NewWishTile {...newWish} />}
       </div>
 
       {/* Visor: una manifestación por pantalla, se desliza hacia arriba para ver la siguiente. */}

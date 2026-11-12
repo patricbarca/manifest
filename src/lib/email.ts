@@ -100,6 +100,36 @@ export async function sendOrderConfirmation(opts: {
   }
 }
 
+/** Pago sin terminar: la sesión de Stripe caducó sin pagar. Un solo aviso por pedido. */
+export async function sendCheckoutReminder(opts: { to: string; locale: Locale; what: "video" | "pack"; url: string }): Promise<void> {
+  if (!emailEnabled() || !opts.to) return;
+  const es = opts.locale === "es";
+  const video = opts.what === "video";
+  const subject = video
+    ? es ? "Tu vídeo te está esperando" : "Your video is waiting for you"
+    : es ? "Tus deseos te están esperando" : "Your wishes are waiting for you";
+  const body = video
+    ? es
+      ? "Dejaste el pago a medias, así que tu vídeo aún no ha empezado. Lo guardamos tal cual lo dejaste: tus deseos, tus fotos y tu guion."
+      : "You left the payment unfinished, so your video hasn't started yet. We kept it just as you left it: your wishes, your photos and your script."
+    : es
+      ? "Dejaste la compra a medias. Cuando quieras, la retomas en un minuto."
+      : "You left your purchase unfinished. Pick it up whenever you like, it takes a minute.";
+  const cta = video ? (es ? "Terminar el pago" : "Finish payment") : es ? "Volver a la compra" : "Back to my purchase";
+  const html = `<!doctype html><html><body style="margin:0;background:#0e0b14;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#fff">
+  <div style="max-width:480px;margin:0 auto;padding:40px 24px">
+    ${brandHeader()}
+    <h1 style="font-size:24px;font-weight:600;margin:0 0 16px">${subject}</h1>
+    <p style="font-size:15px;line-height:1.6;color:#cfc6d8;margin:0 0 24px">${body}</p>
+    <a href="${opts.url}" style="display:inline-block;background:#fff;color:#000;text-decoration:none;padding:12px 24px;border-radius:999px;font-weight:600">${cta}</a>
+  </div></body></html>`;
+  try {
+    await send(opts.to, subject, html);
+  } catch (err) {
+    console.error("[email]", err);
+  }
+}
+
 /** Recordatorio de racha: aún no ha visto su vídeo hoy. */
 export async function sendStreakReminder(opts: {
   to: string;

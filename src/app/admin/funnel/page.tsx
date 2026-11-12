@@ -6,15 +6,11 @@ import { db } from "@/lib/db/store";
 import { manifests } from "@/lib/manifest/store";
 import { FREE_DAILY_CAP, FREE_MANIFESTATIONS, PAYMENTS_ENABLED } from "@/lib/pricing";
 import { freeScenesToday } from "@/lib/manifest/free";
+import { isAdmin } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Embudo — ManifestLifeAI", robots: { index: false, follow: false } };
 
-/** Solo para los emails de ADMIN_EMAILS (separados por comas). */
-function isAdmin(email?: string): boolean {
-  const list = (process.env.ADMIN_EMAILS ?? "").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);
-  return !!email && list.includes(email.toLowerCase());
-}
 
 const RANGES = { "7": 7, "30": 30, all: 0 } as const;
 type Range = keyof typeof RANGES;
@@ -73,7 +69,8 @@ export default async function FunnelPage({ searchParams }: { searchParams: Promi
   return (
     <div className="mx-auto max-w-2xl space-y-6 px-4 py-10">
       <div>
-        <h1 className="t-title">Embudo de la escena gratis</h1>
+        <Link href="/admin" className="t-caption text-[var(--color-label-3)]">← Panel</Link>
+        <h1 className="t-title mt-2">Embudo de la escena gratis</h1>
         <p className="t-caption mt-1 text-[var(--color-label-3)]">
           Escena gratis {FREE_MANIFESTATIONS && PAYMENTS_ENABLED ? "activa" : "apagada"} · hoy {await freeScenesToday()} de {FREE_DAILY_CAP} (tope diario, UTC)
         </p>

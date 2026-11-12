@@ -1,4 +1,6 @@
 import { randomBytes } from "node:crypto";
+import type { Tier } from "../types";
+import { spend, tierCost } from "../wallet";
 import { cookies } from "next/headers";
 import { db } from "./store";
 import type { User } from "../types";
@@ -110,7 +112,7 @@ export async function linkAnonymousData(): Promise<void> {
  *                  regalo, es que aún no sabemos cobrar.
  *  - `paid`      — pagado de verdad. Sin marca de agua.
  */
-export type ChargeKind = "free" | "prelaunch" | "paid";
+export type ChargeKind = "free" | "prelaunch" | "paid" | "wallet";
 
 /** Clave del diccionario con el motivo, no el mensaje ya escrito. */
 type ChargeError = "noFreeLeft" | "paymentRequired";
@@ -118,6 +120,10 @@ type ChargeError = "noFreeLeft" | "paymentRequired";
 export async function chargeForVideo(
   userId: string,
   priceCents: number,
+  /** Si se pasa, el vídeo se paga con el saldo (un deseo por escena, 2 en Elevated) cuando le alcanza. */
+  tier?: Tier,
+  /** Escenas del vídeo (= deseos). */
+  scenes = 3,
 ): Promise<
   | { ok: true; kind: ChargeKind; paidCents: number }
   | { ok: false; reason: ChargeError }
@@ -134,7 +140,9 @@ export async function chargeForVideo(
     return { ok: true, kind: "prelaunch", paidCents: 0 };
   }
 
-  // El cobro lo hace Stripe Checkout (ver api/projects y lib/stripe).
+  if (tier && (await spend(userId, tierCost(tier, scenes)))) return { ok: true, kind: "wallet", paidCents: 0 };
+
+  // Si no le alcanza, el cobro lo hace Stripe Checkout (ver api/projects y lib/stripe).
   void priceCents;
   return { ok: false, reason: "paymentRequired" };
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { costOf, spend } from "@/lib/wallet";
 import { me } from "@/lib/social/me";
 import { manifests } from "@/lib/manifest/store";
 import { PAYMENTS_ENABLED } from "@/lib/pricing";
@@ -20,13 +20,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   if (!m || m.ownerId !== who.user.id) return NextResponse.json({ error: "not_found" }, { status: 404 });
   if (m.status !== "ready") return NextResponse.json({ error: "busy" }, { status: 409 });
   if (!m.draftImageUrl) return NextResponse.json({ error: "no_image" }, { status: 409 });
-  const user = (await db.getUser(who.user.id)) ?? who.user;
   // La edición se paga al pedir la primera imagen; si por lo que sea aún no está pagada, se cobra aquí.
   const charge = PAYMENTS_ENABLED && !m.editPaid;
-  if (charge) {
-    if ((user.credits ?? 0) < 1) return NextResponse.json({ error: "credits" }, { status: 402 });
-    await db.putUser({ ...user, credits: (user.credits ?? 0) - 1 });
-  }
+  const cost = costOf(m.quality);
+  if (charge && !(await spend(who.user.id, cost))) return NextResponse.json({ error: "credits", kind: cost.field === "stillCredits" ? "stills" : "wishes", need: cost.n }, { status: 402 });
   const paid = PAYMENTS_ENABLED && (charge || !!m.editPaid);
   const next = await manifests.patch(id, (cur) => ({
     ...cur,

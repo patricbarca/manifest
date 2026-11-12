@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HeroVideo } from "@/components/HeroVideo";
-import { FREE_MANIFESTATIONS, PAYMENTS_ENABLED, formatUsd, priceUsd } from "@/lib/pricing";
+import { FREE_MANIFESTATIONS, PAYMENTS_ENABLED, formatUsd, stillPacks } from "@/lib/pricing";
 import { getDictionary } from "@/lib/i18n/server";
 import { fill } from "@/lib/i18n";
 
@@ -33,7 +33,7 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
   const angle = typeof sp.a === "string" && sp.a in L.angles ? L.angles[sp.a as keyof typeof L.angles] : null;
   const title = angle?.title ?? L.title;
   const lede = angle?.lede ?? L.lede;
-  const price = formatUsd(priceUsd("cinematic"));
+  const price = formatUsd(Math.min(...stillPacks().map((x) => x.priceUsd)));
   const cta = (
     <Link href={create} className="interactive inline-block rounded-full bg-white px-7 py-3.5 text-[16px] font-semibold tracking-[-0.011em] text-black hover:bg-white/90">
       {freeOn ? L.ctaFree : L.cta}
@@ -53,6 +53,7 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
         </div>
         <div className="mt-8">{cta}</div>
         <p className="t-caption mt-3 text-[var(--color-label-3)]">{fill(freeOn ? L.freeNote : L.priceNote, { price })}</p>
+        <p className="t-caption mt-1 text-[var(--color-label-3)]">{t.common.pricesUsd}</p>
         <p className="t-caption mt-1 text-emerald-300/90">✓ {L.guarantee}</p>
       </section>
 

@@ -1,10 +1,13 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { hasPhotoConsent } from "@/lib/consent";
 import { NewManifestation } from "@/components/NewManifestation";
 import { me } from "@/lib/social/me";
 import { db } from "@/lib/db/store";
 import { livePhotos } from "@/lib/manifest/photos";
-import { creditPacks } from "@/lib/pricing";
+import { creditPacks, elevatedPacks, stillPacks, upsellPack } from "@/lib/pricing";
+import { manifests } from "@/lib/manifest/store";
+import { upsellEligible } from "@/lib/wallet";
 import { stripeEnabled } from "@/lib/stripe";
 import { VOICES } from "@/lib/voices";
 import { getDictionary } from "@/lib/i18n/server";
@@ -14,10 +17,13 @@ import { hasFreeScene } from "@/lib/manifest/free";
 
 export const dynamic = "force-dynamic";
 
+/** Privada: fuera de Google. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
+
 /** Nueva manifestación: escribe un deseo y se crea una escena animada tuya. */
-export default async function ManifestarPage({ searchParams }: { searchParams: Promise<{ bought?: string; sid?: string }> }) {
-  const { bought, sid } = await searchParams;
-  const pack = creditPacks().find((p) => String(p.qty) === bought);
+export default async function ManifestarPage({ searchParams }: { searchParams: Promise<{ bought?: string; sid?: string; kind?: string }> }) {
+  const { bought, sid, kind } = await searchParams;
+  const pack = (kind === "stills" ? stillPacks() : kind === "elevated" ? elevatedPacks() : [...creditPacks(), ...(upsellPack() ? [upsellPack()!] : [])]).find((p) => String(p.qty) === bought);
   const who = await me();
   if (!who) redirect("/login?next=/new");
   const { t, locale } = await getDictionary();
@@ -34,9 +40,10 @@ export default async function ManifestarPage({ searchParams }: { searchParams: P
       <NewManifestation
         initialPhotos={photos.length}
         credits={user.credits ?? 0}
+        stillCredits={user.stillCredits ?? 0}
         freeScene={hasFreeScene(user)}
         paymentsOn={stripeEnabled()}
-        packs={creditPacks()}
+        packs={{ wishes: creditPacks(), stills: stillPacks(), elevated: elevatedPacks(), products: t.products, upsell: upsellEligible(user, await manifests.list(user.id)) ? upsellPack() : undefined, t: t.packs }}
         voices={VOICES.map((v) => ({ id: v.id, label: v.label[locale as Locale] }))}
         locale={locale as Locale}
         guide={t.photoGuide}

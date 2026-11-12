@@ -97,3 +97,28 @@ export async function backfillPlayCopies(): Promise<void> {
   }
   if (n) console.log(`[playback] ${n} copias ligeras creadas`);
 }
+
+/**
+ * "Foto con movimiento": clip sin IA de vídeo a partir de la imagen, con un
+ * acercamiento lento de cámara (Ken Burns). Mismo formato que los clips
+ * animados (1080×1920, 30 fps), así el visor, los highlights y el montaje
+ * funcionan igual. Coste 0.
+ */
+export async function makeStillClip(imageUrl: string, secs: number, sceneId: string): Promise<string> {
+  const m = imageUrl.split("?")[0].match(/^\/media\/generated\/([^/]+)\/[^/]+$/);
+  if (!m || !(await ensureLocal(imageUrl))) throw new Error("Imagen no disponible para el still");
+  const src = localPathForMediaUrl(imageUrl);
+  if (!src) throw new Error("Imagen no disponible para el still");
+  const frames = Math.max(30, Math.round(secs * 30));
+  const name = `still_${sceneId}.mp4`;
+  await ffmpeg([
+    "-y", "-loglevel", "error", "-i", src,
+    "-vf",
+    // Se agranda antes del zoom para que el movimiento no tiemble.
+    `scale=2160:3840:force_original_aspect_ratio=increase,crop=2160:3840,zoompan=z='1+0.1*on/${frames}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1080x1920:fps=30`,
+    "-frames:v", String(frames),
+    "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p",
+    "-threads", "2", "-movflags", "+faststart", mediaPath("generated", m[1], name),
+  ]);
+  return `/media/generated/${m[1]}/${name}`;
+}

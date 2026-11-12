@@ -1,3 +1,5 @@
+import { MAX_DESIRES } from "@/lib/types";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ComposeVideo } from "@/components/ComposeVideo";
@@ -8,6 +10,9 @@ import { getDictionary } from "@/lib/i18n/server";
 import type { Locale } from "@/lib/i18n/locale";
 
 export const dynamic = "force-dynamic";
+
+/** Privada: fuera de Google. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 /** Tu vídeo de manifestación: elige tus manifestaciones y se monta con ellas. */
 export default async function MiVideoPage() {
@@ -31,7 +36,7 @@ export default async function MiVideoPage() {
           items={ready.map((x) => ({ id: x.id, title: x.title, poster: x.highlight?.posterUrl ?? x.imageUrl, manifested: !!x.manifestedAt, locale: x.locale }))}
           voices={VOICES.map((v) => ({ id: v.id, label: v.label[locale as Locale] }))}
           locale={locale as Locale}
-          max={8}
+          max={MAX_DESIRES}
           t={{
             palette: t.create.palette, palettes: t.create.palettes,
             pick: m.pick, selected: m.selected, language: m.language, voice: m.voice, titleLabel: m.titleLabel, titleDefault: m.titleDefault,

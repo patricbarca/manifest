@@ -1,4 +1,8 @@
-import { PAYMENTS_ENABLED } from "@/lib/pricing";
+import type { Metadata } from "next";
+import { PAYMENTS_ENABLED, creditPacks, elevatedPacks, stillPacks, upsellPack } from "@/lib/pricing";
+import { stripeEnabled } from "@/lib/stripe";
+import { PricingPacks } from "@/components/PricingPacks";
+import { upsellEligible } from "@/lib/wallet";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -20,6 +24,9 @@ import { fill } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n/locale";
 
 export const dynamic = "force-dynamic";
+
+/** Privada: fuera de Google. */
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 type Tab = "manifest" | "today" | "circle";
 const TABS: Tab[] = ["manifest", "today", "circle"];
@@ -50,6 +57,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
   };
   const ready = projects.filter((p) => p.status === "ready");
   // Arriba, los mismos círculos que ven los demás: las manifestaciones que muestra.
+  const wallet = (await db.getUser(who.user.id)) ?? who.user;
   const groups = manifestPosts(mine);
   const members = circle.filter((c) => c.status === "accepted");
   const pending = circle.filter((c) => c.status === "pending");
@@ -124,6 +132,20 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
           </Link>
         </div>
       )}
+      {tab === "manifest" && stripeEnabled() && (
+        <div className="card rounded-[var(--radius-lg)] p-4 sm:p-5">
+          <PricingPacks
+            mode="buy"
+            wishes={creditPacks()}
+            stills={stillPacks()}
+            elevated={elevatedPacks()}
+            products={t.products}
+            balance={{ wishes: wallet.credits ?? 0, stills: wallet.stillCredits ?? 0 }}
+            upsell={upsellEligible(wallet, mine) ? upsellPack() : undefined}
+            t={t.packs}
+          />
+        </div>
+      )}
       {tab === "manifest" && (
         <div className="flex gap-2">
           <Link href="/new" className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 text-center font-medium text-black">+ {t.manifest.newButton}</Link>
@@ -135,6 +157,7 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
       {tab === "manifest" && (
         <ManifestationGrid
           initial={mine}
+          newWish={{ label: t.manifest.newWishTile, hint: t.manifest.newWishHint }}
           locale={locale}
           paymentsOn={PAYMENTS_ENABLED}
           t={{ remove: t.manifest.remove, sceneEdit: t.manifest.sceneEdit, edit: t.manifest.edit, save: t.manifest.save, cancel: t.manifest.cancel, titleLabel: t.manifest.titleField, phraseLabel: t.manifest.phraseField, editHint: t.manifest.editHint, textBlocked: t.aura.errors.text_blocked, manifested: t.manifest.manifested, markManifested: t.manifest.markManifested, unmark: t.manifest.unmark, onProfile: t.manifest.onProfile, profileHint: t.manifest.profileHint, showOnProfile: t.manifest.showOnProfile, hideFromProfile: t.manifest.hideFromProfile, generating: t.manifest.generating, waitingFunds: t.manifest.waitingFunds, failed: t.manifest.failed, close: t.aura.close, empty: t.manifest.empty, options: t.manifest.options, manifestedHint: t.manifest.manifestedHint }}

@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import type { PackKind } from "./pricing";
 import { PAYMENTS_ENABLED } from "./pricing";
 import { requestOrigin } from "./request-origin";
 
@@ -14,6 +15,11 @@ const API = "https://api.stripe.com/v1";
 
 export function stripeEnabled(): boolean {
   return PAYMENTS_ENABLED && !!process.env.STRIPE_SECRET_KEY && !!process.env.STRIPE_WEBHOOK_SECRET;
+}
+
+/** Caduca a las 3 horas (Stripe deja de 30 min a 24 h): si no paga, el aviso de caducada dispara el recordatorio el mismo día. */
+function checkoutExpiry(): number {
+  return Math.floor(Date.now() / 1000) + 3 * 3600;
 }
 
 export function siteOrigin(request: Request): string {
@@ -43,6 +49,7 @@ export async function createCheckout(opts: {
     "payment_intent_data[metadata][projectId]": opts.projectId,
     locale: opts.locale === "es" ? "es" : "en",
     allow_promotion_codes: "true",
+    expires_at: String(checkoutExpiry()),
     "metadata[waiver]": "accepted",
     "custom_text[submit][message]":
       opts.locale === "es"
@@ -99,6 +106,8 @@ export function verifyWebhook(payload: string, header: string | null, toleranceS
 export async function createCreditCheckout(opts: {
   userId: string;
   qty: number;
+  /** wishes: deseos animados (credits). stills: fotos con movimiento (stillCredits). */
+  kind?: PackKind;
   priceCents: number;
   productName: string;
   locale: string;
@@ -113,14 +122,15 @@ export async function createCreditCheckout(opts: {
     "line_items[0][price_data][currency]": process.env.STRIPE_CURRENCY ?? "usd",
     "line_items[0][price_data][unit_amount]": String(opts.priceCents),
     "line_items[0][price_data][product_data][name]": opts.productName,
-    success_url: `${opts.origin}/new?bought=${opts.qty}&sid={CHECKOUT_SESSION_ID}`,
+    success_url: `${opts.origin}/new?bought=${opts.qty}${opts.kind && opts.kind !== "wishes" ? `&kind=${opts.kind}` : ""}&sid={CHECKOUT_SESSION_ID}`,
     cancel_url: `${opts.origin}/new?cancelled=1`,
     client_reference_id: opts.userId,
-    "metadata[kind]": "credits",
+    "metadata[kind]": opts.kind === "stills" ? "stills" : opts.kind === "elevated" ? "elevated" : "credits",
     "metadata[userId]": opts.userId,
     "metadata[qty]": String(opts.qty),
     locale: opts.locale === "es" ? "es" : "en",
     allow_promotion_codes: "true",
+    expires_at: String(checkoutExpiry()),
   });
   const res = await fetch(`${API}/checkout/sessions`, {
     method: "POST",

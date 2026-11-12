@@ -53,10 +53,18 @@ export interface Product {
  * TIER_PRICES="vision:9,cinematic:39,elevated:49" (solo en el servidor: los
  * componentes de cliente reciben los precios por props).
  */
-const DEFAULT_TIER_PRICES: Record<Tier, number> = { vision: 9, cinematic: 39, elevated: 49 };
+/**
+ * El vídeo completo son 3 deseos: cuesta lo mismo que el pack de 3 de su tipo
+ * (Stills: 3 stills; Cinematic: 3 deseos; Elevated: 3 deseos × 2).
+ */
+function defaultTierPrices(): Record<Tier, number> {
+  const three = (packs: CreditPack[], fallback: number) => packs.find((p) => p.qty === 3)?.priceUsd ?? fallback;
+  const wish3 = three(creditPacks(), 25);
+  return { vision: three(stillPacks(), 12), cinematic: wish3, elevated: three(elevatedPacks(), wish3 * 2) };
+}
 
 function tierPrices(): Record<Tier, number> {
-  const out = { ...DEFAULT_TIER_PRICES };
+  const out = defaultTierPrices();
   for (const part of (process.env.TIER_PRICES ?? "").split(",")) {
     const [k, v] = part.split(":").map((x) => x.trim());
     const n = Number(v);
@@ -130,8 +138,9 @@ export function creatorPayoutUsd(tier: Tier): number {
 }
 
 /** Lo que se muestra en dólares, sin decimales cuando son redondos. */
+/** Precio en dólares estadounidenses, explícito ("US$39"): la tienda es australiana y cobra en USD. */
 export function formatUsd(amount: number): string {
-  return Number.isInteger(amount) ? `$${amount}` : `$${amount.toFixed(2)}`;
+  return Number.isInteger(amount) ? `US$${amount}` : `US$${amount.toFixed(2)}`;
 }
 
 /**
@@ -173,12 +182,76 @@ export interface CreditPack {
   priceUsd: number;
 }
 
-export function creditPacks(): CreditPack[] {
-  const raw = process.env.PACK_PRICES ?? "1:9,5:35,12:69";
+function parsePacks(raw: string, fallback: CreditPack): CreditPack[] {
   const packs = raw
     .split(",")
     .map((p) => p.split(":").map(Number))
     .filter(([q, price]) => q > 0 && price > 0)
     .map(([qty, priceUsd]) => ({ qty, priceUsd }));
-  return packs.length ? packs : [{ qty: 1, priceUsd: 9 }];
+  return packs.length ? packs : [fallback];
+}
+
+/** Packs de deseos animados (PACK_PRICES). Por defecto: 1 → 10 $, 3 → 25 $, 10 → 69 $. */
+export function creditPacks(): CreditPack[] {
+  return parsePacks(process.env.PACK_PRICES ?? "1:10,3:25,10:69", { qty: 1, priceUsd: 10 });
+}
+
+/** Packs de stills: fotos tuyas con movimiento de cámara (STILL_PACK_PRICES). Por defecto: 1 → 5 $, 3 → 12 $, 10 → 35 $. */
+export function stillPacks(): CreditPack[] {
+  return parsePacks(process.env.STILL_PACK_PRICES ?? "1:5,3:12,10:35", { qty: 1, priceUsd: 5 });
+}
+
+/**
+ * Packs de escenas Elevadas (ELEVATED_PACK_PRICES). Cada escena son 2 deseos:
+ * al comprar se suman qty × 2 deseos. Por defecto: 1 → 20 $, 3 → 50 $, 5 → 69 $.
+ */
+export function elevatedPacks(): CreditPack[] {
+  return parsePacks(process.env.ELEVATED_PACK_PRICES ?? "1:20,3:50,5:69", { qty: 1, priceUsd: 20 });
+}
+
+export type PackKind = "wishes" | "stills" | "elevated";
+/** El tipo de pack que paga cada tipo de vídeo. */
+export const packKindOf = (tier: Tier): PackKind => (tier === "vision" ? "stills" : tier === "elevated" ? "elevated" : "wishes");
+
+/**
+ * Precio de un vídeo con n deseos: la combinación de packs más barata que
+ * sume justo n (4 = pack de 3 + 1), y nunca más que un pack mayor (4 Elevado
+ * cuesta lo del pack de 5). Pura: sirve en el cliente.
+ */
+export function videoPriceUsd(packs: CreditPack[], n: number): number {
+  const best = [0];
+  for (let k = 1; k <= n; k++) {
+    best[k] = Math.min(...packs.filter((p) => p.qty <= k).map((p) => best[k - p.qty] + p.priceUsd), Infinity);
+  }
+  const bigger = Math.min(...packs.filter((p) => p.qty >= n).map((p) => p.priceUsd), Infinity);
+  const price = Math.min(best[n], bigger);
+  return Number.isFinite(price) ? +price.toFixed(2) : 0;
+}
+export const packsFor = (kind: PackKind) => (kind === "stills" ? stillPacks() : kind === "elevated" ? elevatedPacks() : creditPacks());
+
+/** Cuánto saldo da un pack: deseos (Animado y Elevado, ×2) o fotos con movimiento. */
+export function packGrant(kind: PackKind, qty: number): { field: "credits" | "stillCredits"; n: number } {
+  if (kind === "stills") return { field: "stillCredits", n: qty };
+  return { field: "credits", n: kind === "elevated" ? qty * 2 : qty };
+}
+
+/** "3 deseos · US$25": lo que gasta y cuesta un vídeo completo (3 escenas) de cada tipo. */
+export function videoLabel(tier: Tier, many: { wishes: string; stills: string }): string {
+  const units = tier === "vision" ? many.stills.replace("{n}", "3") : many.wishes.replace("{n}", tier === "elevated" ? "6" : "3");
+  return `${units} · ${formatUsd(PRODUCTS[tier].priceUsd)}`;
+}
+
+/** "Completa tu vídeo": a quien compró 1 deseo, los 2 que le faltan al precio del pack de 3 (25 − 10 = 15 $). */
+export function upsellPack(): CreditPack | undefined {
+  const packs = creditPacks();
+  const one = packs.find((p) => p.qty === 1)?.priceUsd;
+  const three = packs.find((p) => p.qty === 3)?.priceUsd;
+  return one && three && three > one ? { qty: 2, priceUsd: three - one } : undefined;
+}
+
+/** Precio suelto de una escena: 1 foto con movimiento (Stills), 1 deseo (Animado) o 2 deseos (Elevado). */
+export function scenePrice(tier: Tier): number {
+  const one = (packs: CreditPack[]) => packs.find((p) => p.qty === 1)?.priceUsd ?? packs[0].priceUsd;
+  if (tier === "vision") return one(stillPacks());
+  return one(creditPacks()) * (tier === "elevated" ? 2 : 1);
 }

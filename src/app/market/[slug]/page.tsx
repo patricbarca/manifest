@@ -1,15 +1,30 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { clip, pageMeta } from "@/lib/seo";
 import { templatePreview } from "@/lib/templates";
 import { TemplateMedia } from "@/components/TemplateMedia";
 import { notFound } from "next/navigation";
 import { TEMPLATES, templateBySlug } from "@/lib/templates";
-import { PRODUCTS, formatUsd } from "@/lib/pricing";
+import { videoLabel } from "@/lib/pricing";
 import { Icon } from "@/components/Icon";
 import { fill } from "@/lib/i18n";
 import { getDictionary } from "@/lib/i18n/server";
 
 export function generateStaticParams() {
   return TEMPLATES.map((t) => ({ slug: t.slug }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const bp = templateBySlug(slug);
+  if (!bp) return {};
+  const { locale } = await getDictionary();
+  return pageMeta({
+    title: `${bp.title[locale]} — ManifestLifeAI`,
+    description: clip(bp.summary[locale]),
+    path: `/market/${bp.slug}`,
+    image: templatePreview(bp.slug).still,
+  });
 }
 
 export default async function TemplatePage({
@@ -48,12 +63,13 @@ export default async function TemplatePage({
                 <div className="mb-2 flex items-baseline justify-between gap-2">
                   <span className="t-sub font-medium">{t.products[tier].name}</span>
                   <span className="t-sub tabular-nums text-[var(--color-label-2)]">
-                    {formatUsd(PRODUCTS[tier].priceUsd)}
+                    {videoLabel(tier, t.packs.many)}
                   </span>
                 </div>
                 <TemplateMedia
                   template={bp}
                   variant={variant}
+                  alt={`${bp.title[locale]} — ${t.products[tier].name}`}
                   className="aspect-[9/16] w-full rounded-[var(--radius-lg)] ring-1 ring-[var(--color-hairline)]"
                 />
                 <Link
