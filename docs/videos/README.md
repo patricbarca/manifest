@@ -20,5 +20,6 @@ Todas las personas son ficticias, generadas con IA. Si se usan en anuncios, már
 | mind-asset-en.mp4 | EN | 21 s | "Your mind… is your greatest asset." Ojo con estrellas, cabeza-galaxia, móvil rápido (escribe → ve el vídeo), "Live it", cresta al amanecer. Voz Brian |
 | not-magic-en.mp4 | EN | 24 s | "Manifesting isn't magic." Varita que se apaga, rutina repetida, móvil (selfie → "I open my own little bakery" → vídeo de ella) y su panadería real. Voz Matilda |
 | tiktok-free-en.mp4 | EN | 27 s | Llamada a probar gratis: "I just saw myself… living my dream." Móvil (selfie → "I open my own studio." → vídeo de ella), "Your first scene? It's FREE.", cierre "Your first scene is free · manifestlife.ai". Voz Sarah |
+| tiktok-free-man-en.mp4 | EN | 21 s | Llamada a probar gratis, versión chico: "I watched myself… living the life I want." Móvil (selfie → "I speak on the biggest stage in my city." → vídeo de él), cierre "Make your wish. See your life." + "Your first scene is free". Todo texto en pantalla va con voz. Voz Brian |
 
 Están en `docs/`, que no entra en la imagen de Docker: no se publican en la web.
