@@ -21,5 +21,6 @@ Todas las personas son ficticias, generadas con IA. Si se usan en anuncios, már
 | not-magic-en.mp4 | EN | 24 s | "Manifesting isn't magic." Varita que se apaga, rutina repetida, móvil (selfie → "I open my own little bakery" → vídeo de ella) y su panadería real. Voz Matilda |
 | tiktok-free-en.mp4 | EN | 27 s | Llamada a probar gratis: "I just saw myself… living my dream." Móvil (selfie → "I open my own studio." → vídeo de ella), "Your first scene? It's FREE.", cierre "Your first scene is free · manifestlife.ai". Voz Sarah |
 | tiktok-free-man-en.mp4 | EN | 21 s | Llamada a probar gratis, versión chico: "I watched myself… living the life I want." Móvil (selfie → "I speak on the biggest stage in my city." → vídeo de él), cierre "Make your wish. See your life." + "Your first scene is free". Todo texto en pantalla va con voz. Voz Brian |
+| tiktok-3reasons-en.mp4 | EN | 38 s | "3 reasons visualization matters (most people miss #3)": 1) el cerebro lo ensaya (imaginar activa muchas de las mismas áreas que hacerlo; los atletas de élite entrenan así), 2) vuelve real la meta, 3) ver también los obstáculos y dar un paso hoy (contraste mental, Oettingen). Cierre "Make your wish. See your life." + escena gratis. Voz Sarah |
 
 Están en `docs/`, que no entra en la imagen de Docker: no se publican en la web.
