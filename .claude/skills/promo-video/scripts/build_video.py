@@ -214,8 +214,9 @@ else:
 overlays = []
 if STYLE == "tiktok" and spec.get("hook"):
     bold_caption(spec["hook"]["text"], f"{T}/hook.png", size=70, yc=0.30, top=spec["hook"].get("top"))
-    first = spec["voice"][1]["at"] if len(spec["voice"]) > 1 else 5.0
-    overlays.append((f"{T}/hook.png", 0.0, first - 0.1))
+    # El gancho dura lo que su voz (la primera): ningún texto en pantalla sin narración.
+    v0 = spec["voice"][0]
+    overlays.append((f"{T}/hook.png", 0.0, v0["at"] + dur(v0["file"]) + 0.05))
 for k, v in enumerate(spec["voice"]):
     cap = v.get("caption")
     if not cap:
