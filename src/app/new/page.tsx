@@ -13,6 +13,7 @@ import { VOICES } from "@/lib/voices";
 import { getDictionary } from "@/lib/i18n/server";
 import type { Locale } from "@/lib/i18n/locale";
 import { TrackPurchase } from "@/components/Tracking";
+import { hasFreeScene } from "@/lib/manifest/free";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,7 @@ export default async function ManifestarPage({ searchParams }: { searchParams: P
         initialPhotos={photos.length}
         credits={user.credits ?? 0}
         stillCredits={user.stillCredits ?? 0}
+        freeScene={hasFreeScene(user)}
         paymentsOn={stripeEnabled()}
         packs={{ wishes: creditPacks(), stills: stillPacks(), elevated: elevatedPacks(), products: t.products, upsell: upsellEligible(user, await manifests.list(user.id)) ? upsellPack() : undefined, t: t.packs }}
         voices={VOICES.map((v) => ({ id: v.id, label: v.label[locale as Locale] }))}
@@ -50,7 +52,7 @@ export default async function ManifestarPage({ searchParams }: { searchParams: P
           desire: m.desire, desirePlaceholder: m.desirePlaceholder, language: m.language, voice: m.voice,
           photosTitle: m.photosTitle, photosHint: m.photosHint, consent: t.consent, biometric: t.biometricConsent,
           upload: m.upload, uploading: m.uploading, photosOk: m.photosOk, waiver: t.create.waiver,
-          create: m.create, creating: m.creating, credits: m.credits, noCredits: m.noCredits, buy: m.buy, each: m.each,
+          create: m.create, creating: m.creating, credits: m.credits, noCredits: m.noCredits, buy: m.buy, each: m.each, freeScene: m.freeScene, marketingOptIn: m.marketingOptIn,
           accessForm: t.access,
           errors: { ...t.aura.errors, photos: m.errPhotos, credits: m.noCredits, access: m.errAccess, payments_off: m.errPayments, rate_limited: t.errors.rateLimited, ...t.safety },
         }}

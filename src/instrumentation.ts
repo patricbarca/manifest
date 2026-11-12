@@ -18,6 +18,7 @@ export async function register() {
   const { runReminders } = await import("./lib/reminders");
   setInterval(() => {
     runReminders().catch((err) => console.error("[reminders]", err));
+    import("./lib/manifest/followups").then((f) => f.runFreeFollowups()).catch((err) => console.error("[seguimiento gratis]", err));
     import("./lib/queue").then((q) => q.approveStaleReviews()).catch((err) => console.error("[queue] revisiones:", err));
     import("./lib/queue").then((q) => q.retryWaitingFunds()).catch((err) => console.error("[fondos] reintento:", err));
   }, 15 * 60 * 1000);

@@ -26,7 +26,7 @@ export default async function AdminPage() {
       <div className="flex items-center justify-between">
         <Link href="/settings" className="t-sub text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">← Ajustes</Link>
         <h1 className="t-headline">Panel</h1>
-        <span className="w-14" />
+        <Link href="/admin/funnel" className="t-sub text-[var(--color-label-2)] hover:text-[var(--color-label-1)]">Escena gratis →</Link>
       </div>
 
       <Section title="Visitas" note="Cloudflare Web Analytics, sin bots. Web pública y app juntas (ver «Dónde»).">

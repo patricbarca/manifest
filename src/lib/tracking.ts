@@ -4,7 +4,8 @@ import { siteHost } from "./hosts";
 /**
  * Medición de anuncios (Google Ads y TikTok). Todo se activa por variables y
  * solo carga si la persona acepta las cookies de publicidad:
- *  - GOOGLE_ADS_ID ("AW-123…"), GOOGLE_ADS_PURCHASE_LABEL, GOOGLE_ADS_CHECKOUT_LABEL
+ *  - GOOGLE_ADS_ID ("AW-123…"), GOOGLE_ADS_PURCHASE_LABEL, GOOGLE_ADS_CHECKOUT_LABEL,
+ *    GOOGLE_ADS_LEAD_LABEL (escena gratis creada)
  *  - TIKTOK_PIXEL_ID
  * Se leen al servir la página (no en el build), así cambiarlas no exige recompilar.
  */
@@ -12,6 +13,8 @@ export interface TrackingConfig {
   googleAdsId?: string;
   googlePurchaseLabel?: string;
   googleCheckoutLabel?: string;
+  /** Conversión "escena gratis creada" (un registro con interés real). */
+  googleLeadLabel?: string;
   tiktokPixelId?: string;
   /** ".manifestlife.ai": la elección de cookies y el origen del anuncio valen en la web y en la app. */
   cookieDomain?: string;
@@ -24,6 +27,7 @@ export function trackingConfig(): TrackingConfig | null {
     googleAdsId: clean(process.env.GOOGLE_ADS_ID, /^AW-\d+$/),
     googlePurchaseLabel: clean(process.env.GOOGLE_ADS_PURCHASE_LABEL, /^[\w-]+$/),
     googleCheckoutLabel: clean(process.env.GOOGLE_ADS_CHECKOUT_LABEL, /^[\w-]+$/),
+    googleLeadLabel: clean(process.env.GOOGLE_ADS_LEAD_LABEL, /^[\w-]+$/),
     tiktokPixelId: clean(process.env.TIKTOK_PIXEL_ID, /^[A-Z0-9]+$/i),
   };
   if (!cfg.googleAdsId && !cfg.tiktokPixelId) return null;

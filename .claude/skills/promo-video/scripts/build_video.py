@@ -18,8 +18,12 @@ Spec (campos):
   "hook": {"top": "POV:", "text": "…"},        # solo tiktok, opcional
   "end": {"secs": 8, "tagline": "See it. Feel it. Live it.", "cta": "Create your first video, free",
           "lines": ["Make yours.", "Link in bio ↓"], "bg": "bg.mp4"},   # bg opcional (si no, degradado)
-  "music_volume": 0.32
+  "music_volume": 0.32,
+  "music": "pista.wav",                       # opcional: música propia (si no, se sintetiza con render/music.py)
+  "grade": "teal_gold",                       # opcional: etalonaje oscuro teal/dorado con grano y viñeta
+  "caption_yc": 0.17                          # opcional (tiktok): altura de los subtítulos, 0 arriba – 1 abajo
 }
+En tiktok, el texto entre asteriscos (*FOCUS.* o *LIVING IT.*) sale en dorado.
 """
 import json, os, subprocess, sys
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
@@ -93,12 +97,30 @@ def serif_caption(text, out):
     grad.save(out)
 
 
+GOLD = (255, 196, 92, 255)
+
+
 def bold_caption(text, out, size=84, yc=0.17, top=None):
-    """Texto TikTok: grande, blanco con contorno negro."""
+    """Texto TikTok: grande, blanco con contorno negro. *palabra* sale en dorado."""
     img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     f = font("Inter.ttf", size, [32, 700])
-    lines = wrap(d, text, f, W - 160)
+    words, gold = [], False  # *una palabra* o *varias palabras* en dorado
+    for w in text.split():
+        start = w.startswith("*")
+        end = w.endswith("*") and len(w) > (1 if not start else 2)
+        words.append((w.strip("*"), gold or start))
+        gold = (gold or start) and not end
+    sp = d.textlength(" ", font=f)
+    lines, cur, cw = [], [], 0
+    for w, g in words:
+        ww = d.textlength(w, font=f)
+        if cur and cw + sp + ww > W - 160:
+            lines.append(cur)
+            cur, cw = [], 0
+        cw += (sp if cur else 0) + ww
+        cur.append((w, g))
+    lines.append(cur)
     lh = int(size * 1.22)
     y0 = int(H * yc - lh * len(lines) / 2)
     if top:
@@ -106,8 +128,11 @@ def bold_caption(text, out, size=84, yc=0.17, top=None):
         d.text(((W - d.textlength(top, font=ft)) / 2, y0 - int(size * 1.7)), top, font=ft,
                fill=(255, 214, 160, 255), stroke_width=9, stroke_fill=(0, 0, 0, 255))
     for i, ln in enumerate(lines):
-        d.text(((W - d.textlength(ln, font=f)) / 2, y0 + i * lh), ln, font=f,
-               fill=(255, 255, 255, 255), stroke_width=9, stroke_fill=(0, 0, 0, 255))
+        x = (W - d.textlength(" ".join(w for w, _ in ln), font=f)) / 2
+        for w, g in ln:
+            d.text((x, y0 + i * lh), w, font=f, fill=GOLD if g else (255, 255, 255, 255),
+                   stroke_width=9, stroke_fill=(0, 0, 0, 255))
+            x += d.textlength(w, font=f) + sp
     img.save(out)
 
 
@@ -137,13 +162,20 @@ def end_card(out, e):
     img.save(out)
 
 
+# Etalonaje opcional (solo planos, no el cierre): "teal_gold" = sombras azuladas, luces doradas y grano.
+GRADES = {"teal_gold": ",eq=contrast=1.08:saturation=0.88:brightness=-0.02,"
+                       "colorbalance=rs=-0.07:gs=-0.01:bs=0.09:rh=0.07:gh=0.02:bh=-0.08,"
+                       "noise=alls=9:allf=t,vignette=PI/5"}
+GRADE = GRADES.get(spec.get("grade"), "")
+CAP_YC = float(spec.get("caption_yc", 0.17))
+
 # 1. Clips al formato final (sin audio, 30 fps, rellenando si el clip es corto).
 parts = []
 for i, s in enumerate(spec["shots"]):
     o = f"{T}/s{i}.mp4"
     run(["-ss", str(s.get("start", 0)), "-i", s["src"], "-t", str(s["secs"]), "-an", "-vf",
          f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},fps={FPS},"
-         f"tpad=stop_mode=clone:stop_duration=3,trim=0:{s['secs']},setpts=PTS-STARTPTS,format=yuv420p",
+         f"tpad=stop_mode=clone:stop_duration=3,trim=0:{s['secs']},setpts=PTS-STARTPTS{GRADE},format=yuv420p",
          "-c:v", "libx264", "-crf", "16", "-preset", "fast", o])
     parts.append((o, float(s["secs"])))
 
@@ -189,7 +221,7 @@ for k, v in enumerate(spec["voice"]):
         step = d / len(chunks)
         for j, c in enumerate(chunks):
             png = f"{T}/c{k}_{j}.png"
-            bold_caption(c, png)
+            bold_caption(c, png, yc=CAP_YC)
             overlays.append((png, v["at"] + j * step, v["at"] + (j + 1) * step))
     else:
         png = f"{T}/c{k}.png"
@@ -198,14 +230,17 @@ for k, v in enumerate(spec["voice"]):
 n = len(parts)
 for j, (png, a, b) in enumerate(overlays):
     inputs += ["-loop", "1", "-framerate", str(FPS), "-t", f"{total:.2f}", "-i", png]
-    chain += f"{label}[{n + j}:v]overlay=0:0:enable='between(t,{a:.2f},{b:.2f})'[o{j}];"
+    chain += f"{label}[{n + j}:v]overlay=0:0:enable='gte(t,{a:.2f})*lt(t,{b:.2f})'[o{j}];"
     label = f"[o{j}]"
 chain += f"{label}format=yuv420p[vout]"
 run([*inputs, "-filter_complex", chain, "-map", "[vout]", "-t", f"{total:.2f}",
      "-c:v", "libx264", "-crf", "17", "-preset", "medium", f"{T}/video.mp4"])
 
 # 5. Voz en su sitio + música propia por debajo, que baja cuando hay voz (sidechain).
-subprocess.run([sys.executable, f"{REPO}/render/music.py", f"{total + 1:.2f}", f"{T}/music.wav"], check=True)
+if spec.get("music"):  # pista propia (p. ej. generada con IA); si es corta, se repite
+    run(["-stream_loop", "-1", "-i", spec["music"], "-t", f"{total + 1:.2f}", "-ar", "44100", "-ac", "2", f"{T}/music.wav"])
+else:
+    subprocess.run([sys.executable, f"{REPO}/render/music.py", f"{total + 1:.2f}", f"{T}/music.wav"], check=True)
 vo = spec["voice"]
 ain = sum([["-i", v["file"]] for v in vo], [])
 amix = "".join(f"[{i + 1}:a]aresample=44100,aformat=channel_layouts=stereo,adelay={int(v['at'] * 1000)}|{int(v['at'] * 1000)}[a{i}];" for i, v in enumerate(vo))

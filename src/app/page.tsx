@@ -3,7 +3,7 @@ import { Icon } from "@/components/Icon";
 import { HeroVideo } from "@/components/HeroVideo";
 import { TEMPLATES } from "@/lib/templates";
 import { TemplateMedia } from "@/components/TemplateMedia";
-import { creditPacks, elevatedPacks, formatUsd, stillPacks } from "@/lib/pricing";
+import { FREE_MANIFESTATIONS, PAYMENTS_ENABLED, creditPacks, elevatedPacks, formatUsd, stillPacks } from "@/lib/pricing";
 import { PricingPacks } from "@/components/PricingPacks";
 import { LIFE_AREAS, type LifeArea } from "@/lib/types";
 import { isDemoMode } from "@/lib/ai";
@@ -67,6 +67,13 @@ export default async function HomePage() {
           <p className="t-caption rise mt-4 text-[var(--color-label-3)]">
             {t.packs.heroNote.replace("{p}", formatUsd(Math.min(...stillPacks().map((x) => x.priceUsd))))}
           </p>
+          {FREE_MANIFESTATIONS && PAYMENTS_ENABLED && (
+            <p className="rise mt-2">
+              <Link href="/new" className="t-sub text-emerald-300/90 underline-offset-4 hover:underline">
+                {t.home.freeLink} →
+              </Link>
+            </p>
+          )}
         </div>
 
         {/* El reproductor, centrado y grande: es el producto. */}

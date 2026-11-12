@@ -3,6 +3,7 @@ import { z } from "zod";
 import { me } from "@/lib/social/me";
 import { db } from "@/lib/db/store";
 import { BODY_BUILDS, BODY_HEIGHTS } from "@/lib/body";
+import { MARKETING_CONSENT_VERSION } from "@/lib/consent";
 
 export const runtime = "nodejs";
 
@@ -13,6 +14,8 @@ export async function POST(request: Request) {
   const body = z
     .object({
       reminders: z.boolean().optional(),
+      /** Emails de novedades y ofertas (permiso expreso; se puede quitar cuando quiera). */
+      marketing: z.boolean().optional(),
       // null = "prefiero no decirlo" (se borra).
       body: z.object({ build: z.enum(BODY_BUILDS).nullable().optional(), height: z.enum(BODY_HEIGHTS).nullable().optional() }).optional(),
     })
@@ -21,10 +24,11 @@ export async function POST(request: Request) {
   const user = (await db.getUser(who.user.id)) ?? who.user;
   const next = { ...user };
   if (body.data.reminders !== undefined) next.reminders = body.data.reminders;
+  if (body.data.marketing !== undefined) next.marketing = body.data.marketing ? (user.marketing ?? { at: Date.now(), version: MARKETING_CONSENT_VERSION }) : undefined;
   if (body.data.body) {
     const merged = { ...user.body, ...body.data.body };
     next.body = { build: merged.build ?? undefined, height: merged.height ?? undefined };
   }
   await db.putUser(next);
-  return NextResponse.json({ reminders: next.reminders, body: next.body });
+  return NextResponse.json({ reminders: next.reminders, marketing: !!next.marketing, body: next.body });
 }

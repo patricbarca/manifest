@@ -3,12 +3,13 @@
 import { useState } from "react";
 
 /** Activar o quitar el email diario de racha. */
-export function ReminderToggle({ initial, label }: { initial: boolean; label: string }) {
+/** `field` = qué ajuste cambia: el recordatorio diario (por defecto) o los emails de novedades. */
+export function ReminderToggle({ initial, label, field = "reminders" }: { initial: boolean; label: string; field?: "reminders" | "marketing" }) {
   const [on, setOn] = useState(initial);
   const [busy, setBusy] = useState(false);
   async function toggle() {
     setBusy(true);
-    const res = await fetch("/api/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reminders: !on }) });
+    const res = await fetch("/api/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ [field]: !on }) });
     setBusy(false);
     if (res.ok) setOn(!on);
   }

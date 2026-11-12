@@ -153,6 +153,18 @@ export function formatUsd(amount: number): string {
 export const FREE_VIDEOS = Number(process.env.FREE_VIDEOS ?? 0);
 
 /**
+ * PRIMERA ESCENA GRATIS
+ *
+ * Con FREE_MANIFESTATIONS=1, cada cuenta puede crear UNA manifestación (un
+ * deseo → una escena animada) sin pagar, con marca de agua en la copia que se
+ * ve. Sirve de gancho: verse una vez dentro de su deseo y, después, comprar el
+ * vídeo completo. Coste ~0,40–0,50 $ por escena (imagen + ~8 s de animación).
+ * FREE_DAILY_CAP limita cuántas se regalan al día entre todas las cuentas.
+ */
+export const FREE_MANIFESTATIONS = process.env.FREE_MANIFESTATIONS === "1";
+export const FREE_DAILY_CAP = Math.max(0, Number(process.env.FREE_DAILY_CAP ?? 50) || 0);
+
+/**
  * Mientras no haya pasarela de pago, no se cobra: se enseña el precio y se
  * genera igual. Se activa poniendo PAYMENTS_ENABLED=true cuando entre Stripe.
  */
