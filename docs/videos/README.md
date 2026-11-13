@@ -22,5 +22,9 @@ Todas las personas son ficticias, generadas con IA. Si se usan en anuncios, már
 | tiktok-free-en.mp4 | EN | 27 s | Llamada a probar gratis: "I just saw myself… living my dream." Móvil (selfie → "I open my own studio." → vídeo de ella), "Your first scene? It's FREE.", cierre "Your first scene is free · manifestlife.ai". Voz Sarah |
 | tiktok-free-man-en.mp4 | EN | 21 s | Llamada a probar gratis, versión chico: "I watched myself… living the life I want." Móvil (selfie → "I speak on the biggest stage in my city." → vídeo de él), cierre "Make your wish. See your life." + "Your first scene is free". Todo texto en pantalla va con voz. Voz Brian |
 | tiktok-3reasons-en.mp4 | EN | 38 s | "3 reasons visualization matters (most people miss #3)": 1) el cerebro lo ensaya (imaginar activa muchas de las mismas áreas que hacerlo; los atletas de élite entrenan así), 2) vuelve real la meta, 3) ver también los obstáculos y dar un paso hoy (contraste mental, Oettingen). Cierre "Make your wish. See your life." + escena gratis. Voz Sarah |
+| tiktok-3razones-es.mp4 | ES | 38 s | Versión en español de «3 reasons». Móvil con la interfaz en español. Cierre «Pide tu deseo. Mira tu vida.» + escena gratis. Voz Sarah |
+| tiktok-gratis-es.mp4 | ES | 20 s | Versión en español de la escena gratis: «Acabo de verme… viviendo mi sueño.» Móvil en español, «¿Y tu primera escena? Es gratis.». Voz Sarah |
+| tiktok-reaction-en.mp4 | EN | 23 s | Reacción: «POV: you see yourself living your dream… for the first time». Selfie → «I speak on stage in front of thousands.» → «Wait… that's me?». Voz Matilda |
+| tiktok-visionboard-en.mp4 | EN | 22 s | «Vision boards are dead. This is my 2027 one.» Tablero de polaroids; zoom a cada foto y se convierte en su vídeo (Kyoto, estudio, casa junto al mar, «and us»). Voz Alice |
 
 Están en `docs/`, que no entra en la imagen de Docker: no se publican en la web.
