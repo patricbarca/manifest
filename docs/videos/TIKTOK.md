@@ -16,7 +16,7 @@ con la extensión «Claude in Chrome» y la cuenta de TikTok ya abierta en ese C
 
 | Día | Fichero | Texto | Hashtags |
 |---|---|---|---|
-| 1 | tiktok-visionboard-en.mp4 | My 2027 vision board… but I can watch myself living it. Your first scene is free at manifestlife.ai | #visionboard #2027goals #visualization #manifestation #ai |
+| 1 | tiktok-visionboard-en.mp4 | Vision boards are dead 👀 This is my 2027 one: every photo turns into a video of me living it. Make your wish. See your life. Your first scene is free → manifestlife.ai · Scenes made with AI. | #visionboard #2027goals #visualization #manifestation #ai |
 | 2 | tiktok-reaction-en.mp4 | Seeing yourself living your dream for the first time hits different. Make your wish at manifestlife.ai (first scene free) | #manifestation #visualization #dreamlife #ai #pov |
 | 3 | tiktok-3reasons-en.mp4 | 3 reasons visualization matters — most people skip #3. Try it: first scene free at manifestlife.ai | #visualization #mindset #goals #selfimprovement #manifestation |
 | 4 | tiktok-free-en.mp4 | One selfie. One dream. A video of you already there. First scene free at manifestlife.ai | #manifestation #visualization #ai #dreamlife |
