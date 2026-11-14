@@ -1,5 +1,5 @@
 """Secuencia de móvil (1080x1920, 30 fps): selfie -> escribe tu sueño -> generando -> vídeo tuyo.
-Uso: [MOCK_SPEED=1.6] python3 mock_phone.py <selfie.jpg> <bg.mp4> <escena.mp4> <salida.mp4> <dir_fuentes> ["sueño"] ["etiqueta"]
+Uso: [MOCK_SPEED=1.6] [MOCK_LANG=es] python3 mock_phone.py <selfie.jpg> <bg.mp4> <escena.mp4> <salida.mp4> <dir_fuentes> ["sueño"] ["etiqueta"]
 """
 import os, subprocess, sys
 from PIL import Image, ImageDraw, ImageFont, ImageOps
@@ -13,6 +13,11 @@ _k = float(os.environ.get("MOCK_SPEED", "1"))  # >1 = más rápido (p. ej. 1.6 p
 T1, T2, T3, T4 = T1 / _k, T2 / _k, T3 / _k, T4 / _k
 DREAM = sys.argv[6] if len(sys.argv) > 6 else "I speak on the biggest stage in my city."
 TAG = sys.argv[7] if len(sys.argv) > 7 else "You, already there"
+# Textos de la interfaz: MOCK_LANG=es para la versión en español.
+UI = {
+    "en": {"selfie": "Add a selfie", "ok": "Looks great", "dream": "Write your dream", "create": "Create my video", "making": "Creating your video…"},
+    "es": {"selfie": "Sube un selfie", "ok": "Se ve genial", "dream": "Escribe tu sueño", "create": "Crear mi vídeo", "making": "Creando tu vídeo…"},
+}[os.environ.get("MOCK_LANG", "en")]
 WORK = os.path.join(os.path.dirname(os.path.abspath(OUT)), "mock")
 os.makedirs(f"{WORK}/scr", exist_ok=True)
 
@@ -71,20 +76,20 @@ def save(im):
 
 # 1. Selfie (aparece y sale el check)
 for i in range(int(T1 * FPS)):
-    im, d = base("Add a selfie", 0)
+    im, d = base(UI["selfie"], 0)
     a = min(1, i / 12)
     ph = Image.blend(Image.new("RGB", selfie.size, BGC), selfie, a)
     im.paste(ph, ((SW - 340) // 2, 280), mask)
     if i > 22:
         d.ellipse([SW / 2 - 34, 720, SW / 2 + 34, 788], fill=GOLD)
         d.line([(SW / 2 - 15, 754), (SW / 2 - 3, 768), (SW / 2 + 17, 740)], fill=BGC, width=7)
-        centered(d, 810, "Looks great", font(30, 600), WHITE)
+        centered(d, 810, UI["ok"], font(30, 600), WHITE)
     save(im)
 
 # 2. Escribe tu sueño (se teclea)
 n2 = int(T2 * FPS)
 for i in range(n2):
-    im, d = base("Write your dream", 1)
+    im, d = base(UI["dream"], 1)
     d.rounded_rectangle([34, 290, SW - 34, 620], radius=28, fill=CARD, outline=GOLD, width=3)
     k = min(len(DREAM), int(len(DREAM) * i / (n2 * 0.75)))
     f = font(36, 500)
@@ -93,13 +98,13 @@ for i in range(n2):
         d.text((60, 320 + j * 50), ln, font=f, fill=WHITE)
     btn = GOLD if k == len(DREAM) else (70, 80, 88)
     d.rounded_rectangle([90, 700, SW - 90, 790], radius=45, fill=btn)
-    centered(d, 726, "Create my video", font(32, 700), BGC)
+    centered(d, 726, UI["create"], font(32, 700), BGC)
     save(im)
 
 # 3. Generando
 n3 = int(T3 * FPS)
 for i in range(n3):
-    im, d = base("Creating your video…", 2)
+    im, d = base(UI["making"], 2)
     sm = selfie.resize((170, 200))
     m2 = mask.resize((170, 200))
     im.paste(sm, ((SW - 170) // 2, 330), m2)

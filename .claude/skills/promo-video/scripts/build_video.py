@@ -224,11 +224,15 @@ for k, v in enumerate(spec["voice"]):
     d = dur(v["file"])
     if STYLE == "tiktok":
         chunks = cap if isinstance(cap, list) else [cap]
-        step = d / len(chunks)
+        # Cada frase dura en proporción a sus letras: sigue mejor a la voz que partes iguales.
+        n = [max(1, len(c.replace("*", "").replace("|", "").strip())) for c in chunks]
+        t0 = v["at"]
         for j, c in enumerate(chunks):
             png = f"{T}/c{k}_{j}.png"
             bold_caption(c, png, yc=CAP_YC)
-            overlays.append((png, v["at"] + j * step, v["at"] + (j + 1) * step))
+            t1 = t0 + d * n[j] / sum(n)
+            overlays.append((png, t0, t1))
+            t0 = t1
     else:
         png = f"{T}/c{k}.png"
         serif_caption(cap if isinstance(cap, str) else " ".join(cap), png)

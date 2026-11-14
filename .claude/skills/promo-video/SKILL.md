@@ -50,6 +50,7 @@ Narration patterns that worked:
    The spec format is documented at the top of `scripts/build_video.py`. Music is synthesized by `render/music.py` (no licensing) and ducks under the voice.
 6. **Check**: extract 3–4 frames into one contact sheet and look at it once (captions readable, no cut faces, end card centered). Don't screenshot every page.
 7. **Deliver**: send the MP4 to the user. Only copy to `public/videos/` (website) after they approve, and only fragments.
+   **Always deliver the post description with the video** (the user asked for this as a rule): a ready-to-paste text in the video's language with the hook, what the viewer sees, the CTA ("Your first scene is free → manifestlife.ai"), "Scenes made with AI." and 4–6 hashtags. No promises of results. Add the same text to `docs/videos/TIKTOK.md`.
 
 ## Editing pitfalls (already solved in the script — keep them if you edit it)
 
