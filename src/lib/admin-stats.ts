@@ -232,11 +232,16 @@ export async function webStats(): Promise<WebStats> {
   const account = process.env.CF_ACCOUNT_ID;
   if (!process.env.CF_API_TOKEN || !account) return { ...empty, error: "not_configured" };
   try {
-    const tag = await siteTag(account);
+    // Listar los sitios pide otro permiso; si el token solo tiene «Account Analytics: Read»,
+    // se consulta la cuenta entera (solo hay un sitio) en vez de filtrar por sitio.
+    const tag = await siteTag(account).catch((err) => {
+      console.warn("[admin] Cloudflare: sin lista de sitios, se usa toda la cuenta:", err instanceof Error ? err.message : err);
+      return null;
+    });
     const now = new Date();
     const iso = (ms: number) => new Date(ms).toISOString();
     const run = async (withBots: boolean) => {
-      const base = (since: number) => ({ AND: [{ datetime_geq: iso(since), datetime_leq: now.toISOString() }, { siteTag: tag }, ...(withBots ? [] : [{ bot: 0 }])] });
+      const base = (since: number) => ({ AND: [{ datetime_geq: iso(since), datetime_leq: now.toISOString() }, ...(tag ? [{ siteTag: tag }] : []), ...(withBots ? [] : [{ bot: 0 }])] });
       const query = `query($account: string!, $filter: AccountRumPageloadEventsAdaptiveGroupsFilter_InputObject, $f24: AccountRumPageloadEventsAdaptiveGroupsFilter_InputObject, $f7: AccountRumPageloadEventsAdaptiveGroupsFilter_InputObject) {
         viewer { accounts(filter: { accountTag: $account }) {
           t24: rumPageloadEventsAdaptiveGroups(limit: 1, filter: $f24) { count sum { visits } }
