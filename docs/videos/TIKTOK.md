@@ -23,5 +23,6 @@ con la extensión «Claude in Chrome» y la cuenta de TikTok ya abierta en ese C
 | 5 | tiktok-free-man-en.mp4 | Make your wish. See your life. First scene free at manifestlife.ai | #visualization #mindset #goals #ai #manifestation |
 | 6 | tiktok-gratis-es.mp4 | Un selfie. Un deseo. Un vídeo tuyo ya allí. Tu primera escena es gratis en manifestlife.ai | #manifestacion #visualizacion #metas #ia |
 | 7 | tiktok-3razones-es.mp4 | 3 razones para visualizar (casi nadie hace la 3). Tu primera escena gratis en manifestlife.ai | #visualizacion #mentalidad #metas #manifestacion #ia |
+| 8 | tiktok-notesapp-en.mp4 | Stop writing your goals in your Notes app 📝 This is my 2027 list: every goal turns into a video of me living it. Make your wish. See your life. Your first scene is free → manifestlife.ai · Scenes made with AI. | #2027goals #goals #visualization #mindset #ai |
 
 Si la cuenta es solo en inglés, dejar los días 6 y 7 para una cuenta en español.
