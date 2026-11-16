@@ -26,5 +26,6 @@ Todas las personas son ficticias, generadas con IA. Si se usan en anuncios, már
 | tiktok-gratis-es.mp4 | ES | 20 s | Versión en español de la escena gratis: «Acabo de verme… viviendo mi sueño.» Móvil en español, «¿Y tu primera escena? Es gratis.». Voz Sarah |
 | tiktok-reaction-en.mp4 | EN | 23 s | Reacción: «POV: you see yourself living your dream… for the first time». Selfie → «I speak on stage in front of thousands.» → «Wait… that's me?». Voz Matilda |
 | tiktok-visionboard-en.mp4 | EN | 22 s | «Vision boards are dead. This is my 2027 one.» Tablero de polaroids; zoom a cada foto y se convierte en su vídeo (Kyoto, estudio, casa junto al mar, «and us»). Voz Alice |
+| tiktok-notesapp-en.mp4 | EN | 23 s | «Stop writing your goals in your Notes app. This is my 2027 list.» Lista de Notas: cada objetivo se marca y se convierte en su vídeo (escenario, cumbre, tortitas con su hija, playa). Voz Brian |
 
 Están en `docs/`, que no entra en la imagen de Docker: no se publican en la web.
