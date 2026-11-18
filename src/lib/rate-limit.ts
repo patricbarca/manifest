@@ -28,6 +28,7 @@ export const LIMITS = {
   clarify: { max: 20, windowMs: HOUR },
   createManifestation: { max: 20, windowMs: HOUR },
   createProject: { max: 6, windowMs: HOUR },
+  redoFace: { max: 6, windowMs: HOUR },
 } as const;
 
 export function allowFor(route: keyof typeof LIMITS, userId: string): boolean {

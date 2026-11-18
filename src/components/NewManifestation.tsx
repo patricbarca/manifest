@@ -15,13 +15,13 @@ type Packs = { wishes: CreditPack[]; stills: CreditPack[]; elevated: CreditPack[
 type Quality = "standard" | "elevated" | "still";
 type Labels = {
   desire: string; desirePlaceholder: string; language: string; voice: string; photosTitle: string; photosHint: string;
-  consent: string; biometric: string; upload: string; uploading: string; photosOk: string; waiver: string; create: string; creating: string;
+  consent: string; biometric: string; upload: string; uploading: string; photosOk: string; photosNeed: string; waiver: string; create: string; creating: string;
   credits: string; noCredits: string; buy: string; each: string; freeScene: string; marketingOptIn: string; errors: Record<string, string>; accessForm: { placeholder: string; submit: string; bad: string };
 };
 
 /** Crear una manifestación nueva: un deseo → una escena animada tuya. */
 export function NewManifestation({
-  initialPhotos,
+  photosReady,
   credits,
   stillCredits,
   freeScene = false,
@@ -33,7 +33,8 @@ export function NewManifestation({
   guide,
   consented = false,
 }: {
-  initialPhotos: number;
+  /** Sus selfies guardadas bastan (al menos 2 de cara, una de frente): ver selfieSetStatus. */
+  photosReady: boolean;
   credits: number;
   stillCredits: number;
   /** Le queda su primera escena gratis (FREE_MANIFESTATIONS): solo para una escena animada estándar. */
@@ -50,7 +51,6 @@ export function NewManifestation({
   const [desire, setDesire] = useState("");
   const [lang, setLang] = useState<Locale>(locale);
   const [voice, setVoice] = useState(voices[0]?.id ?? "Sarah");
-  const [photos, setPhotos] = useState(initialPhotos);
   const [consent, setConsent] = useState(consented);
   const [bio, setBio] = useState(consented);
   const [waiver, setWaiver] = useState(false);
@@ -67,7 +67,10 @@ export function NewManifestation({
   const have = quality === "still" ? stillCredits : credits;
   // La escena gratis cubre una animada estándar.
   const freeNow = freeScene && quality === "standard";
-  const canCreate = desire.trim().length >= 3 && photos > 0 && waiver && (!paymentsOn || freeNow || have >= need) && !busy;
+  // Lo que acaba de subir aquí: una de frente (huecos 1 y 2) y dos de cara en total.
+  // Además se refresca la página tras cada subida para que el servidor lo confirme con las guardadas.
+  const ready = photosReady || (!!(slotUrls[0] || slotUrls[1]) && slotUrls.slice(0, 3).filter(Boolean).length >= 2);
+  const canCreate = desire.trim().length >= 3 && ready && waiver && (!paymentsOn || freeNow || have >= need) && !busy;
   const input = "t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none focus:border-[var(--color-hairline-strong)]";
 
   async function upload(files: File[], slot = 0, scanned = false): Promise<SlotResult | undefined> {
@@ -89,7 +92,6 @@ export function NewManifestation({
       // El veredicto de cada foto se enseña debajo de las fotos (PhotoSlots).
       result = { ok: res.ok, warn: !!data.warning, message: res.ok ? data.warning : (data.error ?? t.errors.invalid) };
       if (res.ok) {
-        setPhotos((n) => n + 1);
         setSlotUrls((prev) => {
           const next = [...prev];
           next[slot] = data.url;
@@ -98,6 +100,7 @@ export function NewManifestation({
       }
     }
     setUploading(false);
+    if (result?.ok) router.refresh();
     return result;
   }
 
@@ -142,12 +145,13 @@ export function NewManifestation({
         </label>
       </div>
 
-      {photos > 0 && !slotUrls.some(Boolean) ? (
+      {ready && !slotUrls.some(Boolean) ? (
         <p className="t-caption text-emerald-300">✓ {t.photosOk}</p>
       ) : (
         <div className="card space-y-3 rounded-[var(--radius-lg)] p-5">
           <p className="t-sub font-medium">{t.photosTitle}</p>
           <p className="t-caption text-[var(--color-label-3)]">{t.photosHint}</p>
+          {!ready && <p className="t-caption text-amber-200">{t.photosNeed}</p>}
           <PhotoSlots
             urls={slotUrls}
             onPick={(file, slot, scanned) => upload([file], slot, scanned)}

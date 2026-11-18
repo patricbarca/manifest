@@ -22,6 +22,8 @@ export async function refundCredit(id: string): Promise<void> {
   const m = await manifests.get(id);
   // Regeneración gratis que falló: se devuelve al contador.
   if (m?.freeRegen) await manifests.patch(id, (cur) => ({ ...cur, freeRegen: undefined, regensUsed: Math.max(0, (cur.regensUsed ?? 1) - 1) }));
+  // Rehacer con selfies nuevas que falló: no cuenta (así no pierde la vez gratis).
+  if (m?.faceRedo) await manifests.patch(id, (cur) => ({ ...cur, faceRedo: undefined, faceRedos: Math.max(0, (cur.faceRedos ?? 1) - 1), photoUrls: cur.prevPhotoUrls ?? cur.photoUrls, prevPhotoUrls: undefined }));
   if (!m?.paidCredit) return;
   await manifests.patch(id, (cur) => ({ ...cur, paidCredit: undefined, editPaid: undefined }));
   await giveBack(m.ownerId, costOf(m.quality));
@@ -40,6 +42,8 @@ export async function runManifestation(id: string): Promise<void> {
   try {
     // Editar escena: la imagen ya está hecha y aprobada; solo falta animarla.
     const animateOnly = !!(start.animateOnly && start.draftImageUrl && (await ensureLocal(start.draftImageUrl)));
+    // Rehacer con sus selfies nuevas: misma escena y frase; solo imagen (con su cara de ahora) y animación nuevas.
+    const faceRedo = !animateOnly && !!(start.faceRedo && start.brief);
     // Nombre nuevo en cada versión: así el navegador no enseña la imagen anterior en caché.
     const sceneId = start.redoNote !== undefined || start.clipUrl ? `sc_${Date.now().toString(36)}` : "sc_1";
     let brief: string;
@@ -50,35 +54,40 @@ export async function runManifestation(id: string): Promise<void> {
       affirmation = start.affirmation ?? start.desire;
       imageUrl = start.draftImageUrl!;
     } else {
-      // 1. Escena y frase para este deseo.
-      const script = await providers.script.write({
-        area: inferArea(start.desire),
-        intention: start.desire,
-        durationSec: 30,
-        tier: "cinematic",
-        tone: "calma",
-        seed: id,
-        locale: start.locale,
-        desires: [start.desire],
-        // Al rehacerla, el cambio que pidió manda sobre la versión anterior.
-        details: start.redoNote ? [{ question: "Cambio que pidió para esta escena", answer: start.redoNote }] : undefined,
-      });
-      cents += script.costCents;
-      brief = script.result.sceneBriefs[0] ?? start.desire;
-      affirmation = script.result.affirmations[0] ?? start.desire;
+      if (faceRedo) {
+        brief = start.brief!;
+        affirmation = start.affirmation ?? start.desire;
+      } else {
+        // 1. Escena y frase para este deseo.
+        const script = await providers.script.write({
+          area: inferArea(start.desire),
+          intention: start.desire,
+          durationSec: 30,
+          tier: "cinematic",
+          tone: "calma",
+          seed: id,
+          locale: start.locale,
+          desires: [start.desire],
+          // Al rehacerla, el cambio que pidió manda sobre la versión anterior.
+          details: start.redoNote ? [{ question: "Cambio que pidió para esta escena", answer: start.redoNote }] : undefined,
+        });
+        cents += script.costCents;
+        brief = script.result.sceneBriefs[0] ?? start.desire;
+        affirmation = script.result.affirmations[0] ?? start.desire;
+      }
       const photos = (start.photoUrls ?? []).map((u) => localPathForMediaUrl(u)).filter((p): p is string => !!p);
       const owner = await db.getUser(start.ownerId);
       const [scene] = buildScenes([brief], start.style ?? "cinematic", photos.length > 0, 8, photos.length, bodyClause(owner?.body));
 
       // 2. Imagen con su cara.
-      const prompt = start.redoNote ? `${scene.prompt}. Change requested by the person (apply it exactly): ${start.redoNote}` : scene.prompt;
+      const prompt = start.redoNote && !faceRedo ? `${scene.prompt}. Change requested by the person (apply it exactly): ${start.redoNote}` : scene.prompt;
       const image = await providers.image.generate({ prompt, referencePaths: photos.length ? photos : undefined, projectId: id, sceneId });
       cents += image.costCents;
       imageUrl = image.result.url;
     }
 
     // 3. Voz de la afirmación: marca cuánto dura la escena. Al solo re-animar, se reutiliza.
-    let voiceUrl = animateOnly && start.voiceUrl && (await ensureLocal(start.voiceUrl)) ? start.voiceUrl : undefined;
+    let voiceUrl = (animateOnly || faceRedo) && start.voiceUrl && (await ensureLocal(start.voiceUrl)) ? start.voiceUrl : undefined;
     if (!voiceUrl) {
       if (!providers.voice.speakLines) throw new Error("La voz por frases no está disponible");
       const voice = await providers.voice.speakLines({ lines: { a0: affirmation }, projectId: id, locale: start.locale, voice: start.voice });
@@ -119,6 +128,8 @@ export async function runManifestation(id: string): Promise<void> {
       highlight: hl?.[0],
       free: free || undefined,
       animateOnly: undefined,
+      faceRedo: undefined,
+      prevPhotoUrls: undefined,
       draftImageUrl: undefined,
       draftNote: undefined,
       draftTries: undefined,

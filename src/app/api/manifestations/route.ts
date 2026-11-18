@@ -10,6 +10,7 @@ import { hasAccess } from "@/lib/access";
 import { db } from "@/lib/db/store";
 import { PAYMENTS_ENABLED } from "@/lib/pricing";
 import { livePhotos } from "@/lib/manifest/photos";
+import { selfieSetStatus } from "@/lib/manifest/selfie-set";
 import { newManifestId, shortTitle } from "@/lib/manifest/extract";
 import { enqueueManifestation } from "@/lib/queue";
 import { VOICE_IDS } from "@/lib/voices";
@@ -108,6 +109,9 @@ export async function POST(request: Request) {
   const user = (await db.getUser(who.user.id)) ?? who.user;
   const photos = await livePhotos(user);
   if (!photos.length) return NextResponse.json({ error: "photos" }, { status: 409 });
+  // Con solo fotos de perfil la cara no sale suya: hacen falta 2 de cara y una de frente.
+  const selfies = selfieSetStatus(user, photos);
+  if (!selfies.ok) return NextResponse.json({ error: "photos_incomplete", missing: selfies.missing }, { status: 409 });
   const quality = body.data.quality ?? "standard";
   const cost = costOf(quality);
   // Su primera escena animada puede ser gratis (FREE_MANIFESTATIONS); si no, se paga con su saldo.

@@ -6,7 +6,8 @@ import { createPortal } from "react-dom";
 import type { Manifestation } from "@/lib/types";
 
 type SceneEditLabels = { open: string; hint: string; placeholder: string; change: string; changing: string; current: string; next: string; left: string; animate: string; changePaid: string; costNote: string; paidNote: string; discardNote: string; animatePaid: string; animateHint: string; discard: string; errors: Record<string, string> };
-type Labels = { remove: Record<string, string>; sceneEdit: SceneEditLabels; edit: string; save: string; cancel: string; titleLabel: string; phraseLabel: string; editHint: string; textBlocked: string; manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; waitingFunds: string; failed: string; close: string; empty: string; options: string; manifestedHint: string };
+type FaceRedoLabels = { open: string; hint: string; photosFirst: string; photosLink: string; free: string; costWish: string; costWishes2: string; costStill: string; now: string; errors: Record<string, string> };
+type Labels = { remove: Record<string, string>; sceneEdit: SceneEditLabels; faceRedo: FaceRedoLabels; edit: string; save: string; cancel: string; titleLabel: string; phraseLabel: string; editHint: string; textBlocked: string; manifested: string; markManifested: string; unmark: string; onProfile: string; profileHint: string; showOnProfile: string; hideFromProfile: string; generating: string; waitingFunds: string; failed: string; close: string; empty: string; options: string; manifestedHint: string };
 
 /** Puede reproducirse en el visor (tiene su clip animado). */
 const playable = (m: Manifestation) => m.status === "ready" && !!m.clipUrl;
@@ -141,6 +142,10 @@ export function ManifestationGrid({
   const [sceneOpen, setSceneOpen] = useState(false);
   const [sceneNote, setSceneNote] = useState("");
   const [sceneBusy, setSceneBusy] = useState(false);
+  // Rehacer con sus selfies nuevas (misma escena, solo cambia la cara).
+  const [faceOpen, setFaceOpen] = useState(false);
+  const [faceBusy, setFaceBusy] = useState(false);
+  const [faceErr, setFaceErr] = useState<string>();
   // Visor a pantalla completa (deslizar para ver todas) y hoja de opciones de la activa.
   const [viewing, setViewing] = useState(false);
   const [sheet, setSheet] = useState(false);
@@ -165,6 +170,7 @@ export function ManifestationGrid({
     setEditing(false);
     setRemoving(false);
     setSceneOpen(false);
+    setFaceOpen(false);
     setErr(undefined);
   }
 
@@ -197,6 +203,18 @@ export function ManifestationGrid({
     const data = await res?.json().catch(() => ({}));
     setSceneBusy(false);
     if (!res?.ok) return setErr(t.sceneEdit.errors[data?.error] ?? t.sceneEdit.errors.failed);
+    setItems((xs) => xs.map((x) => (x.id === m.id ? data.manifestation : x)));
+    show(null);
+  }
+
+  // Rehacer con sus selfies nuevas: se pone en cola como al animar una edición.
+  async function redoFace(m: Manifestation) {
+    setFaceBusy(true);
+    setFaceErr(undefined);
+    const res = await fetch(`/api/manifestations/${m.id}/redo-face`, { method: "POST" }).catch(() => null);
+    const data = await res?.json().catch(() => ({}));
+    setFaceBusy(false);
+    if (!res?.ok) return setFaceErr(data?.error && t.faceRedo.errors[data.error] ? data.error : "failed");
     setItems((xs) => xs.map((x) => (x.id === m.id ? data.manifestation : x)));
     show(null);
   }
@@ -274,6 +292,7 @@ export function ManifestationGrid({
     setEditing(false);
     setRemoving(false);
     setSceneOpen(false);
+    setFaceOpen(false);
     setErr(undefined);
   }, [open?.id]);
 
@@ -389,9 +408,42 @@ export function ManifestationGrid({
           <button type="button" onClick={() => setSceneOpen(false)} className="t-caption underline text-[var(--color-label-3)]">{t.cancel}</button>
         </div>
       ) : (
-        !removing && open.imageUrl && open.status === "ready" && (
+        !removing && !faceOpen && open.imageUrl && open.status === "ready" && (
           <button type="button" onClick={() => { setSceneOpen(true); setSceneNote(""); setErr(undefined); }} className="t-caption mr-4 mt-4 underline text-[var(--color-label-1)]">
             ✎ {t.sceneEdit.open}
+          </button>
+        )
+      )}
+      {faceOpen ? (
+        <div className="mt-4 space-y-2 rounded-[var(--radius-md)] border border-[var(--color-hairline)] p-3">
+          <p className="t-caption text-[var(--color-label-2)]">{t.faceRedo.hint}</p>
+          <p className="t-caption text-[var(--color-label-2)]">
+            {t.faceRedo.photosFirst} <Link href="/settings" className="underline text-[var(--color-label-1)]">{t.faceRedo.photosLink}</Link>.
+          </p>
+          {paymentsOn && (
+            <p className="t-caption text-amber-200/90">
+              {!open.faceRedos ? t.faceRedo.free : open.quality === "still" ? t.faceRedo.costStill : open.quality === "elevated" ? t.faceRedo.costWishes2 : t.faceRedo.costWish}
+            </p>
+          )}
+          {faceErr && (
+            <p className="t-caption text-rose-500">
+              {t.faceRedo.errors[faceErr]}
+              {(faceErr === "photos_incomplete" || faceErr === "photos") && (
+                <> <Link href="/settings" className="underline">{t.faceRedo.photosLink}</Link></>
+              )}
+            </p>
+          )}
+          <div className="flex gap-2">
+            <button type="button" disabled={faceBusy} onClick={() => redoFace(open)} className="interactive t-sub flex-1 rounded-full bg-white px-4 py-2 font-medium text-black disabled:opacity-40">
+              {t.faceRedo.now}
+            </button>
+            <button type="button" disabled={faceBusy} onClick={() => setFaceOpen(false)} className="t-sub rounded-full bg-white/10 px-4 py-2">{t.cancel}</button>
+          </div>
+        </div>
+      ) : (
+        !removing && !sceneOpen && open.imageUrl && open.status === "ready" && (
+          <button type="button" onClick={() => { setFaceOpen(true); setFaceErr(undefined); setErr(undefined); }} className="t-caption mr-4 mt-4 underline text-[var(--color-label-1)]">
+            {t.faceRedo.open}
           </button>
         )
       )}
@@ -405,7 +457,7 @@ export function ManifestationGrid({
           </div>
         </div>
       ) : (
-        !sceneOpen && (
+        !sceneOpen && !faceOpen && (
           <button type="button" onClick={() => { setRemoving(true); setErr(undefined); }} className="t-caption mt-4 underline text-rose-500">
             {t.remove.open}
           </button>
