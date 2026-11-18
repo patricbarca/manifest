@@ -5,6 +5,7 @@ import { NewManifestation } from "@/components/NewManifestation";
 import { me } from "@/lib/social/me";
 import { db } from "@/lib/db/store";
 import { livePhotos } from "@/lib/manifest/photos";
+import { selfieSetStatus } from "@/lib/manifest/selfie-set";
 import { creditPacks, elevatedPacks, stillPacks, upsellPack } from "@/lib/pricing";
 import { manifests } from "@/lib/manifest/store";
 import { upsellEligible } from "@/lib/wallet";
@@ -38,7 +39,7 @@ export default async function ManifestarPage({ searchParams }: { searchParams: P
         <p className="t-sub mt-1 text-[var(--color-label-2)]">{m.newSub}</p>
       </div>
       <NewManifestation
-        initialPhotos={photos.length}
+        photosReady={selfieSetStatus(user, photos).ok}
         credits={user.credits ?? 0}
         stillCredits={user.stillCredits ?? 0}
         freeScene={hasFreeScene(user)}
@@ -51,10 +52,10 @@ export default async function ManifestarPage({ searchParams }: { searchParams: P
         t={{
           desire: m.desire, desirePlaceholder: m.desirePlaceholder, language: m.language, voice: m.voice,
           photosTitle: m.photosTitle, photosHint: m.photosHint, consent: t.consent, biometric: t.biometricConsent,
-          upload: m.upload, uploading: m.uploading, photosOk: m.photosOk, waiver: t.create.waiver,
+          upload: m.upload, uploading: m.uploading, photosOk: m.photosOk, photosNeed: m.photosNeed, waiver: t.create.waiver,
           create: m.create, creating: m.creating, credits: m.credits, noCredits: m.noCredits, buy: m.buy, each: m.each, freeScene: m.freeScene, marketingOptIn: m.marketingOptIn,
           accessForm: t.access,
-          errors: { ...t.aura.errors, photos: m.errPhotos, credits: m.noCredits, access: m.errAccess, payments_off: m.errPayments, rate_limited: t.errors.rateLimited, ...t.safety },
+          errors: { ...t.aura.errors, photos: m.errPhotos, photos_incomplete: m.errPhotosIncomplete, credits: m.noCredits, access: m.errAccess, payments_off: m.errPayments, rate_limited: t.errors.rateLimited, ...t.safety },
         }}
       />
     </div>

@@ -30,7 +30,9 @@ export async function DELETE(request: Request) {
   }
   const abs = localPathForMediaUrl(url);
   if (abs) await rm(abs, { force: true });
-  const next = { ...user, photoUrls: (user.photoUrls ?? []).filter((u) => u !== url) };
+  const photoMeta = { ...(user.photoMeta ?? {}) };
+  delete photoMeta[url];
+  const next = { ...user, photoUrls: (user.photoUrls ?? []).filter((u) => u !== url), photoMeta };
   await db.putUser(next);
   return NextResponse.json({ photos: await livePhotos(next) });
 }

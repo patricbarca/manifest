@@ -25,6 +25,8 @@ export type SelfieIssue = (typeof SELFIE_ISSUES)[number];
 export interface SelfieQuality {
   score: number;
   issues: SelfieIssue[];
+  /** Alto de la cara (% del alto de la foto), si el modelo lo dio. */
+  facePct?: number;
 }
 
 const SYSTEM = "You check if a photo is a good face reference for an AI that will put this person's face into new photos. Reply ONLY with JSON.";
@@ -72,7 +74,11 @@ export async function assessSelfie(
       if (i >= 0) issues.splice(i, 1);
     }
     // Sin cara o con varias no sirve, diga lo que diga la nota.
-    return { score: issues.includes("no_face") || issues.includes("multiple_faces") ? Math.min(score, 3) : score, issues };
+    return {
+      score: issues.includes("no_face") || issues.includes("multiple_faces") ? Math.min(score, 3) : score,
+      issues,
+      ...(Number.isFinite(pct) && pct > 0 ? { facePct: Math.min(100, pct) } : {}),
+    };
   } catch (err) {
     console.error("[selfie-check] falló, se acepta:", err instanceof Error ? err.message : err);
     return null;
