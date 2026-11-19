@@ -2,6 +2,7 @@ import { db } from "../db/store";
 import { FREE_DAILY_CAP, FREE_MANIFESTATIONS, PAYMENTS_ENABLED } from "../pricing";
 import { emailEnabled, sendAdminAlert } from "../email";
 import type { User } from "../types";
+import { logStep } from "../funnel";
 
 /**
  * PRIMERA ESCENA GRATIS (FREE_MANIFESTATIONS=1)
@@ -64,6 +65,7 @@ export async function claimFreeScene(user: User): Promise<boolean> {
     return false;
   }
   await db.putUser({ ...user, freeSceneAt: Date.now() });
+  logStep("free_scene", { userId: user.id });
   return true;
 }
 

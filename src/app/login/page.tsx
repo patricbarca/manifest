@@ -4,6 +4,7 @@ import { SignIn } from "@/components/SignIn";
 import { authConfig } from "@/lib/supabase/config";
 import { authUser } from "@/lib/supabase/server";
 import { getDictionary } from "@/lib/i18n/server";
+import { FREE_MANIFESTATIONS, PAYMENTS_ENABLED } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -17,10 +18,12 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
   if (!cfg) redirect(next);
   if (await authUser()) redirect(next);
   const { t } = await getDictionary();
+  // Viene a crear su escena gratis: textos de "guárdala" y Google como botón principal.
+  const free = FREE_MANIFESTATIONS && PAYMENTS_ENABLED && (next === "/new" || next.startsWith("/new?") || next.startsWith("/new/"));
   return (
     <>
       {error && <p className="t-caption mt-8 text-center text-red-300">{t.auth.error}</p>}
-      <SignIn url={cfg.url} anonKey={cfg.key} next={next} t={t.auth} />
+      <SignIn url={cfg.url} anonKey={cfg.key} next={next} t={t.auth} free={free} />
     </>
   );
 }

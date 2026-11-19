@@ -32,6 +32,7 @@ export function NewManifestation({
   t,
   guide,
   consented = false,
+  initialDesire = "",
 }: {
   /** Sus selfies guardadas bastan (al menos 2 de cara, una de frente): ver selfieSetStatus. */
   photosReady: boolean;
@@ -46,9 +47,11 @@ export function NewManifestation({
   t: Labels;
   guide: PhotoGuideLabels;
   consented?: boolean;
+  /** Deseo escrito antes de entrar (landing /start): llega ya puesto. */
+  initialDesire?: string;
 }) {
   const router = useRouter();
-  const [desire, setDesire] = useState("");
+  const [desire, setDesire] = useState(initialDesire);
   const [lang, setLang] = useState<Locale>(locale);
   const [voice, setVoice] = useState(voices[0]?.id ?? "Sarah");
   const [consent, setConsent] = useState(consented);

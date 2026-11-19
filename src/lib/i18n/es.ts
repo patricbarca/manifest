@@ -155,7 +155,16 @@ export const es: Dictionary = {
     priceNote: "Desde {price} · sin suscripción · pago único",
     guarantee: "Si tu vídeo falla, lo rehacemos o te devolvemos el dinero.",
     ctaFree: "Mírate gratis",
-    freeNote: "Tu primera escena es gratis · el vídeo completo cuesta {price}",
+    freeNote: "Primera escena gratis · sin tarjeta · sin suscripción",
+    wishLabel: "¿Qué quieres vivir?",
+    wishPlaceholder: "Escríbelo con tus palabras",
+    wishExamples: {
+      default: ["Vivir junto al mar", "Abrir mi propio estudio", "Viajar por Japón"],
+      money: ["Dirigir mi propio negocio", "Trabajar desde cualquier lugar del mundo", "Una casa con jardín y mucha luz"],
+      body: ["Cruzar la meta de mi primera carrera", "Sentirme fuerte y con energía", "Yoga al amanecer en la playa"],
+      love: ["Una cena tranquila con mi pareja", "Celebrar con toda mi familia", "Casarme con la persona que amo"],
+      travel: ["Ver la aurora boreal en Islandia", "Pasear por las calles de Kioto", "Navegar por las islas griegas"],
+    },
     angles: {
       money: { title: "Mírate viviendo con libertad financiera.", lede: "Sube una selfie, escribe tus metas de dinero y recibe un vídeo guiado donde te ves ya viviéndolas: tu negocio, tu casa, tu libertad." },
       body: { title: "Mírate en el cuerpo por el que trabajas.", lede: "Sube una selfie, escribe tus metas de salud y forma física y recibe un vídeo guiado donde te ves ya ahí, fuerte y con energía." },
@@ -193,7 +202,8 @@ export const es: Dictionary = {
     lede: "Sube un selfie, escribe tus deseos y mírate viviéndolos en un vídeo guiado de 2 minutos.",
     ctaPrimary: "Crear mi vídeo",
     ctaSecondary: "Ver el market",
-    freeLink: "O prueba una escena gratis",
+    ctaFree: "Mírate gratis",
+    freeNote: "Primera escena gratis · sin tarjeta · sin suscripción",
     previewLine: "Dirijo mi propio estudio.",
     previewCue: "ahora tú — dilo en voz alta",
     steps: [
@@ -661,6 +671,9 @@ export const es: Dictionary = {
   auth: {
     title: "Entra en ManifestLifeAI",
     lede: "Para guardar tus vídeos y verlos desde cualquier dispositivo.",
+    freeTitle: "Guarda tu escena gratis",
+    freeLede: "10 segundos con Google. Sin tarjeta.",
+    freeTrust: "Tus fotos son privadas y puedes borrarlas cuando quieras.",
     email: "tu@email.com",
     send: "Enviarme un código",
     sending: "Enviando…",

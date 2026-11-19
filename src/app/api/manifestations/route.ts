@@ -18,6 +18,7 @@ import { deleteManifestFiles } from "@/lib/cleanup";
 import { claimFreeScene } from "@/lib/manifest/free";
 import { MARKETING_CONSENT_VERSION } from "@/lib/consent";
 import type { Manifestation } from "@/lib/types";
+import { logStep } from "@/lib/funnel";
 
 export const runtime = "nodejs";
 
@@ -105,6 +106,7 @@ export async function POST(request: Request) {
   let verdict = checkDesires([body.data.desire]);
   if (verdict.ok) verdict = await moderate([body.data.desire]);
   if (!verdict.ok) return NextResponse.json({ error: "unsafe", key: verdict.key }, { status: 422 });
+  logStep("wish_submitted", { userId: who.user.id, path: "/new" });
 
   const user = (await db.getUser(who.user.id)) ?? who.user;
   const photos = await livePhotos(user);
