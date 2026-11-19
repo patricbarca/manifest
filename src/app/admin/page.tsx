@@ -63,6 +63,23 @@ export default async function AdminPage() {
           <Tile label="Nuevas (30 d)" value={n(app.users.new30)} />
           <Tile label="Activas (7 d)" value={n(app.users.active7)} hint="Vieron su vídeo o crearon algo" />
         </div>
+        <div>
+          <p className="t-sub mb-2 font-medium">Últimas 5 cuentas</p>
+          {app.latest.length ? (
+            <ul className="divide-y divide-[var(--color-hairline)] border-y border-[var(--color-hairline)]">
+              {app.latest.map((u) => (
+                <li key={u.email} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2.5">
+                  <span className="t-sub min-w-0 break-all">{u.email}</span>
+                  <span className="t-caption text-[var(--color-label-2)] tabular-nums">
+                    {new Date(u.createdAt).toLocaleDateString("es", { day: "numeric", month: "short", year: "numeric", timeZone: "Australia/Brisbane" })} · {u.photos} fotos · {u.scenes} escenas · {u.videos} vídeos · {u.purchases} compras
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="t-caption text-[var(--color-label-2)]">Aún no hay cuentas registradas.</p>
+          )}
+        </div>
       </Section>
 
       <Section title="Embudo (30 días)" note="De la visita al pago. «Crearon algo» cuenta borradores y escenas; «Fueron a pagar» y «Pagaron» salen de Stripe (personas, no pedidos).">

@@ -9,6 +9,8 @@ const DAY = 24 * 3600_000;
 
 export interface AppStats {
   users: { total: number; new7: number; new30: number; active7: number };
+  /** Las últimas cuentas registradas (con email), la más nueva primero. */
+  latest: { email: string; createdAt: number; scenes: number; videos: number; purchases: number; photos: number }[];
   videos: { total: number; last30: number; ready: number; failed: number; inProgress: number };
   manifestations: { total: number; last30: number };
   /** Coste estimado de IA (fal, voz, guion) de lo creado en 30 días, en dólares. */
@@ -50,11 +52,30 @@ export async function appStats(): Promise<AppStats> {
     cost += m.costCents ?? 0;
   }
 
+  // Cuentas de verdad: con email. Las demás son visitantes anónimos (cookie).
+  const accounts = users.filter((u) => !!u.email);
+  const scenesBy = new Map<string, number>();
+  for (const m of allManifests) scenesBy.set(m.ownerId, (scenesBy.get(m.ownerId) ?? 0) + 1);
+  const videosBy = new Map<string, number>();
+  for (const p of projects) videosBy.set(p.ownerId, (videosBy.get(p.ownerId) ?? 0) + 1);
+  const latest = [...accounts]
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 5)
+    .map((u) => ({
+      email: u.email!,
+      createdAt: u.createdAt,
+      scenes: scenesBy.get(u.id) ?? 0,
+      videos: videosBy.get(u.id) ?? 0,
+      purchases: u.creditSessions?.length ?? 0,
+      photos: u.photoUrls?.length ?? 0,
+    }));
+
   return {
+    latest,
     users: {
-      total: users.length,
-      new7: users.filter((u) => u.createdAt >= since7).length,
-      new30: users.filter((u) => u.createdAt >= since30).length,
+      total: accounts.length,
+      new7: accounts.filter((u) => u.createdAt >= since7).length,
+      new30: accounts.filter((u) => u.createdAt >= since30).length,
       active7: active.size,
     },
     videos: {
