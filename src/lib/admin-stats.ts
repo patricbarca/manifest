@@ -1,3 +1,6 @@
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { supabaseConfigured } from "./db/supabase-store";
+import { FUNNEL_STEPS, type FunnelStep } from "./funnel";
 import { db } from "./db/store";
 import { manifests } from "./manifest/store";
 import { social } from "./social/store";
@@ -9,6 +12,8 @@ const DAY = 24 * 3600_000;
 
 export interface AppStats {
   users: { total: number; new7: number; new30: number; active7: number };
+  /** Las últimas cuentas registradas (con email), la más nueva primero. */
+  latest: { email: string; createdAt: number; scenes: number; videos: number; purchases: number; photos: number }[];
   videos: { total: number; last30: number; ready: number; failed: number; inProgress: number };
   manifestations: { total: number; last30: number };
   /** Coste estimado de IA (fal, voz, guion) de lo creado en 30 días, en dólares. */
@@ -50,11 +55,30 @@ export async function appStats(): Promise<AppStats> {
     cost += m.costCents ?? 0;
   }
 
+  // Cuentas de verdad: con email. Las demás son visitantes anónimos (cookie).
+  const accounts = users.filter((u) => !!u.email);
+  const scenesBy = new Map<string, number>();
+  for (const m of allManifests) scenesBy.set(m.ownerId, (scenesBy.get(m.ownerId) ?? 0) + 1);
+  const videosBy = new Map<string, number>();
+  for (const p of projects) videosBy.set(p.ownerId, (videosBy.get(p.ownerId) ?? 0) + 1);
+  const latest = [...accounts]
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 5)
+    .map((u) => ({
+      email: u.email!,
+      createdAt: u.createdAt,
+      scenes: scenesBy.get(u.id) ?? 0,
+      videos: videosBy.get(u.id) ?? 0,
+      purchases: u.creditSessions?.length ?? 0,
+      photos: u.photoUrls?.length ?? 0,
+    }));
+
   return {
+    latest,
     users: {
-      total: users.length,
-      new7: users.filter((u) => u.createdAt >= since7).length,
-      new30: users.filter((u) => u.createdAt >= since30).length,
+      total: accounts.length,
+      new7: accounts.filter((u) => u.createdAt >= since7).length,
+      new30: accounts.filter((u) => u.createdAt >= since30).length,
       active7: active.size,
     },
     videos: {
@@ -287,4 +311,65 @@ export async function webStats(): Promise<WebStats> {
     console.error("[admin] Cloudflare:", err instanceof Error ? err.message : err);
     return { ...empty, error: err instanceof Error ? err.message : String(err) };
   }
+}
+
+// ── Embudo propio (tabla funnel_events) ─────────────────────────────────────
+
+export interface FunnelStats {
+  ok: boolean;
+  error?: string;
+  /** Cada paso en orden: personas distintas y % respecto al paso anterior. */
+  steps: { step: FunnelStep; people: number; pct: number | null }[];
+  /** Top 5 orígenes (utm_source o "direct") de los clics en el botón principal. */
+  sources: Row[];
+}
+
+/** Pasos que ocurren ya con cuenta: se cuenta por cuenta, o por visitante si no la hay. */
+const BY_USER = new Set<FunnelStep>(["sign_up", "selfies_ok", "wish_submitted", "free_scene"]);
+
+let funnelClient: SupabaseClient | undefined;
+
+export async function funnelStats(): Promise<FunnelStats> {
+  const empty = FUNNEL_STEPS.map((step) => ({ step, people: 0, pct: null }));
+  if (!supabaseConfigured()) return { ok: false, error: "not_configured", steps: empty, sources: [] };
+  // Sin funciones SQL propias (no hay migraciones para esto): se leen las filas de 7 días y se agrupan aquí.
+  funnelClient ??= createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SECRET_KEY!, { auth: { persistSession: false, autoRefreshToken: false } });
+  const sb = funnelClient;
+  const since = new Date(Date.now() - 7 * DAY).toISOString();
+  // Supabase devuelve como mucho 1000 filas por consulta: se pide por páginas (tope 50 000).
+  type Ev = { step: string; visitor: string | null; user_id: string | null; source: string | null };
+  const data: Ev[] = [];
+  for (let from = 0; from < 50_000; from += 1000) {
+    const { data: page, error } = await sb
+      .from("funnel_events")
+      .select("step, visitor, user_id, source")
+      .gte("at", since)
+      .order("id")
+      .range(from, from + 999);
+    if (error) return { ok: false, error: error.message, steps: empty, sources: [] };
+    data.push(...((page ?? []) as Ev[]));
+    if (!page || page.length < 1000) break;
+  }
+
+  const people = new Map<string, Set<string>>();
+  const sources = new Map<string, Set<string>>();
+  for (const r of data) {
+    const step = r.step as FunnelStep;
+    const who = BY_USER.has(step) ? (r.user_id ?? r.visitor) : (r.visitor ?? r.user_id);
+    if (!who) continue;
+    (people.get(step) ?? people.set(step, new Set()).get(step)!).add(who);
+    if (step === "cta_click") {
+      const src = r.source || "direct";
+      (sources.get(src) ?? sources.set(src, new Set()).get(src)!).add(who);
+    }
+  }
+  let prev: number | null = null;
+  const steps = FUNNEL_STEPS.map((step) => {
+    const count = people.get(step)?.size ?? 0;
+    const pct = prev === null ? null : prev ? Math.round((count / prev) * 100) : null;
+    prev = count;
+    return { step, people: count, pct };
+  });
+  const top = [...sources].map(([label, s]) => ({ label, visits: s.size, views: 0 })).sort((a, b) => b.visits - a.visits).slice(0, 5);
+  return { ok: true, steps, sources: top };
 }

@@ -12,6 +12,9 @@ import { mediaPath, mediaUrl } from "@/lib/paths";
 import { getDictionary } from "@/lib/i18n/server";
 import { sweepStorage } from "@/lib/cleanup";
 import { db } from "@/lib/db/store";
+import { livePhotos } from "@/lib/manifest/photos";
+import { selfieSetStatus } from "@/lib/manifest/selfie-set";
+import { logStep } from "@/lib/funnel";
 
 /** Cambia si cambia el texto del consentimiento de fotos (para volver a pedirlo y saber cuál aceptó). */
 
@@ -93,11 +96,29 @@ export async function POST(request: Request) {
   // sin volver a subirlas, mientras existan (se borran a los 30 días).
   const url = mediaUrl("uploads", name);
   if (self || !user.photoConsent || user.photoConsent.version !== PHOTO_CONSENT_VERSION) {
-    await db.putUser({
+    const photoUrls = [...(user.photoUrls ?? []), url].slice(-4);
+    // Datos de cada selfie (hueco, encuadre, nota): sirven para saber si hay alguna de frente.
+    // Solo se guardan los de las fotos que siguen en la lista.
+    const rawSlot = form.get("slot");
+    const slot = typeof rawSlot === "string" && /^[0-3]$/.test(rawSlot) ? Number(rawSlot) : undefined;
+    const photoMeta = Object.fromEntries(Object.entries(user.photoMeta ?? {}).filter(([u]) => photoUrls.includes(u)));
+    photoMeta[url] = {
+      ...(slot !== undefined ? { slot } : {}),
+      kind: form.get("slot") === "3" ? "body" : "face",
+      ...(quality ? { score: quality.score } : {}),
+      ...(quality?.facePct !== undefined ? { facePct: quality.facePct } : {}),
+      at: Date.now(),
+    };
+    // Para el embudo: ¿estaba incompleto su juego de selfies antes de esta foto?
+    const wasOk = self && selfieSetStatus(user, await livePhotos(user)).ok;
+    const next = {
       ...user,
       photoConsent: { at: Date.now(), version: PHOTO_CONSENT_VERSION },
-      ...(self ? { photoUrls: [...(user.photoUrls ?? []), url].slice(-4) } : {}),
-    });
+      ...(self ? { photoUrls, photoMeta } : {}),
+    };
+    await db.putUser(next);
+    // Paso "selfies_ok": solo al pasar de incompleto a completo.
+    if (self && !wasOk && selfieSetStatus(next, await livePhotos(next)).ok) logStep("selfies_ok", { userId: user.id, path: "/new" });
   }
 
   // Aceptada pero mejorable: se avisa con los motivos.

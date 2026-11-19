@@ -171,6 +171,12 @@ export interface Manifestation {
   attempts?: number;
   /** Se pagó con una manifestación de un paquete: si falla, se devuelve una vez. */
   paidCredit?: boolean;
+  /** En cola para rehacerla con sus selfies nuevas: misma escena y frase, imagen y animación nuevas. */
+  faceRedo?: boolean;
+  /** Veces que la ha rehecho con sus selfies nuevas (la primera es gratis). */
+  faceRedos?: number;
+  /** Selfies de la versión anterior mientras se rehace con las nuevas (para volver a ellas si falla). */
+  prevPhotoUrls?: string[];
   /** Es su escena gratis (FREE_MANIFESTATIONS): la copia que se ve lleva marca de agua. */
   free?: boolean;
   costCents: number;
@@ -451,6 +457,8 @@ export interface User {
   checkoutReminderAt?: number;
   /** Sus últimas fotos (para crear manifestaciones sin volver a subirlas mientras existan). */
   photoUrls?: string[];
+  /** Datos de cada selfie guardada (por URL): hueco, encuadre y nota del pre-análisis. Sin entrada = foto antigua. */
+  photoMeta?: Record<string, { slot?: number; kind: "face" | "body"; score?: number; facePct?: number; at: number }>;
   /** Complexión y estatura elegidas con botones (opcional): se añaden al prompt de las escenas. */
   body?: import("./body").BodyFeatures;
   /** Stills que puede crear (fotos con movimiento de cámara), aparte de los deseos animados. */

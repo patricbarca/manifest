@@ -1,7 +1,8 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { funnel } from "@/lib/track-client";
 
 type Labels = {
   title: string;
@@ -16,10 +17,16 @@ type Labels = {
   or: string;
   error: string;
   changeEmail: string;
+  freeTitle: string;
+  freeLede: string;
+  freeTrust: string;
 };
 
-/** Entrar con un código o enlace por email, o con Google. */
-export function SignIn({ url, anonKey, next, t }: { url: string; anonKey: string; next: string; t: Labels }) {
+/**
+ * Entrar con un código o enlace por email, o con Google. Con `free` (viene a
+ * crear su escena gratis) cambian los textos y Google pasa a ser el botón principal.
+ */
+export function SignIn({ url, anonKey, next, t, free = false }: { url: string; anonKey: string; next: string; t: Labels; free?: boolean }) {
   const sb = useMemo(() => createBrowserClient(url, anonKey), [url, anonKey]);
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -28,12 +35,14 @@ export function SignIn({ url, anonKey, next, t }: { url: string; anonKey: string
   const [error, setError] = useState<string>();
   // La vuelta va al mismo dominio en el que está la persona: si no, la sesión
   // (que se guarda por dominio) se pierde por el camino.
+  useEffect(() => funnel("login_view", { variant: free ? "free" : "default" }), [free]);
   const callback = () => `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
 
   async function sendCode(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError(undefined);
+    funnel("auth_start", { method: "email" });
     const { error } = await sb.auth.signInWithOtp({ email: email.trim(), options: { emailRedirectTo: callback() } });
     setBusy(false);
     if (error) return setError(error.message || t.error);
@@ -55,6 +64,7 @@ export function SignIn({ url, anonKey, next, t }: { url: string; anonKey: string
 
   async function google() {
     setError(undefined);
+    funnel("auth_start", { method: "google" });
     const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: callback() } });
     if (error) setError(error.message || t.error);
   }
@@ -64,12 +74,24 @@ export function SignIn({ url, anonKey, next, t }: { url: string; anonKey: string
   const primary =
     "interactive w-full rounded-full bg-white px-6 py-3 text-[15px] font-medium text-black hover:bg-white/90 disabled:opacity-50";
 
+  // Con `free`, el email queda en segundo plano: Google es lo más rápido.
+  const secondary =
+    "interactive w-full rounded-full border border-[var(--color-hairline-strong)] px-6 py-3 text-[15px] disabled:opacity-50";
+
   return (
     <div className="mx-auto max-w-sm px-6 py-24">
-      <h1 className="t-title text-center">{t.title}</h1>
-      <p className="t-sub mt-3 text-center text-[var(--color-label-2)]">{t.lede}</p>
+      <h1 className="t-title text-center">{free ? t.freeTitle : t.title}</h1>
+      <p className="t-sub mt-3 text-center text-[var(--color-label-2)]">{free ? t.freeLede : t.lede}</p>
 
-      <button type="button" onClick={google} className="interactive mt-10 flex w-full items-center justify-center gap-3 rounded-full border border-[var(--color-hairline-strong)] px-6 py-3 text-[15px]">
+      <button
+        type="button"
+        onClick={google}
+        className={
+          free
+            ? "interactive mt-10 flex w-full items-center justify-center gap-3 rounded-full bg-white px-6 py-3.5 text-[15px] font-medium text-black hover:bg-white/90"
+            : "interactive mt-10 flex w-full items-center justify-center gap-3 rounded-full border border-[var(--color-hairline-strong)] px-6 py-3 text-[15px]"
+        }
+      >
         <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
           <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />
           <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
@@ -84,7 +106,7 @@ export function SignIn({ url, anonKey, next, t }: { url: string; anonKey: string
       {step === "email" ? (
         <form onSubmit={sendCode} className="space-y-3">
           <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t.email} className={input} />
-          <button type="submit" disabled={busy} className={primary}>
+          <button type="submit" disabled={busy} className={free ? secondary : primary}>
             {busy ? t.sending : t.send}
           </button>
         </form>
@@ -101,6 +123,7 @@ export function SignIn({ url, anonKey, next, t }: { url: string; anonKey: string
         </form>
       )}
       {error && <p className="t-caption mt-4 text-center text-red-300">{error}</p>}
+      {free && <p className="t-caption mt-8 text-center text-[var(--color-label-3)]">{t.freeTrust}</p>}
     </div>
   );
 }
