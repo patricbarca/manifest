@@ -28,5 +28,6 @@ Todas las personas son ficticias, generadas con IA. Si se usan en anuncios, már
 | tiktok-visionboard-en.mp4 | EN | 22 s | «Vision boards are dead. This is my 2027 one.» Tablero de polaroids; zoom a cada foto y se convierte en su vídeo (Kyoto, estudio, casa junto al mar, «and us»). Voz Alice |
 | tiktok-notesapp-en.mp4 | EN | 23 s | «Stop writing your goals in your Notes app. This is my 2027 list.» Lista de Notas: cada objetivo se marca y se convierte en su vídeo (escenario, cumbre, tortitas con su hija, playa). Voz Brian |
 | tiktok-seenit-en.mp4 | EN | 18 s | «You've imagined your dream life a thousand times… but you've never actually seen it.» «Not a stranger. Not a stock video. You.» Móvil (selfie → frase → «and there you are»). Cierre «See yours.» + escena gratis. Voz Sarah |
+| tiktok-notyet-en.mp4 | EN | 19 s | «None of this happened… yet.» Él aplaudido en el escenario → móvil (selfie + frase) → escenario, cumbre, tortitas con su hija → «I watch it every night…». Cierre «Your turn. See yours.» + escena gratis. Voz Brian |
 
 Están en `docs/`, que no entra en la imagen de Docker: no se publican en la web.
