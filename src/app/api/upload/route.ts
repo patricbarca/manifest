@@ -12,6 +12,9 @@ import { mediaPath, mediaUrl } from "@/lib/paths";
 import { getDictionary } from "@/lib/i18n/server";
 import { sweepStorage } from "@/lib/cleanup";
 import { db } from "@/lib/db/store";
+import { livePhotos } from "@/lib/manifest/photos";
+import { selfieSetStatus } from "@/lib/manifest/selfie-set";
+import { logStep } from "@/lib/funnel";
 
 /** Cambia si cambia el texto del consentimiento de fotos (para volver a pedirlo y saber cuál aceptó). */
 
@@ -106,11 +109,16 @@ export async function POST(request: Request) {
       ...(quality?.facePct !== undefined ? { facePct: quality.facePct } : {}),
       at: Date.now(),
     };
-    await db.putUser({
+    // Para el embudo: ¿estaba incompleto su juego de selfies antes de esta foto?
+    const wasOk = self && selfieSetStatus(user, await livePhotos(user)).ok;
+    const next = {
       ...user,
       photoConsent: { at: Date.now(), version: PHOTO_CONSENT_VERSION },
       ...(self ? { photoUrls, photoMeta } : {}),
-    });
+    };
+    await db.putUser(next);
+    // Paso "selfies_ok": solo al pasar de incompleto a completo.
+    if (self && !wasOk && selfieSetStatus(next, await livePhotos(next)).ok) logStep("selfies_ok", { userId: user.id, path: "/new" });
   }
 
   // Aceptada pero mejorable: se avisa con los motivos.

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { FunnelLink } from "@/components/FunnelLink";
+import { StartWish } from "@/components/StartWish";
 import { HeroVideo } from "@/components/HeroVideo";
 import { FREE_MANIFESTATIONS, PAYMENTS_ENABLED, formatUsd, stillPacks } from "@/lib/pricing";
 import { getDictionary } from "@/lib/i18n/server";
@@ -12,12 +13,16 @@ export const metadata: Metadata = {
 };
 
 /** Las UTM del anuncio siguen hasta crear el vídeo, para medir qué anuncio vende. */
-function withUtm(href: string, sp: Record<string, string | string[] | undefined>): string {
-  const q = new URLSearchParams();
+function utmParams(sp: Record<string, string | string[] | undefined>): Record<string, string> {
+  const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(sp)) {
-    if (/^(utm_[a-z]+|fbclid|gclid|ttclid)$/.test(k) && typeof v === "string") q.set(k, v.slice(0, 200));
+    if (/^(utm_[a-z]+|fbclid|gclid|ttclid)$/.test(k) && typeof v === "string") out[k] = v.slice(0, 200);
   }
-  const s = q.toString();
+  return out;
+}
+
+function withUtm(href: string, sp: Record<string, string | string[] | undefined>): string {
+  const s = new URLSearchParams(utmParams(sp)).toString();
   return s ? `${href}?${s}` : href;
 }
 
@@ -30,14 +35,15 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
   const freeOn = FREE_MANIFESTATIONS && PAYMENTS_ENABLED;
   const create = withUtm(freeOn ? "/new" : "/create", sp);
   // Versión por ángulo del anuncio: /start?a=money|body|love|travel. El titular repite la promesa del anuncio.
-  const angle = typeof sp.a === "string" && sp.a in L.angles ? L.angles[sp.a as keyof typeof L.angles] : null;
+  const angleKey = typeof sp.a === "string" && sp.a in L.angles ? (sp.a as keyof typeof L.angles) : null;
+  const angle = angleKey ? L.angles[angleKey] : null;
   const title = angle?.title ?? L.title;
   const lede = angle?.lede ?? L.lede;
   const price = formatUsd(Math.min(...stillPacks().map((x) => x.priceUsd)));
   const cta = (
-    <Link href={create} className="interactive inline-block rounded-full bg-white px-7 py-3.5 text-[16px] font-semibold tracking-[-0.011em] text-black hover:bg-white/90">
+    <FunnelLink href={create} from="start" className="interactive inline-block rounded-full bg-white px-7 py-3.5 text-[16px] font-semibold tracking-[-0.011em] text-black hover:bg-white/90">
       {freeOn ? L.ctaFree : L.cta}
-    </Link>
+    </FunnelLink>
   );
 
   return (
@@ -51,9 +57,16 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
             <HeroVideo src="/videos/promo-en.mp4" poster="/videos/promo-en.jpg" soundLabel={t.home.soundOn} />
           </div>
         </div>
-        <div className="mt-8">{cta}</div>
-        <p className="t-caption mt-3 text-[var(--color-label-3)]">{fill(freeOn ? L.freeNote : L.priceNote, { price })}</p>
-        <p className="t-caption mt-1 text-[var(--color-label-3)]">{t.common.pricesUsd}</p>
+        {/* Con la escena gratis, el botón de arriba es el del formulario: el deseo ya va escrito a /new. */}
+        <div className="mt-8">
+          {freeOn ? (
+            <StartWish utm={utmParams(sp)} examples={L.wishExamples[angleKey ?? "default"]} t={{ label: L.wishLabel, placeholder: L.wishPlaceholder, cta: L.ctaFree }} />
+          ) : (
+            cta
+          )}
+        </div>
+        <p className="t-caption mt-3 text-[var(--color-label-3)]">{freeOn ? L.freeNote : fill(L.priceNote, { price })}</p>
+        {!freeOn && <p className="t-caption mt-1 text-[var(--color-label-3)]">{t.common.pricesUsd}</p>}
         <p className="t-caption mt-1 text-emerald-300/90">✓ {L.guarantee}</p>
       </section>
 

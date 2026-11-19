@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { HeroVideo } from "@/components/HeroVideo";
+import { FunnelLink } from "@/components/FunnelLink";
 import { TEMPLATES } from "@/lib/templates";
 import { TemplateMedia } from "@/components/TemplateMedia";
 import { FREE_MANIFESTATIONS, PAYMENTS_ENABLED, creditPacks, elevatedPacks, formatUsd, stillPacks } from "@/lib/pricing";
@@ -26,6 +27,8 @@ function areaSample(area: LifeArea) {
 export default async function HomePage() {
   const { t } = await getDictionary();
   const demo = isDemoMode();
+  // Con la escena gratis activa, el botón principal lleva a crear una escena sin pagar.
+  const freeOn = FREE_MANIFESTATIONS && PAYMENTS_ENABLED;
 
   return (
     <div>
@@ -50,12 +53,14 @@ export default async function HomePage() {
           </p>
 
           <div className="rise mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/create"
+            <FunnelLink
+              href={freeOn ? "/new" : "/create"}
+              from="home"
+              keepUtm
               className="interactive rounded-full bg-white px-6 py-3 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90"
             >
-              {t.home.ctaPrimary}
-            </Link>
+              {freeOn ? t.home.ctaFree : t.home.ctaPrimary}
+            </FunnelLink>
             <Link
               href="/market"
               className="interactive t-sub inline-flex items-center gap-1.5 rounded-full border border-[var(--color-hairline)] px-6 py-3 text-[var(--color-label-1)]"
@@ -65,15 +70,8 @@ export default async function HomePage() {
             </Link>
           </div>
           <p className="t-caption rise mt-4 text-[var(--color-label-3)]">
-            {t.packs.heroNote.replace("{p}", formatUsd(Math.min(...stillPacks().map((x) => x.priceUsd))))}
+            {freeOn ? t.home.freeNote : t.packs.heroNote.replace("{p}", formatUsd(Math.min(...stillPacks().map((x) => x.priceUsd))))}
           </p>
-          {FREE_MANIFESTATIONS && PAYMENTS_ENABLED && (
-            <p className="rise mt-2">
-              <Link href="/new" className="t-sub text-emerald-300/90 underline-offset-4 hover:underline">
-                {t.home.freeLink} →
-              </Link>
-            </p>
-          )}
         </div>
 
         {/* El reproductor, centrado y grande: es el producto. */}

@@ -2,14 +2,25 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { me } from "@/lib/social/me";
 import { isAdmin } from "@/lib/admin";
-import { appStats, checkoutStats, stripeStats, webStats } from "@/lib/admin-stats";
+import { appStats, checkoutStats, funnelStats, stripeStats, webStats } from "@/lib/admin-stats";
 import { DayChart, Section, Tile, TopList, n } from "@/components/AdminCharts";
 import { formatUsd } from "@/lib/pricing";
 import { stripeSetupChecks } from "@/lib/stripe-admin";
 import { StripeTestCodes } from "@/components/StripeTestCodes";
+import type { FunnelStep } from "@/lib/funnel";
 
 export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false, follow: false } };
+
+const STEP_LABEL: Record<FunnelStep, string> = {
+  cta_click: "Clic en el botón",
+  login_view: "Vieron el login",
+  auth_start: "Empezaron a entrar",
+  sign_up: "Cuenta nueva",
+  selfies_ok: "Selfies completas",
+  wish_submitted: "Escribieron un deseo",
+  free_scene: "Escena gratis",
+};
 
 /** Panel privado: visitas (Cloudflare), uso de la app, ingresos (Stripe) y coste de IA. */
 export default async function AdminPage() {
@@ -18,7 +29,7 @@ export default async function AdminPage() {
   // A quien no es administrador, la página ni existe.
   if (!isAdmin(who.user.email)) notFound();
 
-  const [web, app, money, setup, pay] = await Promise.all([webStats(), appStats(), stripeStats(), stripeSetupChecks(), checkoutStats()]);
+  const [web, app, money, setup, pay, steps] = await Promise.all([webStats(), appStats(), stripeStats(), stripeSetupChecks(), checkoutStats(), funnelStats()]);
   const conversion = web.visits30 ? ((money.payers30 / web.visits30) * 100).toFixed(1) : "–";
 
   return (
@@ -91,6 +102,23 @@ export default async function AdminPage() {
           <Tile label="Pagaron" value={pay.ok ? n(pay.paid) : "–"} hint={pay.ok ? `${n(pay.expired)} sin terminar · ${n(pay.open)} abiertos` : undefined} />
         </div>
         {!pay.ok && <p className="t-caption mt-3 text-rose-300">No se pudo leer Stripe: {pay.error}</p>}
+      </Section>
+
+      <Section title="Embudo (7 días)" note="Medición propia, paso a paso. Personas distintas (visitante anónimo o cuenta) y % respecto al paso anterior.">
+        {steps.ok ? (
+          <>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {steps.steps.map((s) => (
+                <Tile key={s.step} label={STEP_LABEL[s.step]} value={n(s.people)} hint={s.pct === null ? undefined : `${s.pct} % del anterior`} />
+              ))}
+            </div>
+            <TopList title="Origen de los clics en el botón principal" rows={steps.sources} />
+          </>
+        ) : steps.error === "not_configured" ? (
+          <p className="t-caption text-[var(--color-label-2)]">Sin Supabase no se registra el embudo.</p>
+        ) : (
+          <p className="t-caption text-rose-300">No se pudo leer el embudo: {steps.error}</p>
+        )}
       </Section>
 
       <Section title="Creación">

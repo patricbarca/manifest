@@ -22,11 +22,21 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 /** Nueva manifestación: escribe un deseo y se crea una escena animada tuya. */
-export default async function ManifestarPage({ searchParams }: { searchParams: Promise<{ bought?: string; sid?: string; kind?: string }> }) {
-  const { bought, sid, kind } = await searchParams;
+export default async function ManifestarPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
+  const str = (v: string | string[] | undefined) => (typeof v === "string" ? v : undefined);
+  const [bought, sid, kind] = [str(sp.bought), str(sp.sid), str(sp.kind)];
+  // Deseo escrito en la landing (/start): llega ya puesto en el cuadro.
+  const wish = str(sp.wish)?.trim().slice(0, 200) || undefined;
   const pack = (kind === "stills" ? stillPacks() : kind === "elevated" ? elevatedPacks() : [...creditPacks(), ...(upsellPack() ? [upsellPack()!] : [])]).find((p) => String(p.qty) === bought);
   const who = await me();
-  if (!who) redirect("/login?next=/new");
+  if (!who) {
+    // El deseo y las UTM siguen después de entrar.
+    const keep = new URLSearchParams();
+    for (const [k, v] of Object.entries(sp)) if ((k === "wish" || /^(utm_[a-z]+|fbclid|gclid|ttclid)$/.test(k)) && typeof v === "string") keep.set(k, v.slice(0, 200));
+    const q = keep.toString();
+    redirect(`/login?next=${encodeURIComponent(q ? `/new?${q}` : "/new")}`);
+  }
   const { t, locale } = await getDictionary();
   const user = (await db.getUser(who.user.id)) ?? who.user;
   const photos = await livePhotos(user);
@@ -49,6 +59,7 @@ export default async function ManifestarPage({ searchParams }: { searchParams: P
         locale={locale as Locale}
         guide={t.photoGuide}
         consented={hasPhotoConsent(user)}
+        initialDesire={wish}
         t={{
           desire: m.desire, desirePlaceholder: m.desirePlaceholder, language: m.language, voice: m.voice,
           photosTitle: m.photosTitle, photosHint: m.photosHint, consent: t.consent, biometric: t.biometricConsent,

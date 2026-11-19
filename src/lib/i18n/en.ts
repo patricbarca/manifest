@@ -156,7 +156,16 @@ export const en = {
     priceNote: "From {price} · no subscription · one-time payment",
     guarantee: "If your video fails, we remake it or refund you.",
     ctaFree: "See yourself free",
-    freeNote: "Your first scene is free · the full video is {price}",
+    freeNote: "First scene free · no card · no subscription",
+    wishLabel: "What do you want to live?",
+    wishPlaceholder: "Write it in your own words",
+    wishExamples: {
+      default: ["Living by the sea", "Opening my own studio", "Travelling around Japan"],
+      money: ["Running my own business", "Working from anywhere in the world", "A home with a garden and lots of light"],
+      body: ["Crossing the finish line of my first race", "Feeling strong and full of energy", "Yoga at sunrise on the beach"],
+      love: ["A quiet dinner with my partner", "Celebrating with my whole family", "Marrying the person I love"],
+      travel: ["Seeing the northern lights in Iceland", "Walking the streets of Kyoto", "Sailing the Greek islands"],
+    },
     angles: {
       money: { title: "See yourself living financially free.", lede: "Upload a selfie, write your money goals and get a guided video where you see yourself already living them: your business, your home, your freedom." },
       body: { title: "See yourself in the body you're working for.", lede: "Upload a selfie, write your health and fitness goals and get a guided video where you see yourself already there, strong and full of energy." },
@@ -194,7 +203,8 @@ export const en = {
     lede: "Upload a selfie, write your wishes and watch yourself living them in a guided 2-minute video.",
     ctaPrimary: "Create my video",
     ctaSecondary: "See the market",
-    freeLink: "Or try one scene free",
+    ctaFree: "See yourself free",
+    freeNote: "First scene free · no card · no subscription",
     previewLine: "I run my own studio.",
     previewCue: "your turn — say it out loud",
     steps: [
@@ -662,6 +672,9 @@ export const en = {
   auth: {
     title: "Sign in to ManifestLifeAI",
     lede: "To keep your videos and watch them on any device.",
+    freeTitle: "Save your free scene",
+    freeLede: "10 seconds with Google. No card.",
+    freeTrust: "Your photos stay private and you can delete them anytime.",
     email: "you@email.com",
     send: "Email me a code",
     sending: "Sending…",

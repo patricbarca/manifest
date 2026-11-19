@@ -7,6 +7,7 @@ import type { User } from "../types";
 import { authUser } from "../supabase/server";
 import { authEnabled } from "../supabase/config";
 import { FREE_VIDEOS, PAYMENTS_ENABLED } from "../pricing";
+import { logStep } from "../funnel";
 
 /**
  * Identidad.
@@ -51,6 +52,8 @@ async function ensureUser(id: string, email = "", name = "Invitado"): Promise<Us
   }
   const user: User = { id, email, name, createdAt: Date.now(), freeVideosUsed: 0 };
   await db.putUser(user);
+  // Cuenta nueva de verdad (con email): paso "sign_up" del embudo. Los anónimos de desarrollo no cuentan.
+  if (email) logStep("sign_up", { userId: id });
   return user;
 }
 
