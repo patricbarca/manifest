@@ -61,7 +61,7 @@ export default async function ManifestarPage({ searchParams }: { searchParams: P
         consented={hasPhotoConsent(user)}
         initialDesire={wish}
         t={{
-          desire: m.desire, desirePlaceholder: m.desirePlaceholder, language: m.language, voice: m.voice,
+          desire: m.desire, desirePlaceholder: m.desirePlaceholder, placeTitle: m.placeTitle, placeHint: m.placeHint, placePick: m.placePick, placeRemove: m.placeRemove, language: m.language, voice: m.voice,
           photosTitle: m.photosTitle, photosHint: m.photosHint, consent: t.consent, biometric: t.biometricConsent,
           upload: m.upload, uploading: m.uploading, photosOk: m.photosOk, photosNeed: m.photosNeed, waiver: t.create.waiver,
           create: m.create, creating: m.creating, credits: m.credits, noCredits: m.noCredits, buy: m.buy, each: m.each, freeScene: m.freeScene, marketingOptIn: m.marketingOptIn,

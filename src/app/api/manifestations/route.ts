@@ -14,7 +14,8 @@ import { selfieSetStatus } from "@/lib/manifest/selfie-set";
 import { newManifestId, shortTitle } from "@/lib/manifest/extract";
 import { enqueueManifestation } from "@/lib/queue";
 import { VOICE_IDS } from "@/lib/voices";
-import { deleteManifestFiles } from "@/lib/cleanup";
+import { deleteManifestFiles, deleteMediaUrl } from "@/lib/cleanup";
+import { ensureLocal } from "@/lib/manifest/compose";
 import { claimFreeScene } from "@/lib/manifest/free";
 import { MARKETING_CONSENT_VERSION } from "@/lib/consent";
 import type { Manifestation } from "@/lib/types";
@@ -76,6 +77,8 @@ export async function DELETE(request: Request) {
   if (cur.status === "queued" || cur.status === "generating") return NextResponse.json({ error: "busy" }, { status: 409 });
   await manifests.delete(cur.id);
   await deleteManifestFiles(cur.id);
+  // La foto del lugar es solo de esta escena: se va con ella.
+  await deleteMediaUrl(cur.placeUrl);
   return NextResponse.json({ ok: true });
 }
 
@@ -90,6 +93,8 @@ const Create = z.object({
   waiver: z.literal(true),
   /** Marcó la casilla (sin marcar por defecto) de recibir novedades y ofertas por email. */
   marketing: z.boolean().optional(),
+  /** Foto del lugar donde quiere verse (opcional): subida con kind=place, solo suya. */
+  placeUrl: z.string().max(200).optional(),
 });
 
 /**
@@ -103,6 +108,13 @@ export async function POST(request: Request) {
   if (!allowFor("createManifestation", who.user.id)) return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   const body = Create.safeParse(await request.json().catch(() => ({})));
   if (!body.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
+  // La foto del lugar tiene que ser una subida suya de tipo lugar (el nombre lleva su id).
+  const placeUrl = body.data.placeUrl;
+  const placePrefix = `/media/uploads/${who.user.id}_place_`;
+  if (placeUrl && !(placeUrl.startsWith(placePrefix) && /^[a-z0-9_]+\.(jpg|png|webp)$/.test(placeUrl.slice(placePrefix.length)))) {
+    return NextResponse.json({ error: "invalid" }, { status: 400 });
+  }
+  if (placeUrl && !(await ensureLocal(placeUrl))) return NextResponse.json({ error: "invalid" }, { status: 400 });
   let verdict = checkDesires([body.data.desire]);
   if (verdict.ok) verdict = await moderate([body.data.desire]);
   if (!verdict.ok) return NextResponse.json({ error: "unsafe", key: verdict.key }, { status: 422 });
@@ -142,6 +154,7 @@ export async function POST(request: Request) {
     voice: body.data.voice,
     style: body.data.style,
     photoUrls: photos,
+    placeUrl,
     quality,
     paidCredit: (PAYMENTS_ENABLED && !free) || undefined,
     free: free || undefined,

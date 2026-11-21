@@ -45,6 +45,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
             { h: "Quién es responsable", p: [`${OWNER} es responsable de los datos que se tratan en esta web. Para cualquier consulta sobre tus datos escribe a ${c}.`] },
             { h: "Qué datos usamos", p: [
               "Las fotos que subes de ti y, si las añades, de otras personas, con su nombre y relación contigo.",
+              "Si quieres, una foto del lugar donde quieres verte: solo se usa para generar esa escena y se borra con ella.",
               "Lo que escribes: tus deseos, tus respuestas y tus correcciones al guion.",
               "Lo que generamos para ti: guion, imágenes, clips, voz y el vídeo final.",
               "Un identificador anónimo en una cookie, para saber qué vídeos son tuyos.",
@@ -78,6 +79,7 @@ export function legalDoc(doc: LegalDoc, locale: Locale): { title: string; update
             { h: "Who is responsible", p: [`${OWNER} is responsible for the data processed on this site. For any question about your data, write to ${c}.`] },
             { h: "What data we use", p: [
               "The photos you upload of yourself and, if you add them, of other people, with their name and relationship to you.",
+              "If you want, a photo of the place where you want to see yourself: it's used only to generate that scene and is deleted with it.",
               "What you write: your desires, your answers and your corrections to the script.",
               "What we generate for you: script, images, clips, voice and the final video.",
               "An anonymous identifier in a cookie, so we know which videos are yours.",
