@@ -5,6 +5,7 @@ import { db } from "@/lib/db/store";
 import { me } from "@/lib/social/me";
 import { manifests } from "@/lib/manifest/store";
 import { livePhotos } from "@/lib/manifest/photos";
+import { figureLabel } from "@/lib/script-engine";
 import { ensureLocal } from "@/lib/manifest/compose";
 import { checkBlocked } from "@/lib/safety";
 import { moderate } from "@/lib/moderation";
@@ -42,8 +43,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!base || !(await ensureLocal(base))) return NextResponse.json({ error: "no_image" }, { status: 409 });
   const user = (await db.getUser(who.user.id)) ?? who.user;
   const photos = (await livePhotos(user)).map((u) => localPathForMediaUrl(u)).filter((p): p is string => !!p);
-  const refs = [localPathForMediaUrl(base)!, ...photos.slice(0, 4)];
-  const faces = photos.length ? ` The person keeps exactly the face and likeness of ${photos.length > 1 ? `Figures 2 to ${photos.length + 1}` : "Figure 2"}.` : "";
+  const selfies = photos.slice(0, 4);
+  const refs = [localPathForMediaUrl(base)!, ...selfies];
+  const faces = selfies.length ? ` The person keeps exactly the face and likeness of ${selfies.length > 1 ? `Figures 2 to ${selfies.length + 1}` : "Figure 2"}.` : "";
+  // Foto del lugar (si la subió): última referencia, para que el sitio no cambie.
+  const place = m.placeUrl && (await ensureLocal(m.placeUrl)) ? localPathForMediaUrl(m.placeUrl) : null;
+  if (place) refs.push(place);
+  const setting = place ? ` The place stays the location shown in ${figureLabel(refs.length)}; ignore any people in ${figureLabel(refs.length)}.` : "";
 
   // Desde el perfil, editar una escena se paga: 1 manifestación al empezar cubre
   // hasta 3 imágenes y la animación. Las regeneraciones gratis son solo al crear el vídeo.
@@ -57,7 +63,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   working.add(id);
   try {
     const image = await providers.image.generate({
-      prompt: `Photorealistic high-definition photo. Recreate Figure 1 exactly: same place, composition, framing, pose, expression, lighting and style. Apply only this change requested by the person: ${note}.${faces} Vertical framing, sharp focus on the face`,
+      prompt: `Photorealistic high-definition photo. Recreate Figure 1 exactly: same place, composition, framing, pose, expression, lighting and style. Apply only this change requested by the person: ${note}.${faces}${setting} Vertical framing, sharp focus on the face`,
       referencePaths: refs,
       projectId: id,
       sceneId: `ed_${Date.now().toString(36)}`,

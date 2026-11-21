@@ -2,7 +2,7 @@ import { isOutOfFunds, reportOutOfFunds } from "../provider-funds";
 import { costOf, giveBack } from "../wallet";
 import type { Project } from "../types";
 import { providers } from "../ai";
-import { buildScenes, inferArea } from "../script-engine";
+import { buildScenes, inferArea, isPovBrief, MAX_REFERENCE_IMAGES, placeClause } from "../script-engine";
 import { sceneLength } from "../experience";
 import { localPathForMediaUrl } from "../paths";
 import { mediaDuration } from "../render/glass";
@@ -69,19 +69,30 @@ export async function runManifestation(id: string): Promise<void> {
           locale: start.locale,
           desires: [start.desire],
           // Al rehacerla, el cambio que pidió manda sobre la versión anterior.
-          details: start.redoNote ? [{ question: "Cambio que pidió para esta escena", answer: start.redoNote }] : undefined,
+          // Con foto del lugar, el sitio ya está decidido: el guion solo pone la acción.
+          details: [
+            ...(start.redoNote ? [{ question: "Cambio que pidió para esta escena", answer: start.redoNote }] : []),
+            ...(start.placeUrl ? [{ question: "Lugar", answer: "El lugar viene de una foto que subió la persona; describe la acción, no inventes otro lugar" }] : []),
+          ],
         });
         cents += script.costCents;
         brief = script.result.sceneBriefs[0] ?? start.desire;
         affirmation = script.result.affirmations[0] ?? start.desire;
       }
-      const photos = (start.photoUrls ?? []).map((u) => localPathForMediaUrl(u)).filter((p): p is string => !!p);
+      // Foto del lugar (opcional): va la última y siempre entra; si no cabe, sobra una selfie.
+      const place = start.placeUrl && (await ensureLocal(start.placeUrl)) ? localPathForMediaUrl(start.placeUrl) : null;
+      const photos = (start.photoUrls ?? [])
+        .map((u) => localPathForMediaUrl(u))
+        .filter((p): p is string => !!p)
+        .slice(0, place ? MAX_REFERENCE_IMAGES - 1 : MAX_REFERENCE_IMAGES);
       const owner = await db.getUser(start.ownerId);
       const [scene] = buildScenes([brief], start.style ?? "cinematic", photos.length > 0, 8, photos.length, bodyClause(owner?.body));
 
-      // 2. Imagen con su cara.
-      const prompt = start.redoNote && !faceRedo ? `${scene.prompt}. Change requested by the person (apply it exactly): ${start.redoNote}` : scene.prompt;
-      const image = await providers.image.generate({ prompt, referencePaths: photos.length ? photos : undefined, projectId: id, sceneId });
+      // 2. Imagen con su cara (y en su lugar, si subió la foto).
+      let prompt = place ? `${scene.prompt}. ${placeClause(photos.length + 1, isPovBrief(brief))}` : scene.prompt;
+      if (start.redoNote && !faceRedo) prompt = `${prompt}. Change requested by the person (apply it exactly): ${start.redoNote}`;
+      const refs = place ? [...photos, place] : photos;
+      const image = await providers.image.generate({ prompt, referencePaths: refs.length ? refs : undefined, projectId: id, sceneId });
       cents += image.costCents;
       imageUrl = image.result.url;
     }

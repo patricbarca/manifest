@@ -14,7 +14,7 @@ type Voice = { id: string; label: string };
 type Packs = { wishes: CreditPack[]; stills: CreditPack[]; elevated: CreditPack[]; products: Dictionary["products"]; upsell?: CreditPack; t: Dictionary["packs"] };
 type Quality = "standard" | "elevated" | "still";
 type Labels = {
-  desire: string; desirePlaceholder: string; language: string; voice: string; photosTitle: string; photosHint: string;
+  desire: string; desirePlaceholder: string; placeTitle: string; placeHint: string; placePick: string; placeRemove: string; language: string; voice: string; photosTitle: string; photosHint: string;
   consent: string; biometric: string; upload: string; uploading: string; photosOk: string; photosNeed: string; waiver: string; create: string; creating: string;
   credits: string; noCredits: string; buy: string; each: string; freeScene: string; marketingOptIn: string; errors: Record<string, string>; accessForm: { placeholder: string; submit: string; bad: string };
 };
@@ -63,6 +63,9 @@ export function NewManifestation({
   const [uploading, setUploading] = useState(false);
   const [slotUrls, setSlotUrls] = useState<(string | undefined)[]>([]);
   const [busySlot, setBusySlot] = useState<number>();
+  // Foto del lugar (opcional): una sola, solo para esta escena.
+  const [placeUrl, setPlaceUrl] = useState<string>();
+  const [placeBusy, setPlaceBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [note, setNote] = useState<string>();
   const [quality, setQuality] = useState<Quality>(credits === 0 && stillCredits > 0 && !freeScene ? "still" : "standard");
@@ -73,7 +76,7 @@ export function NewManifestation({
   // Lo que acaba de subir aquí: una de frente (huecos 1 y 2) y dos de cara en total.
   // Además se refresca la página tras cada subida para que el servidor lo confirme con las guardadas.
   const ready = photosReady || (!!(slotUrls[0] || slotUrls[1]) && slotUrls.slice(0, 3).filter(Boolean).length >= 2);
-  const canCreate = desire.trim().length >= 3 && ready && waiver && (!paymentsOn || freeNow || have >= need) && !busy;
+  const canCreate = desire.trim().length >= 3 && ready && waiver && (!paymentsOn || freeNow || have >= need) && !busy && !placeBusy;
   const input = "t-body w-full rounded-[var(--radius-ctl)] border border-[var(--color-hairline)] bg-[var(--color-surface-2)] px-4 py-3 outline-none focus:border-[var(--color-hairline-strong)]";
 
   async function upload(files: File[], slot = 0, scanned = false): Promise<SlotResult | undefined> {
@@ -107,13 +110,26 @@ export function NewManifestation({
     return result;
   }
 
+  async function uploadPlace(file: File) {
+    setPlaceBusy(true);
+    setError(undefined);
+    const body = new FormData();
+    body.append("selfie", file);
+    body.append("kind", "place");
+    const res = await fetch("/api/upload", { method: "POST", body });
+    const data = await res.json().catch(() => ({}));
+    setPlaceBusy(false);
+    if (!res.ok) return setError(data.error ?? t.errors.invalid);
+    setPlaceUrl(data.url);
+  }
+
   async function create() {
     setBusy(true);
     setError(undefined);
     const res = await fetch("/api/manifestations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ desire: desire.trim(), locale: lang, voice, quality, waiver: true, marketing }),
+      body: JSON.stringify({ desire: desire.trim(), locale: lang, voice, quality, waiver: true, marketing, ...(placeUrl ? { placeUrl } : {}) }),
     });
     const data = await res.json().catch(() => ({}));
     setBusy(false);
@@ -129,6 +145,40 @@ export function NewManifestation({
         <span className="t-sub mb-2 block font-medium">{t.desire}</span>
         <textarea value={desire} maxLength={200} rows={3} onChange={(e) => setDesire(e.target.value)} placeholder={t.desirePlaceholder} className={`${input} resize-none`} />
       </label>
+
+      <div className="card space-y-2 rounded-[var(--radius-lg)] p-4">
+        <p className="t-sub font-medium">{t.placeTitle}</p>
+        <p className="t-caption text-[var(--color-label-3)]">{t.placeHint}</p>
+        {placeUrl ? (
+          <div className="relative inline-block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={placeUrl} alt="" className="h-24 w-24 rounded-[var(--radius-ctl)] object-cover" />
+            <button
+              type="button"
+              aria-label={t.placeRemove}
+              onClick={() => setPlaceUrl(undefined)}
+              className="interactive absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/80 text-xs text-white"
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          <label className={`interactive t-caption inline-block cursor-pointer rounded-full border border-[var(--color-hairline)] px-4 py-2 text-[var(--color-label-2)] ${placeBusy ? "opacity-50" : ""}`}>
+            {placeBusy ? t.uploading : t.placePick}
+            <input
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              disabled={placeBusy}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (file) void uploadPlace(file);
+              }}
+            />
+          </label>
+        )}
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">

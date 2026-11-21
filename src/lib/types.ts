@@ -167,6 +167,8 @@ export interface Manifestation {
   sourceSceneIndex?: number;
   /** Fotos de la persona usadas para generarla (se borran a los 30 días). */
   photoUrls?: string[];
+  /** Foto del lugar donde quiere verse (opcional, /media/uploads/<id>_place_...). Solo para esta escena. */
+  placeUrl?: string;
   /** Intentos tras reinicios del servidor. */
   attempts?: number;
   /** Se pagó con una manifestación de un paquete: si falla, se devuelve una vez. */
