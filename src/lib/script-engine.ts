@@ -372,6 +372,23 @@ export function isPovBrief(brief: string): boolean {
 const ALONE = "One single photograph of one moment, with the main subject as the only face in the image; anyone else appears only from behind or as a blurred silhouette far in the background";
 const WITH_CAST = "One single photograph of one moment; the people from the figures are the only faces in the image; anyone else appears only from behind or as a blurred silhouette far in the background";
 
+/** Cuántas fotos de referencia se mandan como mucho al modelo de imagen (fal corta en 10). */
+export const MAX_REFERENCE_IMAGES = 10;
+
+/** Cómo se llama en el prompt la foto de referencia N (empieza en 1). fal lo traduce a "reference image N" para GPT Image y Nano Banana. */
+export function figureLabel(n: number): string {
+  return `Figure ${n}`;
+}
+
+/**
+ * Foto del lugar: la subió la persona y va como ÚLTIMA referencia, después de
+ * sus selfies. El brief sigue mandando en la acción; la foto manda en el sitio.
+ */
+export function placeClause(n: number, pov = false): string {
+  const who = pov ? "The scene is seen from the person's own eyes" : "The person is naturally integrated in it, with the same face as the selfies";
+  return `Place the person in the location shown in ${figureLabel(n)}: keep that place's architecture, landscape, layout, colours and light. ${who}. Ignore any people that appear in ${figureLabel(n)}`;
+}
+
 /** Compone el prompt final de imagen: identidad + escena + estilo + encuadre. */
 export function buildScenePrompt(
   brief: string,

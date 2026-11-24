@@ -26,5 +26,12 @@ con la extensión «Claude in Chrome» y la cuenta de TikTok ya abierta en ese C
 | 8 | tiktok-notesapp-en.mp4 | Stop writing your goals in your Notes app 📝 This is my 2027 list: every goal turns into a video of me living it. Make your wish. See your life. Your first scene is free → manifestlife.ai · Scenes made with AI. | #2027goals #goals #visualization #mindset #ai |
 | 9 | tiktok-seenit-en.mp4 | You've imagined it a thousand times. Now see it 👀 One selfie + one sentence = a video of YOU living your dream. See yours: first scene free → manifestlife.ai · Scenes made with AI. | #dreamlife #visualization #manifestation #ai #2027goals |
 | 10 | tiktok-notyet-en.mp4 | None of this happened… yet. 🎬 My face, my dream, made from one selfie and one sentence. Your turn: see yours, first scene free → manifestlife.ai · Scenes made with AI. | #dreamlife #visualization #2027goals #mindset #ai |
+<<<<<<< HEAD
+=======
+
+| 11 | tiktok-place-halong-en.mp4 | I uploaded a photo of Ha Long Bay… and one selfie. Now I watch myself there every morning 🇻🇳 Pick your place → link in bio · Scenes made with AI. | #halongbay #vietnam #visualization #dreamtravel #ai |
+| 13 | tiktok-place-hoian-en.mp4 | Hoi An under the lanterns 🏮 One photo of the place + one selfie = me, already there. Pick yours → link in bio · Scenes made with AI. | #hoian #vietnam #visualization #traveldreams #ai |
+| 15 | tiktok-place-vietnam-en.mp4 | Two places on my list: Ha Long Bay & Hoi An 🇻🇳 A photo of each + one selfie, and I'm already there. Where's yours? → link in bio · Scenes made with AI. | #vietnam #bucketlist #visualization #travel #ai |
+>>>>>>> origin/main
 
 Si la cuenta es solo en inglés, dejar los días 6 y 7 para una cuenta en español.

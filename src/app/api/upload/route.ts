@@ -44,11 +44,14 @@ export async function POST(request: Request) {
   const file = form.get("selfie");
   const consent = form.get("consent");
   const biometric = form.get("biometric");
+  // Foto del lugar (opcional, para una manifestación): no es una foto de la persona,
+  // así que no pasa el análisis de selfie ni se guarda en sus fotos. El filtro NSFW sí.
+  const place = form.get("kind") === "place";
 
   if (!(file instanceof File)) {
     return NextResponse.json({ error: t.errors.noFile }, { status: 400 });
   }
-  if (consent !== "true" || biometric !== "true") {
+  if (!place && (consent !== "true" || biometric !== "true")) {
     return NextResponse.json(
       { error: t.errors.noConsent },
       { status: 400 },
@@ -67,7 +70,8 @@ export async function POST(request: Request) {
   const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
   // El id del dueño va en el nombre: es lo que luego deja a /media comprobar
   // de quién es la foto sin tener que guardar una tabla aparte.
-  const name = `${user.id}_${Date.now().toString(36)}_${randomBytes(8).toString("hex")}.${ext}`;
+  // Las del lugar llevan "_place_": así el alta de la manifestación sabe que es una foto de sitio suya.
+  const name = `${user.id}_${place ? "place_" : ""}${Date.now().toString(36)}_${randomBytes(8).toString("hex")}.${ext}`;
   const abs = mediaPath("uploads", name);
 
   await mkdir(path.dirname(abs), { recursive: true });
@@ -76,6 +80,7 @@ export async function POST(request: Request) {
     await rm(abs, { force: true });
     return NextResponse.json({ error: t.errors.photoUnsafe }, { status: 422 });
   }
+  if (place) return NextResponse.json({ url: mediaUrl("uploads", name) });
   // Sus selfies pasan el pre-análisis: una mala referencia deforma la cara en todas las escenas.
   const self = form.get("kind") === "self";
   // El hueco 4 (índice 3) es de medio cuerpo: ahí la cara puede salir más pequeña.
