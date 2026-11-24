@@ -29,6 +29,7 @@ Todas las personas son ficticias, generadas con IA. Si se usan en anuncios, már
 | tiktok-notesapp-en.mp4 | EN | 23 s | «Stop writing your goals in your Notes app. This is my 2027 list.» Lista de Notas: cada objetivo se marca y se convierte en su vídeo (escenario, cumbre, tortitas con su hija, playa). Voz Brian |
 | tiktok-seenit-en.mp4 | EN | 18 s | «You've imagined your dream life a thousand times… but you've never actually seen it.» «Not a stranger. Not a stock video. You.» Móvil (selfie → frase → «and there you are»). Cierre «See yours.» + escena gratis. Voz Sarah |
 | tiktok-notyet-en.mp4 | EN | 19 s | «None of this happened… yet.» Él aplaudido en el escenario → móvil (selfie + frase) → escenario, cumbre, tortitas con su hija → «I watch it every night…». Cierre «Your turn. See yours.» + escena gratis. Voz Brian |
+| tiktok-grateful-en.mp4 | EN | 22 s | Thanksgiving: «This year… I'm grateful for things that haven't happened yet.» Gracias por su estudio, Kyoto, la casa junto al mar y «us»; «I watch them every night… like they're already mine». Voz Alice |
 
 Están en `docs/`, que no entra en la imagen de Docker: no se publican en la web.
 | tiktok-place-halong-en.mp4 | EN | 24 s | «POV: you upload a photo of the place you dream about». Foto de Ha Long → móvil (selfie → sueño) → ella en un junco en Ha Long. Voz Matilda. Función «foto del lugar» |
