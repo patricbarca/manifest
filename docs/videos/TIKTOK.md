@@ -31,5 +31,6 @@ con la extensión «Claude in Chrome» y la cuenta de TikTok ya abierta en ese C
 | 13 | tiktok-place-hoian-en.mp4 | Hoi An under the lanterns 🏮 One photo of the place + one selfie = me, already there. Pick yours → link in bio · Scenes made with AI. | #hoian #vietnam #visualization #traveldreams #ai |
 | 14 | tiktok-3words-en.mp4 | Describe your dream life in 3 words 👇 Mine: stage, keys, sunset. I turned them into one sentence and watched myself living all three. Your turn, then go see yours: first scene free → manifestlife.ai · Scenes made with AI. | #dreamlife #visualization #manifestation #ai #3words |
 | 15 | tiktok-place-vietnam-en.mp4 | Two places on my list: Ha Long Bay & Hoi An 🇻🇳 A photo of each + one selfie, and I'm already there. Where's yours? → link in bio · Scenes made with AI. | #vietnam #bucketlist #visualization #travel #ai |
+| 16 | tiktok-story-en.mp4 | I used to fall asleep scrolling other people's lives. Now I fall asleep watching mine 🌙 One selfie + your wishes = scenes of you living them, in a short daily ritual: breathe, watch, say it out loud. Your first scene is free → manifestlife.ai · Scenes made with AI. | #storytime #visualization #manifestation #nightroutine #ai |
 
 Si la cuenta es solo en inglés, dejar los días 6 y 7 para una cuenta en español.
