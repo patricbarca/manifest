@@ -39,3 +39,5 @@ Están en `docs/`, que no entra en la imagen de Docker: no se publican en la web
 | tiktok-place-vietnam-en.mp4 | EN | 28 s | «POV: two places you dream about… and one selfie». Ha Long y Hội An en el mismo vídeo |
 
 Guion para que el fundador se grabe contando su historia: `GUION-FUNDADOR.md`.
+
+Piezas sueltas para grabar una vez y combinar en muchos vídeos: `LEGO-FUNDADOR.md`.
