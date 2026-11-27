@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { HeroVideo } from "@/components/HeroVideo";
 import { FunnelLink } from "@/components/FunnelLink";
+import { appHref } from "@/lib/hosts";
 import { TEMPLATES } from "@/lib/templates";
 import { TemplateMedia } from "@/components/TemplateMedia";
 import { FREE_MANIFESTATIONS, PAYMENTS_ENABLED, creditPacks, elevatedPacks, formatUsd, stillPacks } from "@/lib/pricing";
@@ -54,7 +55,7 @@ export default async function HomePage() {
 
           <div className="rise mt-8 flex flex-wrap items-center justify-center gap-3">
             <FunnelLink
-              href={freeOn ? "/new" : "/create"}
+              href={appHref(freeOn ? "/new" : "/create")}
               from="home"
               keepUtm
               className="interactive rounded-full bg-white px-6 py-3 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90"
@@ -90,9 +91,11 @@ export default async function HomePage() {
           {LIFE_AREAS.map((area) => {
             const sample = areaSample(area.id);
             return (
-              <Link
+              <FunnelLink
                 key={area.id}
-                href={`/create?area=${area.id}`}
+                href={appHref(`/create?area=${area.id}`)}
+                from={`home-area-${area.id}`}
+                keepUtm
                 className="card interactive group relative overflow-hidden rounded-[var(--radius-md)]"
               >
                 {sample && (
@@ -102,7 +105,7 @@ export default async function HomePage() {
                   <Icon name={area.icon} size={16} />
                   <h3 className="t-headline">{t.areas[area.id].label}</h3>
                 </div>
-              </Link>
+              </FunnelLink>
             );
           })}
         </div>
@@ -158,7 +161,7 @@ export default async function HomePage() {
           <h2 className="t-title">{t.packs.title}</h2>
           <p className="t-body mt-3 text-[var(--color-label-2)]">{t.packs.lede}</p>
         </div>
-        <PricingPacks mode="link" href="/create" wishes={creditPacks()} stills={stillPacks()} elevated={elevatedPacks()} products={t.products} t={t.packs} examples />
+        <PricingPacks mode="link" href={appHref("/create")} linkBase={appHref("/create")} from="home-pricing" wishes={creditPacks()} stills={stillPacks()} elevated={elevatedPacks()} products={t.products} t={t.packs} examples />
       </section>
 
       {/* ── Preguntas ────────────────────────────────────────────────────── */}
@@ -180,12 +183,14 @@ export default async function HomePage() {
       {/* ── Cierre ───────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-2xl px-6 py-28 text-center">
         <h2 className="t-title text-balance">{t.home.closingTitle}</h2>
-        <Link
-          href="/create"
+        <FunnelLink
+          href={appHref("/create")}
+          from="home-close"
+          keepUtm
           className="interactive mt-9 inline-block rounded-full bg-white px-7 py-3 text-[15px] font-medium tracking-[-0.011em] text-black hover:bg-white/90"
         >
           {t.home.closingCta}
-        </Link>
+        </FunnelLink>
       </section>
     </div>
   );

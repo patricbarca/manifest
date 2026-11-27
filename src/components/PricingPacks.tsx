@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { funnel } from "@/lib/track-client";
 import { useState } from "react";
 import { trackEvent } from "@/lib/track-client";
 import { formatUsd, type CreditPack, type PackKind } from "@/lib/pricing";
@@ -36,6 +37,8 @@ export function PricingPacks({
   upsell,
   initial = "wishes",
   examples = false,
+  linkBase = "/create",
+  from,
 }: {
   wishes: CreditPack[];
   stills: CreditPack[];
@@ -48,6 +51,10 @@ export function PricingPacks({
   /** "Completa tu vídeo": 2 deseos más a precio de pack (solo si le toca). */
   upsell?: CreditPack;
   initial?: PackKind;
+  /** Base de los enlaces por pack (`/create` o la dirección absoluta de la app). */
+  linkBase?: string;
+  /** En modo enlace: de dónde viene el clic, para el embudo («cta_click»). */
+  from?: string;
   /** Los 3 tipos a la vez, cada uno con su ejemplo y sus precios (landing y /pricing). */
   examples?: boolean;
 }) {
@@ -97,7 +104,8 @@ export function PricingPacks({
                   return (
                     <li key={pk.qty}>
                       <Link
-                        href={`/create?tier=${tr}&qty=${pk.qty}`}
+                        href={`${linkBase}?tier=${tr}&qty=${pk.qty}`}
+                        onClick={() => from && funnel("cta_click", { from: `${from}-${tr}-${pk.qty}` })}
                         className={`flex items-baseline justify-between gap-2 py-2.5 transition-opacity hover:opacity-70 ${hot ? "-mx-2 rounded-[var(--radius-sm,8px)] bg-[var(--color-surface-2)] px-2 ring-1 ring-[var(--color-label-1)]" : ""}`}
                       >
                         <span className="t-sub flex flex-wrap items-baseline gap-x-2 text-[var(--color-label-2)]">
@@ -210,7 +218,7 @@ export function PricingPacks({
             hot ? "border-[var(--color-label-1)] bg-[var(--color-surface-2)]" : "border-[var(--color-hairline-strong)]"
           }`;
           return mode === "link" ? (
-            <Link key={p.qty} href={href} className={cls}>
+            <Link key={p.qty} href={href} className={cls} onClick={() => from && funnel("cta_click", { from })}>
               {inner}
             </Link>
           ) : (

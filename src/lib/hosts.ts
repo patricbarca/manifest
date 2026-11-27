@@ -33,6 +33,15 @@ export const APP_ONLY = ["/profile", "/feed", "/create", "/new", "/my-video", "/
 
 export const matches = (path: string, list: string[]) => list.some((p) => path === p || path.startsWith(`${p}/`));
 
+/**
+ * Enlace a una página de la app desde la web pública: absoluto (app.manifestlife.ai/…).
+ * Con un enlace relativo, Next intenta cargarla sin recargar, el servidor la redirige a
+ * otro dominio, el navegador lo bloquea y acaba recargando: ~1,5 s perdidos en el botón.
+ */
+export function appHref(path: string): string {
+  return process.env.APP_URL && matches(path.split("?")[0], APP_ONLY) ? `${appBase()}${path}` : path;
+}
+
 /** ¿Esta petición entró por la dirección de la app? (cabeceras del proxy de Railway). */
 export function isAppHostHeader(hostHeader: string | null | undefined): boolean {
   const app = appHost();
