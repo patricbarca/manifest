@@ -21,7 +21,10 @@ export function funnel(step: "cta_click" | "login_view" | "auth_start", meta?: R
   if (typeof window === "undefined") return;
   try {
     // Origen del anuncio sacado de la dirección actual: así cuenta aunque no acepte cookies (no se guarda nada).
-    const src = new URLSearchParams(window.location.search).get("utm_source")?.slice(0, 100) || undefined;
+    // En /login el utm llega dentro de ?next=/new?utm_source=…
+    const q = new URLSearchParams(window.location.search);
+    const next = q.get("next")?.split("?")[1];
+    const src = (q.get("utm_source") || (next && new URLSearchParams(next).get("utm_source")))?.slice(0, 100) || undefined;
     const body = JSON.stringify({ step, path: window.location.pathname, meta, src });
     const blob = new Blob([body], { type: "application/json" });
     if (navigator.sendBeacon?.("/api/funnel", blob)) return;
