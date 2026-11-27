@@ -1,4 +1,5 @@
 import { creditPacks, elevatedPacks, stillPacks } from "@/lib/pricing";
+import { appHref } from "@/lib/hosts";
 import { PricingPacks } from "@/components/PricingPacks";
 import { getDictionary } from "@/lib/i18n/server";
 import { clip, pageMeta } from "@/lib/seo";
@@ -21,7 +22,7 @@ export default async function PreciosPage() {
       </header>
 
       <div className="mx-auto mt-12 max-w-[1000px]">
-        <PricingPacks mode="link" href="/create" wishes={creditPacks()} stills={stillPacks()} elevated={elevatedPacks()} products={t.products} t={t.packs} examples />
+        <PricingPacks mode="link" href={appHref("/create")} linkBase={appHref("/create")} from="pricing" wishes={creditPacks()} stills={stillPacks()} elevated={elevatedPacks()} products={t.products} t={t.packs} examples />
       </div>
 
       <p className="t-sub mx-auto mt-8 max-w-md text-center text-[var(--color-label-2)]">

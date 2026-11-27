@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { FunnelLink } from "@/components/FunnelLink";
+import { appHref } from "@/lib/hosts";
 import { StartWish } from "@/components/StartWish";
 import { HeroVideo } from "@/components/HeroVideo";
 import { FREE_MANIFESTATIONS, PAYMENTS_ENABLED, formatUsd, stillPacks } from "@/lib/pricing";
@@ -33,7 +34,7 @@ export default async function StartPage({ searchParams }: { searchParams: Promis
   const sp = await searchParams;
   // Con la escena gratis activa, el anuncio lleva a crear una escena sin pagar (/new); si no, al vídeo completo.
   const freeOn = FREE_MANIFESTATIONS && PAYMENTS_ENABLED;
-  const create = withUtm(freeOn ? "/new" : "/create", sp);
+  const create = withUtm(appHref(freeOn ? "/new" : "/create"), sp);
   // Versión por ángulo del anuncio: /start?a=money|body|love|travel. El titular repite la promesa del anuncio.
   const angleKey = typeof sp.a === "string" && sp.a in L.angles ? (sp.a as keyof typeof L.angles) : null;
   const angle = angleKey ? L.angles[angleKey] : null;
